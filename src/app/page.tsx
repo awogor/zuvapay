@@ -65,7 +65,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             {/* Left Copy Area */}
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              {/* Product Announcement Pill (Cardtonic style) */}
+              {/* Product Announcement Pill */}
               <div className="flex items-center justify-center lg:justify-start">
                 <Link
                   href="/services#data"
@@ -74,24 +74,23 @@ export default function HomePage() {
                   <span className="px-1.5 py-0.5 rounded-full bg-zuva-solar text-white text-[10px] font-black uppercase tracking-wider">
                     NEW
                   </span>
-                  <span>Wholesale SME Data from ₦240/GB & Foreign WhatsApp OTPs</span>
+                  <span>Wholesale SME Data from ₦240/GB & Global SMS Verification</span>
                   <ChevronRight className="w-3.5 h-3.5 text-zuva-solar" />
                 </Link>
               </div>
 
               {/* Main Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-[64px] font-black tracking-tight text-slate-950 leading-[1.08] font-display">
-                Explore cheap SME data,{' '}
+              <h1 className="text-4xl sm:text-5xl lg:text-[62px] font-black tracking-tight text-slate-950 leading-[1.08] font-display">
+                Every digital essential.{' '}
                 <br className="hidden sm:inline" />
-                bill payments and{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-zuva-solar via-zuva-amber to-amber-500">
-                  communication tools.
+                  Delivered in seconds.
                 </span>
               </h1>
 
               {/* Subheadline */}
               <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                ZuvaPay is your all-in-one digital platform for instant SME data, 20-digit electricity tokens, foreign virtual SMS numbers (OTPs), and automated utility bill payments.
+                The smart platform powering Nigeria’s daily hustle. Get instant wholesale SME data, electricity tokens without extra fees, and foreign virtual numbers for seamless global verification.
               </p>
 
               {/* Live Ticker Bar */}
