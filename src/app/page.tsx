@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MarketingNavbar } from '@/components/marketing/MarketingNavbar';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import { HeroInteractiveDemo } from '@/components/marketing/HeroInteractiveDemo';
+import { MobileAppShowcase } from '@/components/marketing/MobileAppShowcase';
 import {
   Smartphone,
   MessageSquareCode,
@@ -404,6 +405,11 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* =========================================================================
+          ZUVAPAY MOBILE APP SHOWCASE (SquareMe inspired)
+         ========================================================================= */}
+      <MobileAppShowcase />
 
       {/* =========================================================================
           CAMPUS & HUSTLER AMBASSADOR PROGRAM (SquareMe / Zojapay inspired)
