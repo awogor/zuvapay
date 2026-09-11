@@ -1,0 +1,59 @@
+{
+  "gongoz": {
+    "data": {
+      "globalRule": {
+        "type": "percentage",
+        "value": 10
+      },
+      "overrides": {}
+    },
+    "cable": {
+      "globalRule": {
+        "type": "fixed",
+        "value": 100
+      },
+      "overrides": {}
+    },
+    "power": {
+      "globalRule": {
+        "type": "fixed",
+        "value": 100
+      },
+      "overrides": {}
+    }
+  },
+  "fadded": {
+    "globalRule": {
+      "type": "percentage",
+      "value": 25
+    },
+    "overrides": {}
+  },
+  "momo": {
+    "usdToNgnRate": 1650,
+    "globalRule": {
+      "type": "percentage",
+      "value": 500
+    },
+    "overrides": {
+      "103": 450
+    }
+  },
+  "grizzly": {
+    "usdToNgnRate": 1680,
+    "globalRule": {
+      "type": "percentage",
+      "value": 150
+    },
+    "overrides": {}
+  },
+  "smspool": {
+    "usdToNgnRate": 1650,
+    "globalRule": {
+      "type": "percentage",
+      "value": 45
+    },
+    "overrides": {}
+  },
+  "updatedAt": "2026-09-11T00:25:25.131Z"
+}

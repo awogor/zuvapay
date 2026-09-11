@@ -1,0 +1,195 @@
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=satoshi@400,500,700,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Syne:wght@700;800&family=Space+Grotesk:wght@500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0B1120;
+  --foreground: #F8FAFC;
+  --card-bg: rgba(15, 23, 42, 0.75);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --text-main: #FFFFFF;
+  --text-muted: #94A3B8;
+  color-scheme: dark;
+}
+
+html.light,
+html[data-theme='light'] {
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --card-border: rgba(15, 23, 42, 0.08);
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  color-scheme: light;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Satoshi', 'Outfit', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ========================================================
+   COMPREHENSIVE LIGHT THEME RULES
+   ======================================================== */
+html.light body,
+html[data-theme='light'] body {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+}
+
+/* Base backgrounds & layout surfaces fallback */
+html.light .bg-slate-950:not([data-preserve-dark]),
+html[data-theme='light'] .bg-slate-950:not([data-preserve-dark]) {
+  background-color: #FFFFFF !important;
+}
+
+/* Fallback borders in light mode */
+html.light .border-white\/10,
+html[data-theme='light'] .border-white\/10,
+html.light .border-white\/5,
+html[data-theme='light'] .border-white\/5,
+html.light .border-white\/20,
+html[data-theme='light'] .border-white\/20 {
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Form controls in light mode */
+html.light input:not([type="checkbox"]):not([type="radio"]),
+html[data-theme='light'] input:not([type="checkbox"]):not([type="radio"]),
+html.light select,
+html[data-theme='light'] select,
+html.light textarea,
+html[data-theme='light'] textarea {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light input::placeholder,
+html[data-theme='light'] input::placeholder,
+html.light textarea::placeholder,
+html[data-theme='light'] textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Dividers & tables */
+html.light .divide-white\/5 > :not([hidden]) ~ :not([hidden]),
+html[data-theme='light'] .divide-white\/5 > :not([hidden]) ~ :not([hidden]),
+html.light .divide-white\/10 > :not([hidden]) ~ :not([hidden]),
+html[data-theme='light'] .divide-white\/10 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #E2E8F0 !important;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+html.light .glass-panel,
+html[data-theme='light'] .glass-panel {
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04) !important;
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.7) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+html.light .glass-card,
+html[data-theme='light'] .glass-card {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 8px 24px 0 rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Custom glowing borders */
+.glow-orange {
+  box-shadow: 0 0 25px -5px rgba(255, 140, 0, 0.3);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.3);
+}
+
+.glow-blue {
+  box-shadow: 0 0 25px -5px rgba(2, 132, 199, 0.3);
+}
+
+/* Print styles for Receipt */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-receipt, #printable-receipt * {
+    visibility: visible;
+  }
+  #printable-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+html.light ::-webkit-scrollbar-thumb,
+html[data-theme='light'] ::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.15) !important;
+}
+
+/* Log Product Description Content (overrides any inline or third-party dark styles) */
+.log-description-content {
+  color: #334155;
+}
+
+.dark .log-description-content,
+html.dark .log-description-content,
+html[data-theme='dark'] .log-description-content {
+  color: #E2E8F0 !important;
+}
+
+.dark .log-description-content *,
+html.dark .log-description-content *,
+html[data-theme='dark'] .log-description-content * {
+  color: inherit !important;
+}
+

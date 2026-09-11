@@ -1,0 +1,241 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useWallet } from '@/context/WalletContext';
+import { useAuth } from '@/context/AuthContext';
+import { formatNaira, formatDate } from '@/lib/utils';
+import {
+  X,
+  Copy,
+  Check,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  ShieldCheck,
+  Zap,
+} from 'lucide-react';
+
+function formatMetaKey(key: string): string {
+  return key
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, (str) => str.toUpperCase())
+    .replace(/_/g, ' ')
+    .trim();
+}
+
+export function ReceiptModal() {
+  const { activeReceipt, closeReceipt } = useWallet();
+  const { profile } = useAuth();
+  const [copied, setCopied] = useState(false);
+  const [tokenCopied, setTokenCopied] = useState(false);
+
+  if (!activeReceipt) return null;
+
+  const copyReference = () => {
+    navigator.clipboard.writeText(activeReceipt.reference);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const copyToken = (tok: string) => {
+    navigator.clipboard.writeText(tok);
+    setTokenCopied(true);
+    setTimeout(() => setTokenCopied(false), 2000);
+  };
+
+  const isCredit = activeReceipt.type === 'credit';
+  const metadata = activeReceipt.metadata || {};
+  const token = metadata.token || metadata.Token || metadata.meter_token || metadata.electricity_token;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) closeReceipt();
+      }}
+    >
+      <div className="relative w-full max-w-lg md:max-w-xl max-h-[86dvh] sm:max-h-[90vh] flex flex-col rounded-2xl sm:rounded-3xl border border-white/15 bg-slate-900 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+        {/* Top decorative bar */}
+        <div
+          className={`h-2.5 w-full flex-shrink-0 ${
+            activeReceipt.status === 'completed'
+              ? isCredit
+                ? 'bg-emerald-500'
+                : 'bg-brand-orange'
+              : activeReceipt.status === 'pending'
+              ? 'bg-amber-500'
+              : 'bg-rose-500'
+          }`}
+        />
+
+        {/* Modal Header - Sticky at top */}
+        <div className="sticky top-0 z-20 flex-shrink-0 flex items-center justify-between px-6 py-4 bg-slate-900/95 backdrop-blur-sm border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-brand-orange to-amber-500 font-black text-slate-950 shadow-lg shadow-orange-500/20">
+              KP
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-white tracking-wide">KorrectPay</h3>
+              <p className="text-[11px] text-slate-400">Transaction Receipt</p>
+            </div>
+          </div>
+          <button
+            onClick={closeReceipt}
+            className="rounded-xl p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors border border-transparent hover:border-white/10"
+            title="Close Receipt"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Receipt Content - Scrollable container */}
+        <div id="printable-receipt" className="flex-1 overflow-y-auto px-6 py-5 space-y-5 scrollbar-thin scrollbar-thumb-slate-700">
+          {/* Status & Amount Hero */}
+          <div className="text-center py-4 px-4 bg-slate-950/70 rounded-2xl border border-white/5 shadow-inner">
+            <div className="inline-flex items-center justify-center p-2.5 rounded-full mb-2 bg-white/5">
+              {activeReceipt.status === 'completed' && (
+                <CheckCircle2 className="w-9 h-9 text-emerald-400" />
+              )}
+              {activeReceipt.status === 'pending' && (
+                <Clock className="w-9 h-9 text-amber-400 animate-pulse" />
+              )}
+              {activeReceipt.status === 'failed' && (
+                <AlertCircle className="w-9 h-9 text-rose-400" />
+              )}
+            </div>
+            <p className="text-xs uppercase tracking-wider font-semibold text-slate-400">
+              {isCredit ? 'Amount Credited' : 'Amount Paid'}
+            </p>
+            <h2
+              className={`text-3xl sm:text-4xl font-black mt-1 tracking-tight ${
+                isCredit ? 'text-emerald-400' : 'text-white'
+              }`}
+            >
+              {isCredit ? '+' : '-'}
+              {formatNaira(activeReceipt.amount)}
+            </h2>
+            <div className="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              {activeReceipt.status.toUpperCase()}
+            </div>
+          </div>
+
+          {/* Electricity Token Highlight (if applicable) */}
+          {token && (
+            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-center space-y-2">
+              <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-amber-400 uppercase tracking-wider">
+                <Zap className="w-4 h-4" />
+                Electricity Token (Prepaid Units)
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <span className="font-mono text-xl sm:text-2xl font-black text-amber-300 tracking-wider">
+                  {token}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => copyToken(String(token))}
+                  className="p-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 transition-colors"
+                  title="Copy Token"
+                >
+                  {tokenCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-400">Load this token directly into your prepaid meter</p>
+            </div>
+          )}
+
+          {/* Transaction Metadata Breakdown */}
+          <div className="rounded-2xl bg-slate-950/40 p-4 border border-white/5 space-y-3 text-sm">
+            <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+              <span className="text-slate-400 text-xs">Service Category</span>
+              <span className="font-semibold text-slate-200 capitalize text-xs bg-slate-800/60 px-2.5 py-0.5 rounded-md border border-white/5">
+                {activeReceipt.category}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+              <span className="text-slate-400 text-xs">Description</span>
+              <span className="font-medium text-slate-200 text-xs text-right max-w-[280px]">
+                {activeReceipt.description || 'Digital Payment'}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+              <span className="text-slate-400 text-xs">Reference No.</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs text-brand-orange font-bold">
+                  {activeReceipt.reference}
+                </span>
+                <button
+                  onClick={copyReference}
+                  className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                  title="Copy Reference"
+                >
+                  {copied ? (
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+              <span className="text-slate-400 text-xs">Date & Time</span>
+              <span className="text-slate-300 text-xs font-mono">
+                {formatDate(activeReceipt.created_at)}
+              </span>
+            </div>
+
+            {profile && (
+              <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+                <span className="text-slate-400 text-xs">Customer Name</span>
+                <span className="text-slate-200 font-medium text-xs">
+                  {profile.first_name} {profile.last_name}
+                </span>
+              </div>
+            )}
+
+            {/* Custom service metadata display */}
+            {activeReceipt.metadata && (
+              <>
+                {Object.entries(activeReceipt.metadata)
+                  .filter(([k]) => !['token', 'Token', 'meter_token', 'electricity_token'].includes(k))
+                  .map(([key, val]) => (
+                    <div key={key} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0">
+                      <span className="text-slate-400 text-xs">{formatMetaKey(key)}</span>
+                      <span className="text-slate-200 font-medium text-xs text-right max-w-[280px] break-all">
+                        {String(val)}
+                      </span>
+                    </div>
+                  ))}
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 pt-1 pb-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Verified Secure KorrectPay Transaction</span>
+          </div>
+        </div>
+
+        {/* Modal Actions - Sticky at bottom */}
+        <div className="sticky bottom-0 z-20 flex-shrink-0 no-print flex items-center justify-end gap-2 p-3 sm:p-4 bg-slate-950/95 backdrop-blur-sm border-t border-white/10">
+          <button
+            onClick={copyReference}
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 py-2 px-3.5 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 text-[11px] sm:text-xs font-bold transition-all shadow-md shadow-orange-500/20"
+          >
+            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? 'Copied' : 'Copy Ref'}
+          </button>
+          <button
+            onClick={closeReceipt}
+            className="px-3.5 py-2 rounded-xl border border-white/10 text-slate-300 hover:bg-slate-800 hover:text-white text-[11px] sm:text-xs font-semibold transition-colors"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

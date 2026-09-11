@@ -1,0 +1,16 @@
+# Firebase App Hosting Configuration
+# Documentation: https://firebase.google.com/docs/app-hosting/configure
+
+generatedIncludes:
+  # Next.js App Router / SSR Backend
+runConfig:
+  # Scales to zero when idle to conserve compute resources and avoid unnecessary charges
+  minInstances: 0
+  maxInstances: 5
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 1024
+
+env:
+  - variable: NODE_ENV
+    value: production
