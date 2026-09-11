@@ -36,7 +36,11 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/forgot-password');
-  const isProtectedRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/services') || pathname.startsWith('/transactions') || pathname.startsWith('/profile');
+  // /services is public marketing catalog; /services/* (like /services/airtime) are dashboard action pages
+  const isProtectedRoute = pathname.startsWith('/dashboard') || 
+    (pathname.startsWith('/services/') && pathname !== '/services') || 
+    pathname.startsWith('/transactions') || 
+    pathname.startsWith('/profile');
 
   // If user is authenticated and tries to access login/signup, redirect to /dashboard
   if (user && isAuthRoute) {

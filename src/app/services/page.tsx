@@ -248,6 +248,126 @@ export default function ServicesPage() {
         </div>
       </section>
 
+      {/* 4. Cable TV Subscriptions */}
+      <section id="tv" className="py-20 border-t border-slate-200/80 bg-slate-50/70">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="space-y-2 mb-10 text-center md:text-left">
+            <span className="text-xs font-bold uppercase tracking-widest text-sky-600">
+              Entertainment & Cable
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-950 font-display">
+              Cable TV Subscriptions
+            </h2>
+            <p className="text-xs text-slate-600 max-w-2xl">
+              Instant smartcard/IUC validation and bouquet activation for DSTV, GOtv, and StarTimes with zero delay.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-6 rounded-3xl border border-slate-200/80 bg-white shadow-sm hover:shadow-md transition-all space-y-4">
+              <div className="p-3 rounded-2xl bg-blue-50 text-blue-600 w-fit">
+                <span className="font-black text-xl font-display">DStv</span>
+              </div>
+              <h4 className="text-base font-bold text-slate-900">DStv Nigeria</h4>
+              <p className="text-xs text-slate-600">
+                Padi, Yanga, Confam, Compact, Compact Plus & Premium packages. Automated smartcard reconnection within 60 seconds.
+              </p>
+              <p className="font-mono text-sm font-bold text-blue-700">Instant Smartcard Validation</p>
+              <Link
+                href="/signup"
+                className="w-full inline-flex items-center justify-center py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors"
+              >
+                Renew DStv
+              </Link>
+            </div>
+
+            <div className="p-6 rounded-3xl border border-slate-200/80 bg-white shadow-sm hover:shadow-md transition-all space-y-4">
+              <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600 w-fit">
+                <span className="font-black text-xl font-display">GOtv</span>
+              </div>
+              <h4 className="text-base font-bold text-slate-900">GOtv Nigeria</h4>
+              <p className="text-xs text-slate-600">
+                Smallie, Jinja, Jolli, Max, and Supa+ bouquets. Pre-validates subscriber name before debit.
+              </p>
+              <p className="font-mono text-sm font-bold text-emerald-700">Live IUC Verification</p>
+              <Link
+                href="/signup"
+                className="w-full inline-flex items-center justify-center py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors"
+              >
+                Renew GOtv
+              </Link>
+            </div>
+
+            <div className="p-6 rounded-3xl border border-slate-200/80 bg-white shadow-sm hover:shadow-md transition-all space-y-4">
+              <div className="p-3 rounded-2xl bg-orange-50 text-orange-600 w-fit">
+                <span className="font-black text-xl font-display">StarTimes</span>
+              </div>
+              <h4 className="text-base font-bold text-slate-900">StarTimes ON</h4>
+              <p className="text-xs text-slate-600">
+                Nova, Basic, Smart, Classic, and Super bouquets with immediate signal restoration.
+              </p>
+              <p className="font-mono text-sm font-bold text-orange-700">Instant Signal Activation</p>
+              <Link
+                href="/signup"
+                className="w-full inline-flex items-center justify-center py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors"
+              >
+                Renew StarTimes
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Social Growth & Digital Creator Tools */}
+      <section id="social" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="space-y-2 mb-10 text-center md:text-left">
+          <span className="text-xs font-bold uppercase tracking-widest text-rose-600">
+            Creator Economy & Growth
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-950 font-display">
+            Social Growth & Aged Logs
+          </h2>
+          <p className="text-xs text-slate-600 max-w-2xl">
+            Real non-drop engagement, YouTube monetization watch hours, aged social media logs, and cloud dev setups for digital agencies.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-6 rounded-3xl border border-slate-200/80 bg-white shadow-sm hover:shadow-md transition-all space-y-3">
+            <div className="p-3 rounded-2xl bg-rose-100 text-rose-700 w-fit">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+            <h4 className="text-base font-bold text-slate-900">Social Media Boost</h4>
+            <p className="text-xs text-slate-600">
+              YouTube subscribers, TikTok views, Instagram followers, and Twitter/X impressions. High retention with 30-day refill guarantee.
+            </p>
+            <p className="font-mono text-xs font-bold text-rose-600">Starts from ₦450</p>
+          </div>
+
+          <div className="p-6 rounded-3xl border border-slate-200/80 bg-white shadow-sm hover:shadow-md transition-all space-y-3">
+            <div className="p-3 rounded-2xl bg-indigo-100 text-indigo-700 w-fit">
+              <ShoppingBag className="w-5 h-5" />
+            </div>
+            <h4 className="text-base font-bold text-slate-900">Aged Social Logs</h4>
+            <p className="text-xs text-slate-600">
+              Aged Facebook, Instagram, and Twitter profiles with complete 2FA recovery secrets and cookies, ready for business managers.
+            </p>
+            <p className="font-mono text-xs font-bold text-indigo-600">Instant Automated Delivery</p>
+          </div>
+
+          <div className="p-6 rounded-3xl border border-slate-200/80 bg-white shadow-sm hover:shadow-md transition-all space-y-3">
+            <div className="p-3 rounded-2xl bg-emerald-100 text-emerald-700 w-fit">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <h4 className="text-base font-bold text-slate-900">Dedicated Virtual Accounts</h4>
+            <p className="text-xs text-slate-600">
+              10-digit virtual bank account (Moniepoint MFB & Wema ALAT) issued in your name for instant, automated wallet top-ups.
+            </p>
+            <p className="font-mono text-xs font-bold text-emerald-600">Zero Maintenance Charge</p>
+          </div>
+        </div>
+      </section>
+
       <MarketingFooter />
     </div>
   );
