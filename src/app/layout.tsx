@@ -8,9 +8,9 @@ import { ReceiptModal } from '@/components/modals/ReceiptModal';
 import { SupportProvider } from '@/components/modals/SupportModal';
 
 export const metadata: Metadata = {
-  title: 'ZuvaPay — Lightning-Fast Utility Payments & Digital Finance for Nigeria',
+  title: 'ZuvaPay — Cheap SME Data, Bill Payments & Communication Tools',
   description:
-    'ZuvaPay is the everyday digital payment and utility platform for Nigeria. Instant SME Data, Airtime, Electricity Tokens, Virtual Foreign SMS Numbers, and Multi-Currency Wallets.',
+    'ZuvaPay is the all-in-one digital platform for cheap SME data, 20-digit electricity tokens, foreign virtual SMS OTP numbers, and automated utility bill payments in Nigeria.',
 };
 
 export default function RootLayout({
