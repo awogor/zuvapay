@@ -18,7 +18,6 @@ import {
   ShieldCheck,
   ChevronDown,
   MessageSquare,
-  Sparkles,
   Radio,
 } from 'lucide-react';
 import CustomSearchDropdown, { type DropdownItem } from '@/components/common/CustomSearchDropdown';

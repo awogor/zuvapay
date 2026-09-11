@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useWallet } from '@/context/WalletContext';
 import { useToast } from '@/components/common/Toast';
 import { formatNaira, formatUSD } from '@/lib/utils';
-import { X, ArrowDownUp, RefreshCw, Sparkles } from 'lucide-react';
+import { X, ArrowDownUp, RefreshCw } from 'lucide-react';
 
 interface SwapModalProps {
   isOpen: boolean;
@@ -110,7 +110,6 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
           {/* Rate ticker */}
           <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/70 border border-white/5 text-xs">
             <span className="text-slate-400 flex items-center gap-1.5 font-medium">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               Live Mid-Market Rate:
             </span>
             <span className="font-mono font-bold text-emerald-400">

@@ -13,7 +13,7 @@ import {
   Ban,
   CheckCircle2,
   ShieldCheck,
-  Sparkles,
+  MessageSquare,
   Smartphone,
   ArrowLeft,
   RefreshCw,
@@ -387,7 +387,7 @@ function ActiveOtpContent() {
             <div className="py-6 flex flex-col items-center justify-center text-center space-y-3 bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200/60 dark:border-white/5">
               <div className="relative">
                 <div className="w-14 h-14 rounded-full border-2 border-rose-500/30 border-t-rose-500 animate-spin" />
-                <Sparkles className="w-6 h-6 text-rose-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                <MessageSquare className="w-6 h-6 text-rose-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
               </div>
               <div>
                 <p className="text-sm font-bold text-slate-900 dark:text-white flex items-center justify-center gap-2">

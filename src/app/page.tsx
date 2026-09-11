@@ -15,7 +15,6 @@ import {
   ShieldCheck,
   CheckCircle2,
   Lock,
-  Sparkles,
   RefreshCw,
   ShoppingBag,
   Star,
@@ -64,14 +63,6 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             {/* Left Copy Area */}
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              {/* Trust Badge Pill (CreditDirect / Zojapay style) */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200/90 shadow-sm text-xs font-semibold text-slate-800">
-                <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-                <span className="font-bold text-slate-900">Zero-Wahala FinTech</span>
-                <span className="text-slate-400">•</span>
-                <span className="text-zuva-solar font-bold">Nigeria 🇳🇬</span>
-              </div>
-
               {/* Main Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-[64px] font-black tracking-tight text-slate-950 leading-[1.08] font-display">
                 Fast Payments.{' '}
@@ -636,8 +627,7 @@ export default function HomePage() {
             {/* Glowing pattern inside banner */}
             <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-white/20 blur-[90px] pointer-events-none" />
 
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 border border-white/30 text-white text-xs font-bold">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center px-3.5 py-1.5 rounded-full bg-white/20 border border-white/30 text-white text-xs font-bold">
               Join 32,400+ Nigerians on ZuvaPay (ZuvaPay.com)
             </div>
 
@@ -652,7 +642,8 @@ export default function HomePage() {
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/signup"
-                className="w-full sm:w-auto px-9 py-4 rounded-2xl bg-slate-950 hover:bg-slate-900 text-white font-black text-sm shadow-xl transition-all hover:scale-105 active:scale-95"
+                data-preserve-dark
+                className="w-full sm:w-auto px-9 py-4 rounded-2xl !bg-[#0B0F17] hover:!bg-black !text-white font-black text-sm shadow-xl transition-all hover:scale-105 active:scale-95 text-center"
               >
                 Create Account Now — ₦0 Setup Fee
               </Link>

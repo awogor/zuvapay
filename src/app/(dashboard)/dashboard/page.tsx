@@ -9,7 +9,7 @@ import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { FundWalletModal } from '@/components/modals/FundWalletModal';
 import { SwapModal } from '@/components/modals/SwapModal';
 import { useToast } from '@/components/common/Toast';
-import { Sparkles, ArrowRight, ShieldCheck, AtSign } from 'lucide-react';
+import { ArrowRight, ShieldCheck, AtSign } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {

@@ -13,7 +13,6 @@ import {
   ShieldCheck,
   CheckCircle2,
   Lock,
-  Sparkles,
   RefreshCw,
   ShoppingBag,
 } from 'lucide-react';

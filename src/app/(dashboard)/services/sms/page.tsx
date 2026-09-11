@@ -15,6 +15,7 @@ import {
   MessageCircle,
   Info,
   History,
+  Clock,
 } from 'lucide-react';
 import { useSupport } from '@/components/modals/SupportModal';
 import SmsHistoryModal from '@/components/modals/SmsHistoryModal';
@@ -477,7 +478,7 @@ export default function VirtualSmsCatalogPage() {
               <div className="flex justify-between text-slate-500 dark:text-slate-400">
                 <span>Rental Window:</span>
                 <span className="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1">
-                  <Zap className="w-3.5 h-3.5 text-amber-500" />
+                  <Clock className="w-3.5 h-3.5 text-slate-400" />
                   15 Minutes Live OTP
                 </span>
               </div>

@@ -17,7 +17,6 @@ import {
   HelpCircle,
   MessageCircle,
   Mail,
-  Sparkles,
   Users,
   Building2,
   ExternalLink,
@@ -223,8 +222,7 @@ export function MarketingNavbar() {
               {/* Column 1: Left CTA Callout Card (ZojaPay style) */}
               <div className="col-span-4 p-7 rounded-[28px] bg-gradient-to-br from-orange-50/60 via-amber-50/40 to-slate-50 border border-orange-200/60 flex flex-col justify-between space-y-6">
                 <div className="space-y-3">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-orange-200 text-zuva-solar text-xs font-bold shadow-sm">
-                    <Sparkles className="w-3.5 h-3.5" />
+                  <div className="inline-flex items-center px-3 py-1 rounded-full bg-white border border-orange-200 text-zuva-solar text-xs font-bold shadow-sm">
                     Instant Payments Suite
                   </div>
                   <h3 className="text-2xl font-black text-slate-950 font-display leading-tight">
@@ -323,17 +321,20 @@ export function MarketingNavbar() {
               </div>
 
               {/* Column 3: Right Featured Card (ZojaPay style) */}
-              <div className="col-span-3 flex flex-col justify-between p-6 rounded-[28px] bg-slate-950 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-orange-500/15 rounded-full blur-2xl pointer-events-none" />
+              <div
+                data-preserve-dark
+                className="col-span-3 flex flex-col justify-between p-6 rounded-[28px] !bg-[#0A0D14] !text-white border border-slate-800 relative overflow-hidden shadow-xl"
+              >
+                <div className="absolute top-0 right-0 w-40 h-40 bg-orange-500/20 rounded-full blur-2xl pointer-events-none" />
 
                 <div className="space-y-3 relative z-10">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-zuva-amber">
                     Featured Release
                   </span>
-                  <h4 className="text-lg font-black font-display text-white">
+                  <h4 className="text-lg font-black font-display !text-white">
                     ZuvaPay Mobile on iOS & Android
                   </h4>
-                  <p className="text-xs text-slate-300 leading-relaxed">
+                  <p className="text-xs !text-slate-300 leading-relaxed">
                     Carry zero-stress utility payments in your pocket. Biometric Face ID, offline cache, and instant push receipts.
                   </p>
                   <div className="pt-2 flex items-center gap-2 text-[11px] text-emerald-400 font-semibold">
@@ -345,7 +346,7 @@ export function MarketingNavbar() {
                 <Link
                   href="/#mobile-app"
                   onClick={() => setActiveDropdown(null)}
-                  className="mt-6 flex items-center justify-between text-xs font-bold text-white hover:text-zuva-amber transition-colors pt-4 border-t border-white/10"
+                  className="mt-6 flex items-center justify-between text-xs font-bold !text-white hover:!text-zuva-amber transition-colors pt-4 border-t border-white/10"
                 >
                   <span>See Mobile App UI</span>
                   <ArrowRight className="w-4 h-4" />

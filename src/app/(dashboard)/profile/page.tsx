@@ -17,7 +17,6 @@ import {
   Save,
   LogOut,
   AtSign,
-  Sparkles,
   Check,
   X,
   Loader2,

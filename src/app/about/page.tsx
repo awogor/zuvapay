@@ -6,7 +6,6 @@ import { MarketingNavbar } from '@/components/marketing/MarketingNavbar';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import {
   ArrowRight,
-  Sparkles,
 } from 'lucide-react';
 
 export default function AboutPage() {
@@ -54,8 +53,7 @@ export default function AboutPage() {
           </div>
 
           <div className="p-8 rounded-3xl border border-slate-200/80 bg-white shadow-xl shadow-slate-200/50 space-y-6">
-            <h3 className="text-lg font-bold text-slate-900 font-display flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-zuva-solar" />
+            <h3 className="text-lg font-bold text-slate-900 font-display">
               The ZuvaPay Promise:
             </h3>
 

@@ -45,8 +45,8 @@ html[data-theme='light'] body {
 }
 
 /* Base backgrounds & layout surfaces fallback */
-html.light .bg-slate-950:not([data-preserve-dark]),
-html[data-theme='light'] .bg-slate-950:not([data-preserve-dark]) {
+html.light .bg-slate-950:not([data-preserve-dark]):not(button):not(a):not([class*='text-white']),
+html[data-theme='light'] .bg-slate-950:not([data-preserve-dark]):not(button):not(a):not([class*='text-white']) {
   background-color: #FFFFFF !important;
 }
 

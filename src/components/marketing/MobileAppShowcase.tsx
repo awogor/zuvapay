@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   Lock,
   ArrowRight,
-  Sparkles,
   Eye,
   Bell,
   ArrowDownLeft,
@@ -48,15 +47,14 @@ export function MobileAppShowcase() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Main Banner Card (SquareMe style) */}
-        <div className="rounded-[36px] bg-gradient-to-br from-[#0B0F17] via-[#111827] to-[#1E293B] border border-white/10 p-8 sm:p-12 lg:p-16 text-white shadow-2xl relative overflow-hidden">
+        <div data-preserve-dark className="rounded-[36px] bg-gradient-to-br from-[#0B0F17] via-[#111827] to-[#1E293B] border border-white/10 p-8 sm:p-12 lg:p-16 text-white shadow-2xl relative overflow-hidden">
           {/* Flare behind phone frames */}
           <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-bl from-zuva-solar/20 via-amber-500/15 to-transparent blur-[120px] pointer-events-none" />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             {/* Left Column: Copy & App Store Badges */}
             <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-zuva-amber text-xs font-bold backdrop-blur-md">
-                <Sparkles className="w-3.5 h-3.5 text-zuva-solar" />
+              <div className="inline-flex items-center px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-zuva-amber text-xs font-bold backdrop-blur-md">
                 <span>ZuvaPay Mobile iOS & Android</span>
               </div>
 

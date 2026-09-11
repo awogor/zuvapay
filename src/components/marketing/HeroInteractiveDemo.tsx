@@ -4,9 +4,7 @@ import React, { useState } from 'react';
 import {
   Smartphone,
   MessageSquareCode,
-  Zap,
   CheckCircle2,
-  Sparkles,
   ShieldCheck,
   RefreshCw,
 } from 'lucide-react';
@@ -40,14 +38,18 @@ export function HeroInteractiveDemo() {
       <div className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/95 border border-slate-200/90 shadow-lg shadow-slate-900/5 absolute -top-5 -left-6 z-20">
         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
         <p className="text-[11px] font-semibold text-slate-800">
-          <strong className="text-slate-950">✓ Adaeze</strong> received ₦120,000 — 2m ago
+          <strong className="text-slate-950">Adaeze</strong> recharged 25GB SME Data — 2m ago
         </p>
       </div>
 
       {/* Floating Operator Speed Chip */}
-      <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-950 text-white shadow-xl absolute -bottom-4 -right-4 z-20 text-[11px] font-bold">
-        <span className="text-zuva-amber font-mono font-black">⚡ 0.8s</span>
-        <span className="text-slate-300">Average Settlement</span>
+      <div
+        data-preserve-dark
+        className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full !bg-[#0B0F17] !text-white shadow-xl absolute -bottom-4 -right-4 z-20 text-[11px] font-bold border border-slate-800"
+      >
+        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+        <span className="font-mono font-black !text-emerald-400">0.8s</span>
+        <span className="!text-slate-300">Delivery Speed</span>
       </div>
 
       {/* Main Card Container */}
@@ -64,9 +66,6 @@ export function HeroInteractiveDemo() {
               Live Fulfillment Demo
             </span>
           </div>
-          <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80">
-            99.98% Success Rate
-          </span>
         </div>
 
         {/* Tab Switcher */}
@@ -112,7 +111,6 @@ export function HeroInteractiveDemo() {
                 : 'text-slate-600 hover:text-slate-950'
             }`}
           >
-            <Zap className="w-3.5 h-3.5" />
             <span>Power Token</span>
           </button>
         </div>
@@ -193,18 +191,16 @@ export function HeroInteractiveDemo() {
           <button
             onClick={handleSimulate}
             disabled={simulating}
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-slate-950 hover:bg-slate-900 text-white font-bold text-xs md:text-sm transition-all shadow-xl shadow-slate-950/15 active:scale-95 disabled:opacity-50"
+            data-preserve-dark
+            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-gradient-to-r from-zuva-solar to-zuva-amber hover:from-orange-600 hover:to-amber-600 !text-white font-bold text-xs md:text-sm transition-all shadow-xl shadow-orange-500/25 active:scale-95 disabled:opacity-50"
           >
             {simulating ? (
               <>
-                <RefreshCw className="w-4 h-4 animate-spin text-zuva-solar" />
-                <span>Simulating Carrier Routing...</span>
+                <RefreshCw className="w-4 h-4 animate-spin !text-white" />
+                <span className="!text-white font-bold">Connecting Carrier Switch...</span>
               </>
             ) : (
-              <>
-                <Sparkles className="w-4 h-4 text-zuva-amber" />
-                <span>Test 1-Second Delivery</span>
-              </>
+              <span className="!text-white font-bold">Simulate Instant Delivery</span>
             )}
           </button>
 

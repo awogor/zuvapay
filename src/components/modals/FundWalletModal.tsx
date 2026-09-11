@@ -15,7 +15,6 @@ import {
   Zap,
   ArrowRight,
   ShieldCheck,
-  Sparkles,
   RefreshCw,
 } from 'lucide-react';
 
@@ -247,7 +246,6 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
                 <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-brand-orange/40 shadow-xl space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-xs uppercase text-slate-400 font-semibold tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-brand-orange" />
                       Korapay Dedicated NGN Account
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">
@@ -331,7 +329,6 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
                     disabled={generatingAccount}
                     className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-brand-orange hover:bg-amber-500 text-slate-950 text-xs font-bold transition-all shadow-md disabled:opacity-50"
                   >
-                    <Sparkles className="w-3.5 h-3.5" />
                     {generatingAccount ? 'Contacting Korapay...' : 'Generate Dedicated Account Now'}
                   </button>
                 </form>

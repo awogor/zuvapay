@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/common/Toast';
-import { Mail, Lock, ArrowRight, ShieldCheck, Sparkles, Clock, AtSign, User } from 'lucide-react';
+import { Mail, Lock, ArrowRight, ShieldCheck, Clock, AtSign, User } from 'lucide-react';
 
 function LoginFormContent() {
   const router = useRouter();
