@@ -34,7 +34,7 @@ export function MarketingFooter() {
             </Link>
 
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-              The high-velocity digital payment and everyday financial utility platform for Nigerian creators, students, and businesses. Cheap SME data, instant airtime, disco tokens, foreign OTP numbers, and dedicated virtual bank accounts.
+              The high-velocity digital platform for bill payments and communication tools. Cheap SME data, instant airtime, electricity tokens, foreign SMS OTP numbers, and automated wallet funding.
             </p>
 
             <div className="flex flex-wrap items-center gap-2 pt-2">

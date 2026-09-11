@@ -311,10 +311,10 @@ export function MarketingNavbar() {
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-slate-900 group-hover:text-zuva-solar transition-colors">
-                      Dedicated Virtual Bank Accounts
+                      Instant Wallet Funding
                     </h4>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Instant 10-digit Moniepoint & Wema Bank account in your name.
+                      Dedicated automated virtual account to fund your bill payment wallet in seconds.
                     </p>
                   </div>
                 </Link>

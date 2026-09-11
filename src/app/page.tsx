@@ -65,22 +65,36 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             {/* Left Copy Area */}
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+              {/* Product Announcement Pill (Cardtonic style) */}
+              <div className="flex items-center justify-center lg:justify-start">
+                <Link
+                  href="/services#data"
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50/90 border border-orange-200/80 text-xs font-semibold text-slate-800 hover:bg-orange-100/80 transition-colors shadow-sm"
+                >
+                  <span className="px-1.5 py-0.5 rounded-full bg-zuva-solar text-white text-[10px] font-black uppercase tracking-wider">
+                    NEW
+                  </span>
+                  <span>Wholesale SME Data from ₦240/GB & Foreign WhatsApp OTPs</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-zuva-solar" />
+                </Link>
+              </div>
+
               {/* Main Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-[64px] font-black tracking-tight text-slate-950 leading-[1.08] font-display">
-                Fast Payments.{' '}
+                Explore cheap SME data,{' '}
                 <br className="hidden sm:inline" />
+                bill payments and{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-zuva-solar via-zuva-amber to-amber-500">
-                  Zero Wahala.
-                </span>{' '}
-                Money that moves at your speed.
+                  communication tools.
+                </span>
               </h1>
 
               {/* Subheadline */}
               <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                Never stress over hanging airtime or failed bank transfers again. Enjoy wholesale SME data, instant electricity tokens, foreign SMS OTPs for WhatsApp and AI, and dedicated Moniepoint or Wema bank accounts that fund instantly.
+                ZuvaPay is your all-in-one digital platform for instant SME data, 20-digit electricity tokens, foreign virtual SMS numbers (OTPs), and automated utility bill payments.
               </p>
 
-              {/* Live Ticker Bar (Zojapay style) */}
+              {/* Live Ticker Bar */}
               <div className="flex items-center justify-center lg:justify-start">
                 <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-100/90 border border-slate-200/80 text-[11px] font-medium text-slate-800">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -119,7 +133,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   <span>
-                    <strong className="text-slate-900 font-bold">1.1s</strong> Instant Delivery
+                    <strong className="text-slate-900 font-bold">150+ Countries</strong> Foreign SMS
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -180,10 +194,10 @@ export default function HomePage() {
               <span>Pain Points Solved</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-black text-slate-950 font-display">
-              Built because regular banking apps in Nigeria keep giving people high blood pressure.
+              Fast, reliable bill payments and communication tools without the stress.
             </h2>
             <p className="text-sm text-slate-600">
-              We eliminated every annoying bottleneck where online transactions hang, fail, or leave you begging customer care for your own money.
+              We eliminated every annoying bottleneck where utility bills delay, SMS OTPs never arrive, or failed transactions hang your funds.
             </p>
           </div>
 
@@ -215,9 +229,9 @@ export default function HomePage() {
               <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shadow-sm">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mt-5">Dedicated Nigerian Virtual Accounts</h3>
+              <h3 className="text-xl font-bold text-slate-900 mt-5">Instant Wallet Top-Up</h3>
               <p className="text-xs text-slate-600 leading-relaxed mt-2.5">
-                Receive an automated, permanent 10-digit Moniepoint or Wema bank account in your name. Any transfer funds your ZuvaPay wallet balance in under 2 seconds.
+                Top up your bill payment wallet 24/7 with dedicated automated virtual account numbers. Funds reflect in under 2 seconds to pay bills without card decline issues.
               </p>
             </div>
           </div>
