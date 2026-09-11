@@ -154,11 +154,6 @@ export default function HomePage() {
       </section>
 
       {/* =========================================================================
-          FEATURED ON: Leading Nigerian Press & Media
-         ========================================================================= */}
-      <FeaturedOn />
-
-      {/* =========================================================================
           SOCIAL PROOF: Real Nigerian Traction
          ========================================================================= */}
       <section className="py-14 bg-white" id="rates">
@@ -584,6 +579,11 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* =========================================================================
+          FEATURED ON: Leading Nigerian Press & Media (Placed down near footer)
+         ========================================================================= */}
+      <FeaturedOn />
 
       {/* =========================================================================
           FAQ SECTION: Direct Answers, No Technical Jargon
