@@ -40,144 +40,99 @@ export function MarketingNavbar() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Brand Logo */}
+          {/* Brand Logo: ZuvaPay Solar Crest */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-brand-orange via-amber-500 to-yellow-400 font-black text-xl text-slate-950 shadow-md shadow-orange-500/20 group-hover:scale-105 transition-transform duration-200">
-              KP
+            <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-zuva-solar via-zuva-amber to-zuva-gold font-black text-xl text-slate-950 shadow-md shadow-orange-500/25 group-hover:scale-105 transition-transform duration-200">
+              <span className="font-display tracking-tighter text-slate-950 font-black">ZP</span>
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-white"></span>
+              </span>
             </div>
             <div className="flex flex-col">
-              <span className="font-extrabold text-xl tracking-tight text-slate-900 flex items-center gap-1 font-display">
-                Korrect<span className="text-brand-orange">Pay</span>
+              <span className="font-black text-2xl tracking-tight text-slate-950 flex items-center gap-0.5 font-display">
+                Zuva<span className="text-transparent bg-clip-text bg-gradient-to-r from-zuva-solar to-zuva-amber">Pay</span>
               </span>
-              <span className="text-[10px] font-semibold text-slate-500 flex items-center gap-1">
+              <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1.5 uppercase tracking-wider">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live in Nigeria
+                Live in Nigeria 🇳🇬
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
-            {/* Services Dropdown */}
-            <div
-              className="relative"
-              onMouseEnter={() => setServicesDropdownOpen(true)}
-              onMouseLeave={() => setServicesDropdownOpen(false)}
-            >
-              <button
-                className="flex items-center gap-1.5 text-slate-700 hover:text-slate-950 transition-colors py-2 font-medium"
-                onClick={() => setServicesDropdownOpen((prev) => !prev)}
-              >
-                Services
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${servicesDropdownOpen ? 'rotate-180 text-brand-orange' : ''}`} />
-              </button>
-
-              {servicesDropdownOpen && (
-                <div className="absolute top-full -left-4 w-80 p-3 rounded-2xl bg-white border border-slate-200 shadow-xl backdrop-blur-2xl animate-in fade-in slide-in-from-top-2">
-                  <div className="space-y-1">
-                    <Link
-                      href="/services#data"
-                      className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors group"
-                    >
-                      <div className="p-2 rounded-lg bg-orange-50 text-brand-orange">
-                        <Smartphone className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900 group-hover:text-brand-orange transition-colors">
-                          Airtime & SME Data
-                        </p>
-                        <p className="text-[11px] text-slate-500">MTN, Airtel, Glo, 9mobile with 0% fail rate</p>
-                      </div>
-                    </Link>
-
-                    <Link
-                      href="/services#sms"
-                      className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors group"
-                    >
-                      <div className="p-2 rounded-lg bg-purple-50 text-purple-600">
-                        <MessageSquareCode className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
-                          Virtual SMS Numbers
-                        </p>
-                        <p className="text-[11px] text-slate-500">USA, UK, Kenya OTPs with instant auto-refunds</p>
-                      </div>
-                    </Link>
-
-                    <Link
-                      href="/services#power"
-                      className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors group"
-                    >
-                      <div className="p-2 rounded-lg bg-teal-50 text-teal-600">
-                        <Zap className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900 group-hover:text-teal-600 transition-colors">
-                          Electricity & Cable TV
-                        </p>
-                        <p className="text-[11px] text-slate-500">Instant tokens for IKEDC, AEDC, DSTV & GOtv</p>
-                      </div>
-                    </Link>
-
-                    <Link
-                      href="/services#social"
-                      className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors group"
-                    >
-                      <div className="p-2 rounded-lg bg-rose-50 text-rose-600">
-                        <TrendingUp className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900 group-hover:text-rose-600 transition-colors">
-                          Social Growth & Logs
-                        </p>
-                        <p className="text-[11px] text-slate-500">Creators & marketers boost tools & verified logs</p>
-                      </div>
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <Link href="/pricing" className="hover:text-slate-950 transition-colors font-medium">
-              Pricing
-            </Link>
-            <Link href="/about" className="hover:text-slate-950 transition-colors font-medium">
-              Why KorrectPay
-            </Link>
+          <nav className="hidden md:flex items-center gap-7 text-sm font-semibold text-slate-600">
             <Link
-              href="https://wa.me/2348000000000?text=Hello%20KorrectPay%20Support"
-              target="_blank"
-              className="hover:text-slate-950 transition-colors flex items-center gap-1.5 font-medium"
+              href="/#services"
+              className="hover:text-slate-950 transition-colors"
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              WhatsApp Help
+              Services
+            </Link>
+
+            <Link
+              href="/#rates"
+              className="hover:text-slate-950 transition-colors flex items-center gap-1.5"
+            >
+              Live Rates
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200/60">
+                Wholesale
+              </span>
+            </Link>
+
+            <Link
+              href="/#speed"
+              className="hover:text-slate-950 transition-colors"
+            >
+              Speed Test
+            </Link>
+
+            <Link
+              href="/#ambassador"
+              className="hover:text-slate-950 transition-colors flex items-center gap-1.5 text-zuva-solar font-bold"
+            >
+              <span>Ambassador</span>
+              <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 font-extrabold tracking-wide">
+                Earn ₦50k
+              </span>
+            </Link>
+
+            <Link
+              href="/#faqs"
+              className="hover:text-slate-950 transition-colors"
+            >
+              FAQs
             </Link>
           </nav>
 
-          {/* Right Action Area */}
-          <div className="hidden md:flex items-center gap-4">
+          {/* Right Action Group */}
+          <div className="hidden md:flex items-center gap-3">
+            {/* Live Status Chip */}
+            <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200/80 text-xs font-semibold text-slate-700">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>99.98% Gateway Uptime</span>
+            </div>
+
             {user ? (
               <Link
                 href="/dashboard"
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-950 font-bold text-xs shadow-md shadow-orange-500/20 transition-all active:scale-95"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 text-white text-xs font-bold transition-all hover:scale-105"
               >
                 Go to Dashboard
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             ) : (
               <>
                 <Link
                   href="/login"
-                  className="px-4 py-2.5 text-xs font-bold text-slate-700 hover:text-slate-950 transition-colors"
+                  className="px-4 py-2 text-xs font-bold text-slate-700 hover:text-slate-950 transition-colors"
                 >
-                  Log In
+                  Sign In
                 </Link>
                 <Link
                   href="/signup"
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-950 font-bold text-xs shadow-md shadow-orange-500/20 transition-all active:scale-95"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-zuva-solar to-zuva-amber hover:from-amber-600 hover:to-orange-600 text-white text-xs font-black shadow-lg shadow-orange-500/20 transition-all hover:scale-105 active:scale-95"
                 >
-                  Create Free Account
+                  Create Account (₦0)
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </>
@@ -199,36 +154,43 @@ export function MarketingNavbar() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white/95 border-b border-slate-200 px-6 py-6 space-y-4 backdrop-blur-2xl shadow-xl animate-in slide-in-from-top-4">
-          <div className="space-y-3">
+        <div className="md:hidden bg-white/98 border-b border-slate-200 px-6 py-6 space-y-4 backdrop-blur-2xl shadow-2xl animate-in slide-in-from-top-4">
+          <div className="space-y-3 font-semibold">
             <Link
-              href="/services"
+              href="/#services"
               onClick={() => setMobileMenuOpen(false)}
-              className="block text-sm font-bold text-slate-800 hover:text-brand-orange py-2"
+              className="block text-sm text-slate-800 hover:text-zuva-solar py-1.5"
             >
-              All Services & Live Pricing
+              Services & Digital Tools
             </Link>
             <Link
-              href="/pricing"
+              href="/#rates"
               onClick={() => setMobileMenuOpen(false)}
-              className="block text-sm font-bold text-slate-800 hover:text-brand-orange py-2"
+              className="block text-sm text-slate-800 hover:text-zuva-solar py-1.5"
             >
-              Pricing Breakdown
+              Live Wholesale Rates
             </Link>
             <Link
-              href="/about"
+              href="/#speed"
               onClick={() => setMobileMenuOpen(false)}
-              className="block text-sm font-bold text-slate-800 hover:text-brand-orange py-2"
+              className="block text-sm text-slate-800 hover:text-zuva-solar py-1.5"
             >
-              Why KorrectPay
+              Speed Test Simulator
             </Link>
             <Link
-              href="https://wa.me/2348000000000"
-              target="_blank"
-              className="flex items-center gap-2 text-sm font-bold text-emerald-600 py-2"
+              href="/#ambassador"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-between text-sm text-zuva-solar font-bold py-1.5"
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Chat on WhatsApp (24/7)
+              <span>Campus Ambassador Program</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-orange-100 text-orange-700">Earn ₦50k</span>
+            </Link>
+            <Link
+              href="/#faqs"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-sm text-slate-800 hover:text-zuva-solar py-1.5"
+            >
+              FAQs & Help
             </Link>
           </div>
 
@@ -236,7 +198,8 @@ export function MarketingNavbar() {
             {user ? (
               <Link
                 href="/dashboard"
-                className="w-full text-center py-3 rounded-xl bg-brand-orange text-slate-950 font-bold text-sm shadow-md"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full text-center py-3 rounded-xl bg-slate-950 text-white font-bold text-sm shadow-md"
               >
                 Open Dashboard
               </Link>
@@ -244,15 +207,17 @@ export function MarketingNavbar() {
               <>
                 <Link
                   href="/login"
-                  className="w-full text-center py-3 rounded-xl border border-slate-200 text-slate-800 font-bold text-sm bg-slate-50"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center py-3 rounded-xl border border-slate-300 text-slate-800 font-bold text-sm bg-slate-50"
                 >
-                  Log In
+                  Sign In
                 </Link>
                 <Link
                   href="/signup"
-                  className="w-full text-center py-3 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 text-slate-950 font-bold text-sm shadow-md"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center py-3 rounded-xl bg-gradient-to-r from-zuva-solar to-zuva-amber text-white font-black text-sm shadow-md shadow-orange-500/25"
                 >
-                  Get Started (₦0 Free)
+                  Create Account (₦0)
                 </Link>
               </>
             )}

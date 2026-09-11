@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/common/Toast';
 import { Mail, Lock, ArrowRight, ShieldCheck, Sparkles, Clock, AtSign, User } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signIn, isMockMode } = useAuth();
@@ -188,20 +188,32 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-xs md:text-sm transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50"
+            className="w-full mt-2 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-zuva-solar to-zuva-amber hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs md:text-sm transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50"
           >
-            {loading ? 'Signing in...' : 'Sign In to KorrectPay'}
+            {loading ? 'Signing in...' : 'Sign In to ZuvaPay'}
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
         <div className="mt-6 text-center text-xs text-slate-400">
           Don't have an account yet?{' '}
-          <Link href="/signup" className="font-bold text-brand-orange hover:underline">
+          <Link href="/signup" className="font-bold text-zuva-solar hover:underline">
             Create Account
           </Link>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#0B1120] text-slate-400 text-xs">
+        Loading ZuvaPay Sign In...
+      </div>
+    }>
+      <LoginFormContent />
+    </Suspense>
   );
 }

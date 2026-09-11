@@ -48,47 +48,59 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FBFBFE] text-slate-900 font-sans selection:bg-brand-orange selection:text-white">
+    <div className="min-h-screen bg-[#FDFDFC] text-slate-900 font-sans selection:bg-zuva-solar selection:text-white">
       <MarketingNavbar />
 
       {/* =========================================================================
-          HERO SECTION: High-Energy, Bold Typography, Crisp Light Aesthetic
+          HERO SECTION: High-Energy, Bold Typography, ZuvaPay Solar Theme
          ========================================================================= */}
-      <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 overflow-hidden bg-gradient-to-b from-orange-50/40 via-white to-[#FBFBFE]">
-        {/* Soft Ambient Background Glows */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] bg-gradient-to-tr from-brand-orange/10 via-amber-200/20 to-teal-200/15 blur-[120px] pointer-events-none" />
-        <div className="absolute top-1/3 -left-40 w-96 h-96 bg-purple-200/20 blur-[100px] pointer-events-none" />
+      <section className="relative pt-32 pb-20 md:pt-44 md:pb-28 overflow-hidden bg-gradient-to-b from-orange-50/30 via-white to-[#FDFDFC]">
+        {/* Soft Ambient Background Solar Glow */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[450px] bg-gradient-to-tr from-zuva-solar/10 via-amber-200/20 to-emerald-200/10 blur-[130px] pointer-events-none" />
+        <div className="absolute top-1/3 -left-40 w-96 h-96 bg-amber-100/30 blur-[100px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             {/* Left Copy Area */}
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              {/* Trust Badge Pill */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200/80 shadow-sm text-xs font-semibold text-slate-700">
-                <span className="flex h-2 w-2 rounded-full bg-brand-orange animate-ping" />
-                <span>The No-Nonsense FinTech Built For Nigeria</span>
-                <span className="text-brand-orange font-bold">🇳🇬</span>
+              {/* Trust Badge Pill (CreditDirect / Zojapay style) */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200/90 shadow-sm text-xs font-semibold text-slate-800">
+                <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+                <span className="font-bold text-slate-900">Zero-Wahala FinTech</span>
+                <span className="text-slate-400">•</span>
+                <span className="text-zuva-solar font-bold">Nigeria 🇳🇬</span>
               </div>
 
               {/* Main Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-950 leading-[1.1] font-display">
-                The money app that{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange via-amber-500 to-yellow-500">
-                  actually delivers
+              <h1 className="text-4xl sm:text-5xl lg:text-[64px] font-black tracking-tight text-slate-950 leading-[1.08] font-display">
+                Fast Payments.{' '}
+                <br className="hidden sm:inline" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-zuva-solar via-zuva-amber to-amber-500">
+                  Zero Wahala.
                 </span>{' '}
-                the second you hit send.
+                Money that moves at your speed.
               </h1>
 
-              {/* Subheadline - Clear, Direct, No Buzzwords */}
+              {/* Subheadline */}
               <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                No hanging airtime. No delayed electricity tokens. No foreign card declining for WhatsApp or ChatGPT SMS OTPs. Just cheap SME data, dual Naira & Dollar wallets, and verified digital tools built for Nigerian hustlers and businesses.
+                Never stress over hanging airtime or failed bank transfers again. Enjoy wholesale SME data, instant electricity tokens, foreign SMS OTPs for WhatsApp and AI, and dedicated Moniepoint or Wema bank accounts that fund instantly.
               </p>
 
+              {/* Live Ticker Bar (Zojapay style) */}
+              <div className="flex items-center justify-center lg:justify-start">
+                <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-100/90 border border-slate-200/80 text-[11px] font-medium text-slate-800">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>
+                    <strong>✓ Adaeze from Abuja</strong> just purchased 2.5GB MTN SME — 3 minutes ago
+                  </span>
+                </div>
+              </div>
+
               {/* CTA Group */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-1">
                 <Link
                   href="/signup"
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm shadow-xl shadow-orange-500/25 transition-all hover:scale-105 active:scale-95"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-zuva-solar to-zuva-amber hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm shadow-xl shadow-orange-500/25 transition-all hover:scale-105 active:scale-95"
                 >
                   Create Free Account (₦0)
                   <ArrowRight className="w-4 h-4 stroke-[2.5]" />
@@ -96,9 +108,9 @@ export default function HomePage() {
 
                 <Link
                   href="#services"
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-4 rounded-2xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-bold text-sm shadow-sm transition-all active:scale-95"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-4 rounded-2xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-900 font-bold text-sm shadow-sm transition-all active:scale-95"
                 >
-                  See Live Rates & Services
+                  Explore Services & Rates
                 </Link>
               </div>
 
@@ -113,7 +125,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   <span>
-                    <strong className="text-slate-900 font-bold">1.2s</strong> Avg Delivery
+                    <strong className="text-slate-900 font-bold">1.1s</strong> Instant Delivery
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -126,8 +138,29 @@ export default function HomePage() {
             </div>
 
             {/* Right Interactive Simulator */}
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-5" id="speed">
               <HeroInteractiveDemo />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          PARTNER & INFRASTRUCTURE LOGO TICKER (CreditDirect / Zojapay style)
+         ========================================================================= */}
+      <section className="py-8 border-y border-slate-200/80 bg-slate-50/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span>Settled via Licensed Partners:</span>
+            </div>
+            <div className="flex flex-wrap items-center justify-center md:justify-end gap-6 md:gap-10 text-xs font-bold text-slate-400">
+              <span className="hover:text-slate-800 transition-colors">Moniepoint MFB</span>
+              <span className="hover:text-slate-800 transition-colors">Wema Bank (ALAT)</span>
+              <span className="hover:text-slate-800 transition-colors">MTN SME Routing</span>
+              <span className="hover:text-slate-800 transition-colors">Airtel Corporate</span>
+              <span className="hover:text-slate-800 transition-colors">Interswitch NIBSS</span>
             </div>
           </div>
         </div>
@@ -136,77 +169,77 @@ export default function HomePage() {
       {/* =========================================================================
           SOCIAL PROOF: Real Nigerian Traction
          ========================================================================= */}
-      <section className="py-12 border-y border-slate-200/80 bg-white">
+      <section className="py-14 bg-white" id="rates">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             <div className="space-y-1">
-              <p className="font-mono text-3xl md:text-4xl font-black text-slate-900">24,800+</p>
-              <p className="text-xs text-slate-500 font-semibold">Active Nigerian Users</p>
+              <p className="font-mono text-3xl md:text-4xl font-black text-slate-950">32,400+</p>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Active Hustlers & Users</p>
             </div>
             <div className="space-y-1">
-              <p className="font-mono text-3xl md:text-4xl font-black text-emerald-600">₦180M+</p>
-              <p className="text-xs text-slate-500 font-semibold">Transactions Processed</p>
+              <p className="font-mono text-3xl md:text-4xl font-black text-emerald-600">₦240M+</p>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Dispatched Volume</p>
             </div>
             <div className="space-y-1">
-              <p className="font-mono text-3xl md:text-4xl font-black text-brand-orange">&lt; 2 Sec</p>
-              <p className="text-xs text-slate-500 font-semibold">Dispatched Token Speed</p>
+              <p className="font-mono text-3xl md:text-4xl font-black text-zuva-solar">&lt; 1.2 Sec</p>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Average Token Speed</p>
             </div>
             <div className="space-y-1">
-              <p className="font-mono text-3xl md:text-4xl font-black text-purple-700">15 Mins</p>
-              <p className="text-xs text-slate-500 font-semibold">Virtual OTP Window</p>
+              <p className="font-mono text-3xl md:text-4xl font-black text-indigo-600">150+ Countries</p>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Global SMS Numbers</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* =========================================================================
-          PAIN POINTS SOLVED: "Why KorrectPay hit different"
+          PAIN POINTS SOLVED: "Why ZuvaPay Hits Different"
          ========================================================================= */}
-      <section className="py-24 relative overflow-hidden bg-[#FBFBFE]">
+      <section className="py-24 relative overflow-hidden bg-[#FDFDFC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-brand-orange">
-              No Stress • No Wahala
-            </h2>
-            <p className="text-3xl md:text-4xl font-black text-slate-950 font-display">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-bold text-zuva-solar">
+              <span>Pain Points Solved</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black text-slate-950 font-display">
               Built because regular banking apps in Nigeria keep giving people high blood pressure.
-            </p>
+            </h2>
             <p className="text-sm text-slate-600">
-              We eliminated every annoying point where online transactions fail, hang, or leave you begging customer care.
+              We eliminated every annoying bottleneck where online transactions hang, fail, or leave you begging customer care for your own money.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Card 1 */}
-            <div className="p-8 rounded-3xl border border-slate-200/80 bg-white shadow-sm hover:shadow-xl hover:border-brand-orange/40 transition-all group">
-              <div className="w-12 h-12 rounded-2xl bg-orange-50 text-brand-orange flex items-center justify-center font-bold">
+            <div className="p-8 rounded-[28px] border border-slate-200/80 bg-white shadow-sm hover:shadow-xl hover:border-orange-300 transition-all group">
+              <div className="w-12 h-12 rounded-2xl bg-orange-50 text-zuva-solar flex items-center justify-center font-bold shadow-sm">
                 <RefreshCw className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mt-4">Instant Wallet Reversal</h3>
-              <p className="text-xs text-slate-600 leading-relaxed mt-2">
-                If MTN, Airtel, or a Power Disco gateway has downtime, KorrectPay immediately cancels and reverses the money to your wallet in seconds. No waiting for 24 hours.
+              <h3 className="text-xl font-bold text-slate-900 mt-5">Instant 5-Second Auto-Refund</h3>
+              <p className="text-xs text-slate-600 leading-relaxed mt-2.5">
+                If MTN, Airtel, or an electricity Disco gateway times out, ZuvaPay cancels the transaction and refunds your wallet immediately. Zero 24-hour waiting periods.
               </p>
             </div>
 
             {/* Card 2 */}
-            <div className="p-8 rounded-3xl border border-slate-200/80 bg-white shadow-sm hover:shadow-xl hover:border-purple-300 transition-all group">
-              <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+            <div className="p-8 rounded-[28px] border border-slate-200/80 bg-white shadow-sm hover:shadow-xl hover:border-indigo-300 transition-all group">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shadow-sm">
                 <MessageSquareCode className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mt-4">Foreign SMS That Actually Works</h3>
-              <p className="text-xs text-slate-600 leading-relaxed mt-2">
-                Need a US, UK, or Kenya line to register WhatsApp, Telegram, or OpenAI without buying expensive foreign physical SIMs? Rent one on KorrectPay with 15 minutes of live OTP listening.
+              <h3 className="text-xl font-bold text-slate-900 mt-5">Real Foreign Non-VoIP SIMs</h3>
+              <p className="text-xs text-slate-600 leading-relaxed mt-2.5">
+                Rent legitimate US, UK, and Kenya mobile lines to register WhatsApp, Telegram, or OpenAI ChatGPT. Live OTP listening window with zero charge if no code is received.
               </p>
             </div>
 
             {/* Card 3 */}
-            <div className="p-8 rounded-3xl border border-slate-200/80 bg-white shadow-sm hover:shadow-xl hover:border-emerald-300 transition-all group">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+            <div className="p-8 rounded-[28px] border border-slate-200/80 bg-white shadow-sm hover:shadow-xl hover:border-emerald-300 transition-all group">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shadow-sm">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mt-4">Dual NGN & USD Wallets</h3>
-              <p className="text-xs text-slate-600 leading-relaxed mt-2">
-                Use Naira for local utilities and convert directly into Dollars whenever you need to pay for international tools. Transparent live rates with zero hidden markups.
+              <h3 className="text-xl font-bold text-slate-900 mt-5">Dedicated Nigerian Virtual Accounts</h3>
+              <p className="text-xs text-slate-600 leading-relaxed mt-2.5">
+                Receive an automated, permanent 10-digit Moniepoint or Wema bank account in your name. Any transfer funds your ZuvaPay wallet balance in under 2 seconds.
               </p>
             </div>
           </div>
@@ -373,17 +406,114 @@ export default function HomePage() {
       </section>
 
       {/* =========================================================================
+          CAMPUS & HUSTLER AMBASSADOR PROGRAM (SquareMe / Zojapay inspired)
+         ========================================================================= */}
+      <section id="ambassador" className="py-20 bg-[#0B0F17] text-white relative overflow-hidden border-t border-slate-800">
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-6 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/30 text-zuva-amber text-xs font-bold">
+                <span>🌟 ZuvaPay Ambassador Program</span>
+              </div>
+
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black font-display tracking-tight text-white leading-tight">
+                Put your friends on the ZuvaPay train. <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-zuva-solar via-zuva-amber to-amber-300">
+                  Earn unlimited cash bonuses.
+                </span>
+              </h2>
+
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Whether you are a university student at UNILAG, UI, UNIBEN, or a freelance agency operator in Lagos, earn recurring commissions on every SME data and utility purchase made by your network.
+              </p>
+
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500/20 text-zuva-amber font-bold text-xs">
+                    ✓
+                  </div>
+                  <p className="text-xs font-medium text-slate-200">
+                    Instant cash payout directly to your bank account or NGN wallet
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500/20 text-zuva-amber font-bold text-xs">
+                    ✓
+                  </div>
+                  <p className="text-xs font-medium text-slate-200">
+                    Exclusive wholesale reseller pricing tiers (as low as ₦235/GB)
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500/20 text-zuva-amber font-bold text-xs">
+                    ✓
+                  </div>
+                  <p className="text-xs font-medium text-slate-200">
+                    Free official ZuvaPay merch + direct WhatsApp VIP support desk
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-3">
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-zuva-solar to-zuva-amber hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm shadow-xl shadow-orange-500/25 transition-all hover:scale-105 active:scale-95"
+                >
+                  Join the Ambassador Crew
+                  <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Right Interactive Tier Cards (01, 02, 03) */}
+            <div className="lg:col-span-6 space-y-4">
+              <div className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 backdrop-blur-md flex items-start gap-4">
+                <span className="font-mono text-3xl font-black text-zuva-solar">01</span>
+                <div>
+                  <h4 className="text-base font-bold text-white">Create Your Free @username</h4>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Sign up on ZuvaPay in 30 seconds and claim your unique handle (e.g. <span className="text-zuva-amber font-mono font-bold">@yourname</span>).
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 backdrop-blur-md flex items-start gap-4">
+                <span className="font-mono text-3xl font-black text-zuva-amber">02</span>
+                <div>
+                  <h4 className="text-base font-bold text-white">Share Your Link on Campus & WhatsApp</h4>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Your referral link gives your friends cheap ₦240 data and instant electricity tokens.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-6 rounded-3xl bg-white/[0.04] border border-white/10 backdrop-blur-md flex items-start gap-4">
+                <span className="font-mono text-3xl font-black text-emerald-400">03</span>
+                <div>
+                  <h4 className="text-base font-bold text-white">Cash Out Whenever You Want</h4>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Commissions accumulate in real time. Transfer to your Kuda, Moniepoint, or GTBank account 24/7.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
           REAL STORIES: Human, Authentic Nigerian Feedback
          ========================================================================= */}
-      <section className="py-24 bg-slate-50/80 border-t border-slate-200/80">
+      <section className="py-24 bg-[#FDFDFC] border-t border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-brand-orange">
-              Real Talk From Real Users
-            </h2>
-            <p className="text-3xl md:text-4xl font-black text-slate-950 font-display">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-bold text-zuva-solar">
+              <span>Real User Stories</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black text-slate-950 font-display">
               Why thousands of Nigerians refuse to use any other utility app.
-            </p>
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -437,7 +567,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-xs text-slate-700 leading-relaxed italic">
-                "Power went out at 1:40 AM and my meter was beeping. My bank app was showing 'system maintenance'. I funded my KorrectPay virtual account with ₦3,000, entered my IKEDC meter, and got my 20-digit token right there on screen. Saved my night."
+                "Power went out at 1:40 AM and my meter was beeping. My bank app was showing 'system maintenance'. I funded my ZuvaPay virtual account with ₦3,000, entered my IKEDC meter, and got my 20-digit token right there on screen. Saved my night."
               </p>
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                 <div>
@@ -456,12 +586,12 @@ export default function HomePage() {
       {/* =========================================================================
           FAQ SECTION: Direct Answers, No Technical Jargon
          ========================================================================= */}
-      <section className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" id="faqs">
         <div className="text-center space-y-3 mb-12">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-brand-orange">
-            Clear Answers
-          </h2>
-          <p className="text-3xl font-black text-slate-950 font-display">Frequently Asked Questions</p>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-bold text-zuva-solar">
+            <span>Clear Answers</span>
+          </div>
+          <h2 className="text-3xl font-black text-slate-950 font-display">Frequently Asked Questions</h2>
         </div>
 
         <div className="space-y-4">
@@ -472,12 +602,12 @@ export default function HomePage() {
             >
               <button
                 onClick={() => toggleFaq(idx)}
-                className="w-full flex items-center justify-between p-5 text-left text-sm font-bold text-slate-900 hover:text-brand-orange transition-colors"
+                className="w-full flex items-center justify-between p-5 text-left text-sm font-bold text-slate-900 hover:text-zuva-solar transition-colors"
               >
                 <span>{faq.q}</span>
                 <ChevronRight
                   className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
-                    activeFaq === idx ? 'rotate-90 text-brand-orange' : ''
+                    activeFaq === idx ? 'rotate-90 text-zuva-solar' : ''
                   }`}
                 />
               </button>
@@ -492,17 +622,17 @@ export default function HomePage() {
       </section>
 
       {/* =========================================================================
-          FINAL CTA BANNER: High-Conversion Closing Push
+          FINAL CTA BANNER: High-Conversion Closing Push (ZuvaPay Solar)
          ========================================================================= */}
-      <section className="py-20 relative overflow-hidden">
+      <section className="py-20 relative overflow-hidden bg-slate-50/50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="relative rounded-3xl border border-orange-200 bg-gradient-to-br from-orange-500 via-brand-orange to-amber-500 p-10 md:p-14 text-center space-y-6 shadow-2xl shadow-orange-500/20 overflow-hidden text-white">
+          <div className="relative rounded-[32px] border border-orange-300/40 bg-gradient-to-br from-zuva-solar via-zuva-amber to-amber-500 p-10 md:p-14 text-center space-y-6 shadow-2xl shadow-orange-500/25 overflow-hidden text-white">
             {/* Glowing pattern inside banner */}
             <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-white/20 blur-[90px] pointer-events-none" />
 
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 border border-white/30 text-white text-xs font-bold">
               <Sparkles className="w-3.5 h-3.5" />
-              Join 24,800+ Nigerians on KorrectPay
+              Join 32,400+ Nigerians on ZuvaPay (ZuvaPay.com)
             </div>
 
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white font-display">

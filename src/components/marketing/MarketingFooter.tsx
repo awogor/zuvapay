@@ -16,33 +16,33 @@ import {
 
 export function MarketingFooter() {
   return (
-    <footer className="relative bg-slate-900 text-slate-400 border-t border-slate-800 overflow-hidden">
-      {/* Subtle background glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-brand-orange/5 blur-[120px] pointer-events-none" />
+    <footer className="relative bg-[#0B0F17] text-slate-400 border-t border-slate-800/80 overflow-hidden">
+      {/* Subtle solar flare background glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-orange-500/5 blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-800">
           {/* Col 1: Brand & Nigerian Trust */}
           <div className="lg:col-span-2 space-y-4">
             <Link href="/" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-brand-orange to-amber-500 font-black text-lg text-slate-950 shadow-md">
-                KP
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-zuva-solar via-zuva-amber to-zuva-gold font-black text-lg text-slate-950 shadow-md shadow-orange-500/20">
+                ZP
               </div>
-              <span className="font-extrabold text-xl tracking-tight text-white font-display">
-                Korrect<span className="text-brand-orange">Pay</span>
+              <span className="font-extrabold text-2xl tracking-tight text-white font-display">
+                Zuva<span className="text-transparent bg-clip-text bg-gradient-to-r from-zuva-solar to-zuva-amber">Pay</span>
               </span>
             </Link>
 
-            <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
-              The everyday financial toolkit built for Nigerian creators, students, small businesses, and tech hustlers. Cheap data, instant airtime, power tokens, foreign OTP numbers, and dual-currency wallets that never hang.
+            <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+              The high-velocity digital payment and everyday financial utility platform for Nigerian creators, students, and businesses. Cheap SME data, instant airtime, disco tokens, foreign OTP numbers, and dedicated virtual bank accounts.
             </p>
 
             <div className="flex flex-wrap items-center gap-2 pt-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-semibold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Moniepoint & Wema Virtual Accounts
+                Moniepoint & Wema Bank Virtual Accounts
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[11px] font-semibold">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 NDPR Compliant
               </span>
@@ -133,7 +133,7 @@ export function MarketingFooter() {
                 </Link>
               </li>
               <li className="text-slate-400">
-                Email: <span className="text-slate-200">support@korrectpay.com</span>
+                Email: <span className="text-slate-200">support@zuvapay.com</span>
               </li>
               <li className="text-slate-400">
                 Operating Hub: <span className="text-slate-300">Victoria Island, Lagos, Nigeria</span>
@@ -150,11 +150,11 @@ export function MarketingFooter() {
         {/* Bottom copyright & disclaimers */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <p>
-            © {new Date().getFullYear()} KorrectPay Technologies Nigeria. All rights reserved.
+            © {new Date().getFullYear()} ZuvaPay Technologies Limited (ZuvaPay.com). All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-1.5 text-slate-300">
-              <Lock className="w-3.5 h-3.5 text-brand-orange" />
+              <Lock className="w-3.5 h-3.5 text-zuva-solar" />
               256-Bit SSL Encrypted
             </span>
             <span className="flex items-center gap-1.5 text-slate-300">

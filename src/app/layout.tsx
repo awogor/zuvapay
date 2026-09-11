@@ -8,9 +8,9 @@ import { ReceiptModal } from '@/components/modals/ReceiptModal';
 import { SupportProvider } from '@/components/modals/SupportModal';
 
 export const metadata: Metadata = {
-  title: 'KorrectPay — Nigerian Fintech & Digital Services Platform',
+  title: 'ZuvaPay — Lightning-Fast Utility Payments & Digital Finance for Nigeria',
   description:
-    'Instant Airtime, Internet Data, Electricity, Cable TV, Virtual SMS Phone Numbers, Social Media Growth, and Premium Digital Logs & Tools.',
+    'ZuvaPay is the everyday digital payment and utility platform for Nigeria. Instant SME Data, Airtime, Electricity Tokens, Virtual Foreign SMS Numbers, and Multi-Currency Wallets.',
 };
 
 export default function RootLayout({
