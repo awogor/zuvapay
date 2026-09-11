@@ -6,6 +6,8 @@ import { MarketingNavbar } from '@/components/marketing/MarketingNavbar';
 import { MarketingFooter } from '@/components/marketing/MarketingFooter';
 import { HeroInteractiveDemo } from '@/components/marketing/HeroInteractiveDemo';
 import { MobileAppShowcase } from '@/components/marketing/MobileAppShowcase';
+import { FeaturedOn } from '@/components/marketing/FeaturedOn';
+import { StrategicPartners } from '@/components/marketing/StrategicPartners';
 import {
   Smartphone,
   MessageSquareCode,
@@ -138,25 +140,9 @@ export default function HomePage() {
       </section>
 
       {/* =========================================================================
-          PARTNER & INFRASTRUCTURE LOGO TICKER (CreditDirect / Zojapay style)
+          FEATURED ON: Leading Nigerian Press & Media
          ========================================================================= */}
-      <section className="py-8 border-y border-slate-200/80 bg-slate-50/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>Settled via Licensed Partners:</span>
-            </div>
-            <div className="flex flex-wrap items-center justify-center md:justify-end gap-6 md:gap-10 text-xs font-bold text-slate-400">
-              <span className="hover:text-slate-800 transition-colors">Moniepoint MFB</span>
-              <span className="hover:text-slate-800 transition-colors">Wema Bank (ALAT)</span>
-              <span className="hover:text-slate-800 transition-colors">MTN SME Routing</span>
-              <span className="hover:text-slate-800 transition-colors">Airtel Corporate</span>
-              <span className="hover:text-slate-800 transition-colors">Interswitch NIBSS</span>
-            </div>
-          </div>
-        </div>
-      </section>
+      <FeaturedOn />
 
       {/* =========================================================================
           SOCIAL PROOF: Real Nigerian Traction
@@ -498,6 +484,11 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* =========================================================================
+          STRATEGIC & LICENSED PARTNERS (Banking, Telco, Energy, Compliance)
+         ========================================================================= */}
+      <StrategicPartners />
 
       {/* =========================================================================
           REAL STORIES: Human, Authentic Nigerian Feedback
