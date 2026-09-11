@@ -78,13 +78,13 @@ export default function PricingPage() {
           </div>
 
           {/* Tier 2: Creators & Digital Hustlers (Featured) */}
-          <div className="p-8 rounded-3xl border-2 border-brand-orange bg-white shadow-2xl shadow-orange-500/10 relative flex flex-col justify-between space-y-6">
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-brand-orange to-amber-500 text-white font-black text-[11px] uppercase tracking-wider shadow-lg shadow-orange-500/30">
+          <div className="p-8 rounded-3xl border-2 border-zuva-solar bg-white shadow-2xl shadow-orange-500/10 relative flex flex-col justify-between space-y-6">
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-zuva-solar to-zuva-amber text-white font-black text-[11px] uppercase tracking-wider shadow-lg shadow-orange-500/30">
               Most Popular
             </div>
 
             <div className="space-y-4 pt-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">
+              <span className="text-xs font-bold uppercase tracking-wider text-zuva-solar">
                 Creators & Growth Marketers
               </span>
               <h3 className="text-2xl font-black text-slate-950 font-display">Hustler & Creator</h3>
@@ -97,23 +97,23 @@ export default function PricingPage() {
               </div>
               <ul className="space-y-2.5 text-xs text-slate-800 pt-4 border-t border-slate-100 font-medium">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-brand-orange" />
+                  <CheckCircle2 className="w-4 h-4 text-zuva-solar" />
                   US, UK, Kenya OTP phone lines from ₦750
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-brand-orange" />
+                  <CheckCircle2 className="w-4 h-4 text-zuva-solar" />
                   Automatic full refund if no SMS arrives in 15m
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-brand-orange" />
+                  <CheckCircle2 className="w-4 h-4 text-zuva-solar" />
                   Dual NGN & USD wallet with real-time conversion
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-brand-orange" />
+                  <CheckCircle2 className="w-4 h-4 text-zuva-solar" />
                   Aged social logs with 2FA + Windows RDP access
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-brand-orange" />
+                  <CheckCircle2 className="w-4 h-4 text-zuva-solar" />
                   Non-drop YouTube & TikTok boost starting at ₦450
                 </li>
               </ul>
@@ -121,7 +121,7 @@ export default function PricingPage() {
 
             <Link
               href="/signup"
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm text-center shadow-xl shadow-orange-500/25 transition-all"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-zuva-solar to-zuva-amber hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm text-center shadow-xl shadow-orange-500/25 transition-all"
             >
               Sign Up Now — Zero Setup Fee
             </Link>
@@ -162,7 +162,7 @@ export default function PricingPage() {
             </div>
 
             <Link
-              href="https://wa.me/2348000000000?text=Hello%20KorrectPay%20I%20want%20to%20inquire%20about%20Business%20Wholesale%20tier"
+              href="https://wa.me/2348000000000?text=Hello%20ZuvaPay%20I%20want%20to%20inquire%20about%20Business%20Wholesale%20tier"
               target="_blank"
               className="w-full py-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-900 font-bold text-xs text-center transition-colors"
             >
@@ -175,9 +175,9 @@ export default function PricingPage() {
       {/* Safety & Fee Policy Guarantee */}
       <section className="py-16 border-t border-slate-200/80 bg-slate-50/70">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-4">
-          <ShieldCheck className="w-10 h-10 text-emerald-600 mx-auto" />
+          <ShieldCheck className="w-10 h-10 text-zuva-emerald mx-auto" />
           <h3 className="text-2xl font-bold text-slate-950 font-display">
-            The KorrectPay "No-Downtime, No-Loss" Guarantee
+            The ZuvaPay "No-Downtime, No-Loss" Guarantee
           </h3>
           <p className="text-xs text-slate-600 leading-relaxed">
             Unlike other platforms where failed requests leave your money stuck for weeks, our system reverses failed transactions atomically back into your wallet balance in under 5 seconds. If a service does not deliver, you do not pay.

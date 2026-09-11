@@ -27,7 +27,7 @@ export default function AboutPage() {
             Built by Nigerians who were tired of banking apps hanging when we needed them most.
           </h1>
           <p className="text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            We started KorrectPay with one clear rule: if an app is taking someone's hard-earned money in Nigeria, it must work on the first try — without excuses, without network lag, and without customer care stress.
+            We started ZuvaPay with one clear rule: if an app is taking someone's hard-earned money in Nigeria, it must work on the first try — without excuses, without network lag, and without customer care stress.
           </p>
         </div>
       </section>
@@ -36,7 +36,7 @@ export default function AboutPage() {
       <section className="py-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="space-y-4">
-            <span className="text-xs font-bold uppercase tracking-widest text-brand-orange">
+            <span className="text-xs font-bold uppercase tracking-widest text-zuva-solar">
               The Reality of Nigerian Payments
             </span>
             <h2 className="text-3xl font-black text-slate-950 font-display">
@@ -49,14 +49,14 @@ export default function AboutPage() {
               Or you want to verify a WhatsApp business account for your client with a US number, and foreign card decline issues stop your work completely.
             </p>
             <p className="text-xs text-slate-600 leading-relaxed">
-              We engineered KorrectPay from the ground up to solve these exact frustrations. We integrated directly with tier-1 telecom switches, electricity discos, and global carrier aggregators to make digital fulfillment instantaneous.
+              We engineered ZuvaPay from the ground up to solve these exact frustrations. We integrated directly with tier-1 telecom switches, electricity discos, and global carrier aggregators to make digital fulfillment instantaneous.
             </p>
           </div>
 
           <div className="p-8 rounded-3xl border border-slate-200/80 bg-white shadow-xl shadow-slate-200/50 space-y-6">
             <h3 className="text-lg font-bold text-slate-900 font-display flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-brand-orange" />
-              The KorrectPay Promise:
+              <Sparkles className="w-4 h-4 text-zuva-solar" />
+              The ZuvaPay Promise:
             </h3>
 
             <div className="space-y-4 text-xs text-slate-700">
@@ -92,11 +92,11 @@ export default function AboutPage() {
             Experience the difference today.
           </h2>
           <p className="text-xs text-slate-600 max-w-lg mx-auto">
-            Join over 24,000 creators, freelancers, and businesses across Nigeria who trust KorrectPay for zero-stress digital payments.
+            Join over 24,000 creators, freelancers, and businesses across Nigeria who trust ZuvaPay for zero-stress digital payments.
           </p>
           <Link
             href="/signup"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm shadow-xl shadow-orange-500/25 transition-all hover:scale-105"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-zuva-solar to-zuva-amber hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm shadow-xl shadow-orange-500/25 transition-all hover:scale-105"
           >
             Create Your Account in 60 Seconds
             <ArrowRight className="w-4 h-4 stroke-[2.5]" />
