@@ -197,11 +197,11 @@ export function MobileAppShowcase() {
                   <div className="px-4 pt-3 pb-2 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-zuva-solar to-zuva-amber text-slate-950 font-black text-xs flex items-center justify-center">
-                        DA
+                        D
                       </div>
                       <div>
                         <p className="text-[10px] text-slate-400 leading-tight">Welcome back,</p>
-                        <p className="text-xs font-black text-white leading-tight">@davidadeleke</p>
+                        <p className="text-xs font-black text-white leading-tight">David</p>
                       </div>
                     </div>
                     <div className="relative p-2 rounded-full bg-white/5 border border-white/10">
@@ -230,13 +230,19 @@ export function MobileAppShowcase() {
 
                     {/* Action buttons on card */}
                     <div className="flex items-center gap-2 pt-2 border-t border-slate-900/10">
-                      <div className="flex-1 py-1.5 rounded-xl bg-slate-950 text-white text-[10px] font-bold text-center flex items-center justify-center gap-1">
-                        <ArrowDownLeft className="w-3 h-3 text-emerald-400" />
-                        + Fund
+                      <div
+                        data-preserve-dark
+                        className="flex-1 py-1.5 rounded-xl !bg-[#0B0F17] !text-white text-[11px] font-bold text-center flex items-center justify-center gap-1.5 shadow-sm"
+                      >
+                        <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span className="!text-white font-bold">Fund</span>
                       </div>
-                      <div className="flex-1 py-1.5 rounded-xl bg-white/90 text-slate-950 text-[10px] font-bold text-center flex items-center justify-center gap-1">
-                        <ArrowUpRight className="w-3 h-3 text-zuva-solar" />
-                        Transfer
+                      <div
+                        data-preserve-dark
+                        className="flex-1 py-1.5 rounded-xl !bg-white !text-slate-950 text-[11px] font-bold text-center flex items-center justify-center gap-1.5 shadow-sm"
+                      >
+                        <ArrowUpRight className="w-3.5 h-3.5 text-zuva-solar shrink-0" />
+                        <span className="!text-slate-950 font-bold">Transfer</span>
                       </div>
                     </div>
                   </div>
