@@ -91,7 +91,7 @@ export function MarketingFooter() {
           {/* Col 3: Company & Trust */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-              Why KorrectPay
+              Why ZuvaPay
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
