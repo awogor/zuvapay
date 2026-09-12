@@ -147,8 +147,22 @@ export function MarketingFooter() {
           </div>
         </div>
 
-        {/* Bottom copyright & disclaimers */}
-        <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+        {/* Regulatory & Legal Disclaimers (Platnova model) */}
+        <div className="pt-8 pb-6 border-b border-slate-800/80 space-y-3 text-[11px] leading-relaxed text-slate-400">
+          <p>
+            ZuvaPay Technologies Limited is FCCPC approved and NDPR compliant, with registered business operating address in Lagos, Nigeria.
+          </p>
+          <p>
+            ZuvaPay is a financial technology platform, not a bank. Banking services and dedicated virtual accounts are provided by CBN-licensed partner institutions (including Moniepoint MFB and Wema Bank Plc). Regulated utility and payment services are facilitated through licensed third-party switches. See{' '}
+            <Link href="/terms" className="text-slate-300 underline underline-offset-2 hover:text-white transition-colors">
+              Terms &amp; Conditions
+            </Link>{' '}
+            for more information.
+          </p>
+        </div>
+
+        {/* Bottom copyright & security badges */}
+        <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <p>
             © {new Date().getFullYear()} ZuvaPay Technologies Limited (ZuvaPay.com). All rights reserved.
           </p>
