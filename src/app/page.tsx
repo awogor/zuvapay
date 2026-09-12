@@ -64,47 +64,24 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             {/* Left Copy Area */}
-            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              {/* Product Announcement Pill */}
-              <div className="flex items-center justify-center lg:justify-start">
-                <Link
-                  href="/services#data"
-                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50/90 border border-orange-200/80 text-xs font-semibold text-slate-800 hover:bg-orange-100/80 transition-colors shadow-sm"
-                >
-                  <span className="px-1.5 py-0.5 rounded-full bg-zuva-solar text-white text-[10px] font-black uppercase tracking-wider">
-                    NEW
-                  </span>
-                  <span>Wholesale SME Data from ₦240/GB & Global SMS Verification</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-zuva-solar" />
-                </Link>
-              </div>
-
+            <div className="lg:col-span-7 space-y-7 text-center lg:text-left">
               {/* Main Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-[62px] font-black tracking-tight text-slate-950 leading-[1.08] font-display">
-                Every digital essential.{' '}
+              <h1 className="text-4xl sm:text-5xl lg:text-[64px] font-black tracking-tight text-slate-950 leading-[1.08] font-display">
+                Automate your bill payments{' '}
                 <br className="hidden sm:inline" />
+                with a{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-zuva-solar via-zuva-amber to-amber-500">
-                  Delivered in seconds.
+                  dedicated virtual account.
                 </span>
               </h1>
 
               {/* Subheadline */}
               <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                The smart platform powering Nigeria’s daily hustle. Get instant wholesale SME data, electricity tokens without extra fees, and foreign virtual numbers for seamless global verification.
+                Get a permanent Nigerian virtual account to power all your everyday utility bills. Instant wholesale SME data, prepaid power tokens, and foreign OTP numbers — funded in seconds with zero downtime.
               </p>
 
-              {/* Live Ticker Bar */}
-              <div className="flex items-center justify-center lg:justify-start">
-                <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-100/90 border border-slate-200/80 text-[11px] font-medium text-slate-800">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>
-                    <strong>✓ Adaeze from Abuja</strong> just purchased 2.5GB MTN SME — 3 minutes ago
-                  </span>
-                </div>
-              </div>
-
               {/* CTA Group */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-1">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
                 <Link
                   href="/signup"
                   className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-zuva-solar to-zuva-amber hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm shadow-xl shadow-orange-500/25 transition-all hover:scale-105 active:scale-95"
@@ -119,28 +96,6 @@ export default function HomePage() {
                 >
                   Explore Services & Rates
                 </Link>
-              </div>
-
-              {/* Live Micro-Stats Strip */}
-              <div className="pt-6 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-slate-600 border-t border-slate-200/80">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>
-                    <strong className="text-slate-900 font-bold">₦240/GB</strong> SME Data
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>
-                    <strong className="text-slate-900 font-bold">150+ Countries</strong> Foreign SMS
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>
-                    <strong className="text-slate-900 font-bold">100%</strong> Auto-Refund Guarantee
-                  </span>
-                </div>
               </div>
             </div>
 
