@@ -108,10 +108,10 @@ function LoginFormContent() {
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center space-y-2 mb-8">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-brand-orange to-amber-500 font-black text-2xl text-slate-950 shadow-xl shadow-orange-500/20">
-            KP
+            ZP
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white mt-2">
-            Welcome to Korrect<span className="text-brand-orange">Pay</span>
+            Welcome to Zuva<span className="text-brand-orange">Pay</span>
           </h1>
         </div>
 

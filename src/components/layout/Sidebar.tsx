@@ -118,11 +118,11 @@ export function Sidebar({ onOpenFundModal, onCloseMobile }: SidebarProps) {
       {/* Brand logo */}
       <div className="flex items-center gap-3 px-2 py-4 mb-3 border-b border-slate-200 dark:border-white/10">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-orange to-amber-500 font-black text-slate-950 shadow-md">
-          KP
+          ZP
         </div>
         <div>
           <h2 className="text-lg font-black tracking-tight text-slate-900 dark:text-white">
-            Korrect<span className="text-brand-orange">Pay</span>
+            Zuva<span className="text-brand-orange">Pay</span>
           </h2>
           <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold tracking-wider uppercase">
             Fintech & Digital Hub

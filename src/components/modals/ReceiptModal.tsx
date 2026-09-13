@@ -72,7 +72,7 @@ export function ReceiptModal() {
         <div className="sticky top-0 z-20 flex-shrink-0 flex items-center justify-between px-6 py-4 bg-slate-900/95 backdrop-blur-sm border-b border-white/10">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-brand-orange to-amber-500 font-black text-slate-950 shadow-lg shadow-orange-500/20">
-              KP
+              ZP
             </div>
             <div>
               <h3 className="text-base font-bold text-white tracking-wide">ZuvaPay</h3>

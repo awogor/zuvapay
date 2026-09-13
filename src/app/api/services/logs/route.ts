@@ -321,7 +321,7 @@ export async function POST(request: NextRequest) {
       username: `account_${Math.random().toString(36).substring(7)}@domain.com`,
       password: `KpSec!${Math.floor(1000 + Math.random() * 9000)}#`,
       twoFactor: 'JBSWY3DPEHPK3PXP',
-      cookies: 'datr=v9X3qh...; sessionid=korrect_session; c_user=10004928192;',
+      cookies: 'datr=v9X3qh...; sessionid=zuva_session; c_user=10004928192;',
     };
 
     return NextResponse.json({

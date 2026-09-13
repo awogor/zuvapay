@@ -10,7 +10,7 @@ const FALLBACK_USERS = [
     first_name: 'David',
     last_name: 'Adeleke (Admin)',
     phone_number: '08031234567',
-    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=KorrectUser1',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ZuvaUser1',
     status: 'active',
     is_pin_set: true,
     created_at: new Date().toISOString(),

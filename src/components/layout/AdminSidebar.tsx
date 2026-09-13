@@ -103,12 +103,12 @@ export function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
       {/* Brand logo */}
       <div className="flex items-center gap-3 px-2 py-4 mb-3 border-b border-slate-200 dark:border-white/10">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-orange to-amber-500 font-black text-slate-950 shadow-md">
-          KP
+          ZP
         </div>
         <div>
           <div className="flex items-center gap-1.5">
             <h1 className="text-xl font-black tracking-tight text-slate-900 dark:text-white leading-none">
-              Korrect<span className="text-brand-orange">Pay</span>
+              Zuva<span className="text-brand-orange">Pay</span>
             </h1>
             <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-brand-orange/15 text-brand-orange border border-brand-orange/30">
               Admin

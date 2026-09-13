@@ -155,7 +155,7 @@ export default function SignUpPage() {
       <div className="relative w-full max-w-lg rounded-3xl border border-white/10 bg-slate-900/80 p-8 shadow-2xl backdrop-blur-xl">
         <div className="flex flex-col items-center text-center space-y-2 mb-6">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-brand-orange to-amber-500 font-black text-xl text-slate-950 shadow-xl shadow-orange-500/20">
-            KP
+            ZP
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white mt-1">
             Create Your Account

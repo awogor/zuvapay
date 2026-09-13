@@ -63,12 +63,12 @@ export function renderBaseEmailLayout({
                       <tr>
                         <td style="vertical-align: middle;">
                           <div style="display: inline-block; width: 38px; height: 38px; line-height: 38px; background: linear-gradient(135deg, #FF6B00 0%, #FFAA00 100%); border-radius: 12px; text-align: center; font-weight: 900; font-size: 18px; color: #0F172A;">
-                            KP
+                            ZP
                           </div>
                         </td>
                         <td style="vertical-align: middle; padding-left: 12px;">
                           <span style="font-size: 20px; font-weight: 900; color: #FFFFFF; letter-spacing: -0.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-                            Korrect<span style="color: #FF6B00;">Pay</span>
+                            Zuva<span style="color: #FF6B00;">Pay</span>
                           </span>
                           <span style="display: block; font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px;">
                             Instant Digital Utility

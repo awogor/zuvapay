@@ -54,7 +54,7 @@ const SUPPORT_CONTACTS = {
     label: 'Email Helpdesk',
   },
   phone: {
-    number: '+234 800 KORRECT',
+    number: '+234 800 ZUVAPAY',
     raw: '+2348005677328',
     label: 'Emergency Hotlines',
   },
