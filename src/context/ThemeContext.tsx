@@ -35,7 +35,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem('korrectpay_theme') as Theme | null;
+    const saved = localStorage.getItem('zuvapay_theme') as Theme | null;
     const initialTheme = saved === 'light' || saved === 'dark' ? saved : 'dark';
     setThemeState(initialTheme);
     applyTheme(initialTheme);
@@ -43,7 +43,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem('korrectpay_theme', newTheme);
+    localStorage.setItem('zuvapay_theme', newTheme);
     applyTheme(newTheme);
   };
 

@@ -25,7 +25,7 @@ export default function TransactionsPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `korrectpay_statement_${Date.now()}.csv`);
+    link.setAttribute('download', `zuvapay_statement_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -40,7 +40,7 @@ export default function TransactionsPage() {
             Transaction History
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Real-time transaction logs from web and mobile KorrectPay activities.
+            Real-time transaction logs from web and mobile ZuvaPay activities.
           </p>
         </div>
 

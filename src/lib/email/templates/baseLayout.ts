@@ -1,5 +1,5 @@
 /**
- * Base responsive HTML email template for KorrectPay.
+ * Base responsive HTML email template for ZuvaPay.
  * Built with bulletproof table layouts, inline CSS, high-contrast typography,
  * brand gradient header, trust badges, and Lagos support desk information.
  */
@@ -23,7 +23,7 @@ export function renderBaseEmailLayout({
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light" />
   <meta name="supported-color-schemes" content="light" />
-  <title>KorrectPay Transactional Alert</title>
+  <title>ZuvaPay Transactional Alert</title>
   <style type="text/css">
     /* Global Resets */
     body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
@@ -109,7 +109,7 @@ export function renderBaseEmailLayout({
                     <div style="font-size: 11px; color: #64748B;">Our Lagos customer team responds in under 3 minutes on WhatsApp.</div>
                   </td>
                   <td align="right" style="vertical-align: middle;">
-                    <a href="https://wa.me/2348000000000?text=Hello%20KorrectPay%20Helpdesk" target="_blank" style="display: inline-block; padding: 8px 14px; background-color: #10B981; color: #FFFFFF; font-size: 11px; font-weight: 800; text-decoration: none; border-radius: 8px;">
+                    <a href="https://wa.me/2348000000000?text=Hello%20ZuvaPay%20Helpdesk" target="_blank" style="display: inline-block; padding: 8px 14px; background-color: #10B981; color: #FFFFFF; font-size: 11px; font-weight: 800; text-decoration: none; border-radius: 8px;">
                       Chat Now
                     </a>
                   </td>
@@ -137,13 +137,13 @@ export function renderBaseEmailLayout({
                 </tr>
                 <tr>
                   <td align="center" style="font-size: 11px; line-height: 18px; color: #64748B;">
-                    © ${currentYear} KorrectPay Technologies Nigeria. All rights reserved.<br />
+                    © ${currentYear} ZuvaPay Technologies Nigeria. All rights reserved.<br />
                     Victoria Island, Lagos, Nigeria.
                   </td>
                 </tr>
                 <tr>
                   <td align="center" style="font-size: 10px; line-height: 16px; color: #94A3B8; padding-top: 10px;">
-                    This is an automated transactional security alert regarding your KorrectPay account. If you did not perform this activity, please lock your account or message our support team immediately.
+                    This is an automated transactional security alert regarding your ZuvaPay account. If you did not perform this activity, please lock your account or message our support team immediately.
                   </td>
                 </tr>
               </table>

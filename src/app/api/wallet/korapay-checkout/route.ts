@@ -27,11 +27,11 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = user.id;
-    const userEmail = user.email || 'customer@korrectpay.com';
+    const userEmail = user.email || 'customer@zuvapay.com';
     const userName =
       user.user_metadata?.first_name && user.user_metadata?.last_name
         ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
-        : user.user_metadata?.first_name || 'KorrectPay Customer';
+        : user.user_metadata?.first_name || 'ZuvaPay Customer';
 
     const korapaySecretKey = process.env.KORAPAY_SECRET_KEY;
     const isMock = !korapaySecretKey || korapaySecretKey.includes('test') || korapaySecretKey.includes('mock');
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
             name: userName,
             email: userEmail,
           },
-          narration: `KorrectPay Wallet Deposit - ${userName}`,
+          narration: `ZuvaPay Wallet Deposit - ${userName}`,
           redirect_url: redirectUrl || `${appUrl}/dashboard?payment=success&ref=${reference}`,
           channels: ['card', 'bank_transfer', 'pay_with_bank'],
           metadata: {

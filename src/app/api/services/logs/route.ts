@@ -146,7 +146,7 @@ function sanitizeDescription(html: string): string {
   // 1. Remove telegram/fadded links and text mentioning fadded
   clean = clean.replace(/https?:\/\/[^\s<>"']*(fadded|t\.me|telegram)[^\s<>"']*/gi, '');
   clean = clean.replace(/watch how to login here\s*:?/gi, '');
-  clean = clean.replace(/fadded\s*(socials)?/gi, 'KorrectPay Hub');
+  clean = clean.replace(/fadded\s*(socials)?/gi, 'ZuvaPay Hub');
 
   // 2. Remove hardcoded inline styles (e.g. style="color:rgb(33,37,41);") that break dark mode
   clean = clean.replace(/\s*style\s*=\s*("[^"]*"|'[^']*')/gi, '');
@@ -275,7 +275,7 @@ export async function POST(request: NextRequest) {
         product_key: itemId,
         quantity: parseInt(quantity) || 1,
         external_order_id: reference,
-        customer_info: { email: customerEmail || 'customer@korrectpay.com' },
+        customer_info: { email: customerEmail || 'customer@zuvapay.com' },
       }),
     });
 

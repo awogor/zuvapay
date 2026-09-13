@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { gongozFetch, DISCO_IDS, CABLE_IDS } from '@/lib/vendors/gongoz';
+import { verifyMeter, verifySmartCard } from '@/lib/vendors/strowallet';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,57 +14,78 @@ export async function POST(request: NextRequest) {
     }
 
     if (type === 'electricity') {
-      const discoId = DISCO_IDS[provider.toLowerCase()] || 1;
-      const mtype = meterType?.toLowerCase() === 'postpaid' ? 'Postpaid' : 'Prepaid';
+      const mtype = meterType?.toLowerCase() === 'postpaid' ? 'postpaid' : 'prepaid';
 
-      // Gongoz spec: GET /validatemeter?meternumber=meter&disconame=id&mtype=metertype
-      const res = await gongozFetch(
-        `validatemeter?meternumber=${account}&disconame=${discoId}&mtype=${mtype}`
-      );
+      // Call StroWallet: POST /api/electricity/verify-merchant
+      const res = await verifyMeter({
+        meterNumber: account,
+        disco: provider,
+        meterType: mtype,
+      });
 
       if (!res.isMock) {
-        const { data, ok } = res;
-        if (!ok || data?.status === 'failed' || data?.invalid) {
+        const { data, ok, status } = res;
+
+        // Check for error responses from StroWallet
+        if (!ok || data?.success === false || data?.error) {
+          const errMsg =
+            (typeof data?.message === 'string' ? data.message : null) ||
+            (data?.message?.meter_number ? data.message.meter_number[0] : null) ||
+            data?.error ||
+            'Could not verify meter with selected Disco. Please verify the Disco and meter number.';
+
           return NextResponse.json(
-            { success: false, error: data?.message || 'Could not verify meter with selected Disco. Please verify the Disco and meter number.' },
-            { status: 400 }
+            { success: false, error: errMsg },
+            { status: (status !== undefined && status >= 500) ? 502 : 400 }
           );
         }
 
+        const customerName = data?.customer_name || data?.CustomerName || data?.name || 'Verified Customer';
+        const address = data?.address || data?.CustomerAddress || data?.customer_address || 'Service Address Verified';
+
         return NextResponse.json({
           success: true,
-          customerName: data?.name || data?.customer_name || 'Verified Customer',
-          address: data?.address || 'Service Address Verified',
+          customerName: customerName.trim(),
+          address: address.trim(),
           account,
           provider,
         });
       }
     } else {
-      // Cable IUC validation: GET /validateiuc?smart_card_number=iuc&cablename=id
-      const cableId = CABLE_IDS[provider.toLowerCase()] || 1;
-      const res = await gongozFetch(
-        `validateiuc?smart_card_number=${account}&cablename=${cableId}`
-      );
+      // Cable IUC validation via StroWallet: POST /api/cable-subscription/verify-merchant
+      const res = await verifySmartCard({
+        serviceId: provider,
+        customerId: account,
+      });
 
       if (!res.isMock) {
-        const { data, ok } = res;
-        if (!ok || data?.status === 'failed' || data?.invalid) {
+        const { data, ok, status } = res;
+
+        if (!ok || data?.success === false || data?.error) {
+          const errMsg =
+            (typeof data?.message === 'string' ? data.message : null) ||
+            (data?.message?.customer_id ? data.message.customer_id[0] : null) ||
+            data?.error ||
+            'Invalid Smartcard / IUC number for selected provider';
+
           return NextResponse.json(
-            { success: false, error: data?.message || 'Invalid IUC number for selected provider' },
-            { status: 400 }
+            { success: false, error: errMsg },
+            { status: (status !== undefined && status >= 500) ? 502 : 400 }
           );
         }
 
+        const customerName = data?.customer_name || data?.name || data?.CustomerName || 'Verified Subscriber';
+
         return NextResponse.json({
           success: true,
-          customerName: data?.name || data?.customer_name || 'Verified Subscriber',
+          customerName: customerName.trim(),
           account,
           provider,
         });
       }
     }
 
-    // Mock validation
+    // Mock validation fallback
     await new Promise((res) => setTimeout(res, 350));
 
     if (account.length < 8) {

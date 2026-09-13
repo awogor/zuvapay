@@ -10,7 +10,7 @@
     "cable": {
       "globalRule": {
         "type": "fixed",
-        "value": 100
+        "value": 0
       },
       "overrides": {}
     },

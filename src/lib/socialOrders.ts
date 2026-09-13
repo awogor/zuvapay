@@ -20,8 +20,8 @@ export interface SocialOrderRecord {
   lastCheckedAt?: number;
 }
 
-const STORAGE_KEY = 'korrectpay_social_orders_list';
-const EVENT_NAME = 'korrectpay_social_orders_updated';
+const STORAGE_KEY = 'zuvapay_social_orders_list';
+const EVENT_NAME = 'zuvapay_social_orders_updated';
 
 export function getSocialOrders(): SocialOrderRecord[] {
   if (typeof window === 'undefined') return [];
@@ -41,7 +41,7 @@ export function getSocialOrders(): SocialOrderRecord[] {
     const existingRefs = new Set(orders.map((o) => o.reference));
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && k.startsWith('korrectpay_txs_')) {
+      if (k && k.startsWith('zuvapay_txs_')) {
         const item = localStorage.getItem(k);
         if (item) {
           try {

@@ -9,6 +9,7 @@ export interface DropdownItem {
   flag?: string;
   subtitle?: string;
   badge?: string;
+  badgeColor?: 'hot' | 'orange' | 'emerald' | 'sky' | 'purple';
   isPriority?: boolean;
 }
 
@@ -164,6 +165,11 @@ export default function CustomSearchDropdown({
                   <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white break-words line-clamp-2">
                     {selectedItem.name}
                   </span>
+                  {selectedItem.badge && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-500 text-white shadow-sm shadow-rose-500/30 shrink-0">
+                      {selectedItem.badge}
+                    </span>
+                  )}
                 </div>
                 {selectedItem.subtitle && (
                   <span className={`text-xs font-bold whitespace-nowrap flex-shrink-0 self-start sm:self-auto ${themeStyles.activeText}`}>
@@ -241,7 +247,14 @@ export default function CustomSearchDropdown({
                                 ) : (
                                   <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${themeStyles.dot}`} />
                                 )}
-                                <span className="break-words leading-snug flex-1">{item.name}</span>
+                                <span className="break-words leading-snug flex-1 flex items-center gap-2">
+                                  <span>{item.name}</span>
+                                  {item.badge && (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-wider bg-rose-500 text-white shadow-sm shadow-rose-500/25 shrink-0 leading-none">
+                                      {item.badge}
+                                    </span>
+                                  )}
+                                </span>
                               </div>
                               <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                                 {item.subtitle && (
@@ -289,7 +302,14 @@ export default function CustomSearchDropdown({
                                 ) : (
                                   <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0 mt-1.5" />
                                 )}
-                                <span className="break-words leading-snug flex-1">{item.name}</span>
+                                <span className="break-words leading-snug flex-1 flex items-center gap-2">
+                                  <span>{item.name}</span>
+                                  {item.badge && (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-wider bg-rose-500 text-white shadow-sm shadow-rose-500/25 shrink-0 leading-none">
+                                      {item.badge}
+                                    </span>
+                                  )}
+                                </span>
                               </div>
                               <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                                 {item.subtitle && (

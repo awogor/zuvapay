@@ -15,8 +15,8 @@ export interface SmsOrderRecord {
   otpCode?: string | null;
 }
 
-const STORAGE_KEY = 'korrectpay_sms_orders_list';
-const EVENT_NAME = 'korrectpay_sms_orders_updated';
+const STORAGE_KEY = 'zuvapay_sms_orders_list';
+const EVENT_NAME = 'zuvapay_sms_orders_updated';
 
 /**
  * Retrieve all saved SMS orders, migrating any legacy keys if found.
@@ -34,15 +34,15 @@ export function getSmsOrders(): SmsOrderRecord[] {
     console.warn('Failed to parse SMS orders:', e);
   }
 
-  // Check for legacy individual keys: korrectpay_active_sms_*
+  // Check for legacy individual keys: zuvapay_active_sms_*
   try {
     const existingIds = new Set(orders.map((o) => o.orderId));
     let hasMigration = false;
 
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith('korrectpay_active_sms_')) {
-        const orderId = key.replace('korrectpay_active_sms_', '');
+      if (key && key.startsWith('zuvapay_active_sms_')) {
+        const orderId = key.replace('zuvapay_active_sms_', '');
         if (!existingIds.has(orderId)) {
           const rawItem = localStorage.getItem(key);
           if (rawItem) {
@@ -99,8 +99,8 @@ export function saveSmsOrder(order: SmsOrderRecord): void {
 
     const trimmed = current.slice(0, 50);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
-    sessionStorage.setItem(`korrectpay_active_sms_${order.orderId}`, JSON.stringify(order));
-    localStorage.setItem(`korrectpay_active_sms_${order.orderId}`, JSON.stringify(order));
+    sessionStorage.setItem(`zuvapay_active_sms_${order.orderId}`, JSON.stringify(order));
+    localStorage.setItem(`zuvapay_active_sms_${order.orderId}`, JSON.stringify(order));
 
     window.dispatchEvent(new CustomEvent(EVENT_NAME));
   } catch (err) {
@@ -126,8 +126,8 @@ export function updateSmsOrderStatus(
       current[index] = updated;
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
-      sessionStorage.setItem(`korrectpay_active_sms_${orderId}`, JSON.stringify(updated));
-      localStorage.setItem(`korrectpay_active_sms_${orderId}`, JSON.stringify(updated));
+      sessionStorage.setItem(`zuvapay_active_sms_${orderId}`, JSON.stringify(updated));
+      localStorage.setItem(`zuvapay_active_sms_${orderId}`, JSON.stringify(updated));
 
       window.dispatchEvent(new CustomEvent(EVENT_NAME));
       return updated;
@@ -164,7 +164,7 @@ export function subscribeSmsOrders(callback: () => void): () => void {
 
   const handleCustomEvent = () => callback();
   const handleStorageEvent = (e: StorageEvent) => {
-    if (e.key === STORAGE_KEY || (e.key && e.key.startsWith('korrectpay_active_sms_'))) {
+    if (e.key === STORAGE_KEY || (e.key && e.key.startsWith('zuvapay_active_sms_'))) {
       callback();
     }
   };

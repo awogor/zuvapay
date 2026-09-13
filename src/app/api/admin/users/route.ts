@@ -5,7 +5,7 @@ const FALLBACK_USERS = [
   {
     id: '00000000-0000-0000-0000-000000000001',
     role: 'admin',
-    email: 'admin@korrectpay.com',
+    email: 'admin@zuvapay.com',
     title: 'Mr',
     first_name: 'David',
     last_name: 'Adeleke (Admin)',
@@ -25,7 +25,7 @@ const FALLBACK_USERS = [
       {
         bank_name: 'Wema Bank',
         account_number: '9902819201',
-        account_name: 'David Adeleke / KorrectPay',
+        account_name: 'David Adeleke / ZuvaPay',
         status: 'active',
       },
     ],
@@ -53,7 +53,7 @@ const FALLBACK_USERS = [
       {
         bank_name: 'Sterling Bank',
         account_number: '8810294821',
-        account_name: 'Amara Eze / KorrectPay',
+        account_name: 'Amara Eze / ZuvaPay',
         status: 'active',
       },
     ],
@@ -81,7 +81,7 @@ const FALLBACK_USERS = [
       {
         bank_name: 'Fidelity Bank',
         account_number: '7729104829',
-        account_name: 'Tunde Bakare / KorrectPay',
+        account_name: 'Tunde Bakare / ZuvaPay',
         status: 'active',
       },
     ],

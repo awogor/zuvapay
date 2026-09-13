@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     // Fallback demo user support for local test environments
     if (cleanUsername === 'davidadeleke' || cleanUsername === 'david') {
-      return NextResponse.json({ email: 'david@korrectpay.com' });
+      return NextResponse.json({ email: 'david@zuvapay.com' });
     }
 
     const supabase = createAdminClient();

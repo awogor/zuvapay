@@ -60,7 +60,7 @@ const DEFAULT_CONFIG: ProviderPricingConfig = {
       overrides: {},
     },
     cable: {
-      globalRule: { type: 'fixed', value: 100 },
+      globalRule: { type: 'fixed', value: 0 },
       overrides: {},
     },
     power: {

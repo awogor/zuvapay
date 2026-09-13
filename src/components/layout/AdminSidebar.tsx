@@ -76,6 +76,13 @@ export function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
           icon: Mail,
           badge: 'SMTP',
         },
+        {
+          name: 'Business & Vendor Manual',
+          href: '/admin?tab=business-docs',
+          tabId: 'business-docs',
+          icon: FileText,
+          badge: 'Guide',
+        },
       ],
     },
     {

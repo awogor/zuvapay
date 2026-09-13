@@ -25,7 +25,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                var saved = localStorage.getItem('korrectpay_theme') || 'dark';
+                var saved = localStorage.getItem('zuvapay_theme') || 'dark';
                 var d = document.documentElement;
                 if (saved === 'light') {
                   d.classList.remove('dark');

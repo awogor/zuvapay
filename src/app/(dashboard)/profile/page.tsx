@@ -124,7 +124,7 @@ export default function ProfilePage() {
       }
 
       await updateProfile({ username: clean });
-      success('Handle Claimed! 🎉', `You are now @${clean} on KorrectPay!`);
+      success('Handle Claimed! 🎉', `You are now @${clean} on ZuvaPay!`);
       setClaimHandle('');
       setHandleStatus(null);
     } catch (err: any) {
@@ -162,7 +162,7 @@ export default function ProfilePage() {
       <div>
         <h1 className="text-2xl font-black text-slate-900 dark:text-white">Profile & Security</h1>
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          Manage your KorrectPay profile identity, username handle, and linked contact info.
+          Manage your ZuvaPay profile identity, username handle, and linked contact info.
         </p>
       </div>
 
@@ -250,7 +250,7 @@ export default function ProfilePage() {
                 </span>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-300 mb-4">
-                Your @username allows other KorrectPay users to send you funds instantly and enables sign-in via your handle.
+                Your @username allows other ZuvaPay users to send you funds instantly and enables sign-in via your handle.
               </p>
 
               <form onSubmit={handleClaimUsername} className="space-y-3">
@@ -397,7 +397,7 @@ export default function ProfilePage() {
               {effectiveUsername && (
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    KorrectPay Handle
+                    ZuvaPay Handle
                   </label>
                   <div className="relative">
                     <AtSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-orange" />
@@ -409,7 +409,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">
-                    Your handle is permanent and uniquely bound to your KorrectPay account.
+                    Your handle is permanent and uniquely bound to your ZuvaPay account.
                   </p>
                 </div>
               )}

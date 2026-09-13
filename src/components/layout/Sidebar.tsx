@@ -21,6 +21,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   HelpCircle,
+  Sparkles,
 } from 'lucide-react';
 import { useSupport } from '@/components/modals/SupportModal';
 
@@ -78,6 +79,13 @@ export function Sidebar({ onOpenFundModal, onCloseMobile }: SidebarProps) {
           name: 'Social Boost',
           href: '/services/social/youtube',
           icon: TrendingUp,
+        },
+        {
+          name: 'AI Marketplace',
+          href: '/services/marketplace',
+          icon: Sparkles,
+          highlight: true,
+          badge: 'Hot',
         },
         {
           name: 'Account Logs',

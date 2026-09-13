@@ -36,7 +36,7 @@ export function useSupport() {
   return ctx;
 }
 
-// Configurable KorrectPay Official Support Contacts
+// Configurable ZuvaPay Official Support Contacts
 const SUPPORT_CONTACTS = {
   whatsapp: {
     number: '+2348000000000',
@@ -45,12 +45,12 @@ const SUPPORT_CONTACTS = {
     handle: 'Chat with Support Team',
   },
   telegram: {
-    handle: '@KorrectPaySupport',
-    url: 'https://t.me/KorrectPaySupport',
+    handle: '@ZuvaPaySupport',
+    url: 'https://t.me/ZuvaPaySupport',
     label: 'Telegram Official Desk',
   },
   email: {
-    address: 'support@korrectpay.com',
+    address: 'support@zuvapay.com',
     label: 'Email Helpdesk',
   },
   phone: {
@@ -81,7 +81,7 @@ export function SupportProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getWhatsAppMessage = () => {
-    let msg = 'Hello KorrectPay Support, I need assistance with my account.\n\n';
+    let msg = 'Hello ZuvaPay Support, I need assistance with my account.\n\n';
     if (contextData?.service) {
       msg += `• Service: ${contextData.service}\n`;
     }
@@ -251,7 +251,7 @@ export function SupportProvider({ children }: { children: React.ReactNode }) {
             {/* Footer - Fixed at Bottom */}
             <div className="flex-shrink-0 px-4 py-3 sm:p-4 bg-slate-50 dark:bg-slate-950/60 border-t border-slate-100 dark:border-white/5 text-center">
               <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400">
-                KorrectPay Desk operates 24 hours daily • Typical response under 5 minutes
+                ZuvaPay Desk operates 24 hours daily • Typical response under 5 minutes
               </p>
             </div>
           </div>

@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('authorization');
     const { searchParams } = new URL(request.url);
     const queryKey = searchParams.get('key');
-    const expectedSecret = process.env.CRON_SECRET || 'korrectpay_cron_secret_2026';
+    const expectedSecret = process.env.CRON_SECRET || 'zuvapay_cron_secret_2026';
 
     const isAuthorized =
       authHeader === `Bearer ${expectedSecret}` ||

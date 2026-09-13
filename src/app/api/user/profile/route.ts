@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       console.warn('Profile fetch warning:', profileError.message);
     }
 
-    const effectiveRole = profile?.role || user.user_metadata?.role || (user.email === 'awogorm@gmail.com' || user.email === 'david@korrectpay.com' ? 'admin' : 'customer');
+    const effectiveRole = profile?.role || user.user_metadata?.role || (user.email === 'awogorm@gmail.com' || user.email === 'david@zuvapay.com' ? 'admin' : 'customer');
     const effectiveUsername = profile?.username || user.user_metadata?.username || null;
 
     const mergedProfile = {

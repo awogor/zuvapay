@@ -163,6 +163,9 @@ export default function CableTvPage() {
           provider,
           iucNumber,
           bouquetId: selectedBouquet.id,
+          bouquetName: selectedBouquet.name,
+          variationCode: (selectedBouquet as any).variationCode || selectedBouquet.id,
+          amount: selectedBouquet.price,
           customerName,
           reference,
         }),
@@ -313,6 +316,11 @@ export default function CableTvPage() {
                 <span className={`font-mono font-semibold ${(wallet?.balance || 0) < selectedBouquet.price ? 'text-rose-500' : 'text-slate-800 dark:text-slate-200'}`}>
                   {formatBalance(wallet?.balance || 0)}
                 </span>
+              </div>
+
+              <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                <span>Convenience / Service Fee:</span>
+                <span className="font-bold text-emerald-500 dark:text-emerald-400">₦0 (No Fee)</span>
               </div>
 
               <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-white/5 text-sm font-bold text-slate-900 dark:text-white">

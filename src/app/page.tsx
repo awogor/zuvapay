@@ -476,7 +476,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-xs text-slate-700 leading-relaxed italic">
-                "As an agency owner running TikTok and Instagram campaigns for clients in Lagos, foreign SMS numbers used to be my biggest headache. With KorrectPay, I get a US line, receive the OTP in 10 seconds, and if anything happens, my money returns to my wallet immediately."
+                "As an agency owner running TikTok and Instagram campaigns for clients in Lagos, foreign SMS numbers used to be my biggest headache. With ZuvaPay, I get a US line, receive the OTP in 10 seconds, and if anything happens, my money returns to my wallet immediately."
               </p>
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                 <div>
@@ -497,7 +497,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-xs text-slate-700 leading-relaxed italic">
-                "I buy data for almost 30 people every week for my church media group. MTN and Airtel SME bundles on KorrectPay never fail. 2.5GB for ₦640 delivers before I even close the success screen. The speed is crazy."
+                "I buy data for almost 30 people every week for my church media group. MTN and Airtel SME bundles on ZuvaPay never fail. 2.5GB for ₦640 delivers before I even close the success screen. The speed is crazy."
               </p>
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                 <div>

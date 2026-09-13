@@ -432,7 +432,7 @@ export function MarketingNavbar() {
           <div className="p-8">
             <div className="grid grid-cols-3 gap-6">
               <Link
-                href="https://wa.me/2348000000000?text=Hello%20KorrectPay%20Help%20Desk"
+                href="https://wa.me/2348000000000?text=Hello%20ZuvaPay%20Help%20Desk"
                 target="_blank"
                 onClick={() => setActiveDropdown(null)}
                 className="p-5 rounded-2xl bg-slate-50 hover:bg-emerald-50 border border-slate-200/80 hover:border-emerald-200 transition-all group"
@@ -492,17 +492,17 @@ export function MarketingNavbar() {
           {/* Services Accordion */}
           <div className="border-b border-slate-100 pb-3">
             <button
-              onClick={() => setMobileExpandedSection(mobileExpandedSection === 'services' ? null : 'services')}
+              onClick={() => toggleMobileSection('services')}
               className="flex items-center justify-between w-full py-2 text-sm font-bold text-slate-900"
             >
               <span>Services</span>
               <ChevronDown
                 className={`w-4 h-4 transition-transform duration-200 ${
-                  mobileExpandedSection === 'services' ? 'rotate-180 text-zuva-solar' : 'text-slate-400'
+                  mobileExpanded.services ? 'rotate-180 text-zuva-solar' : 'text-slate-400'
                 }`}
               />
             </button>
-            {mobileExpandedSection === 'services' && (
+            {mobileExpanded.services && (
               <div className="pl-3 pt-2 space-y-2.5 text-xs text-slate-600">
                 <Link
                   href="/services#data"

@@ -69,7 +69,7 @@ export function AdminEmailTab() {
         body: JSON.stringify({
           action: 'preview',
           templateType: type,
-          targetEmail: targetEmail || 'customer@korrectpay.com',
+          targetEmail: targetEmail || 'customer@zuvapay.com',
           sampleData: {
             name,
             amount: 5000,
@@ -211,7 +211,7 @@ export function AdminEmailTab() {
           <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-white/5">
             <span className="text-[10px] uppercase font-bold text-slate-400 block">From Address</span>
             <span className="font-mono font-bold text-slate-800 dark:text-slate-200 truncate block">
-              {smtpStatus?.config?.fromEmail || 'support@korrectpay.com'}
+              {smtpStatus?.config?.fromEmail || 'support@zuvapay.com'}
             </span>
           </div>
           <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-white/5">
@@ -245,7 +245,7 @@ export function AdminEmailTab() {
                 onChange={(e) => setTemplateType(e.target.value as any)}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white font-medium focus:outline-none focus:border-brand-orange"
               >
-                <option value="welcome">👋 1. Welcome to KorrectPay (Account Ready)</option>
+                <option value="welcome">👋 1. Welcome to ZuvaPay (Account Ready)</option>
                 <option value="wallet_credit">💰 2. Wallet Funded (Credit Receipt)</option>
                 <option value="service_receipt">⚡ 3. Service Purchase Receipt (Airtime/Data/Power)</option>
                 <option value="electricity_token">⚡ 4. NEPA Electricity Token Delivery (20-Digit Code)</option>

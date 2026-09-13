@@ -44,6 +44,26 @@ export const DISCO_IDS: Record<string, number> = {
   yola: 11,
 };
 
+export const DISCO_API_NAMES: Record<string, string> = {
+  ikeja: 'Ikeja Electric',
+  eko: 'Eko Electric',
+  abuja: 'Abuja Electric',
+  kano: 'Kano Electric',
+  enugu: 'Enugu Electric',
+  portharcourt: 'Port Harcourt Electric',
+  ibadan: 'Ibadan Electric',
+  kaduna: 'Kaduna Electric',
+  jos: 'Jos Electric',
+  benin: 'Benin Electric',
+  yola: 'Yola Electric',
+};
+
+export const CABLE_API_NAMES: Record<string, string> = {
+  gotv: 'GOTV',
+  dstv: 'DSTV',
+  startimes: 'STARTIMES',
+};
+
 export async function gongozFetch(endpoint: string, options: RequestInit = {}) {
   const isMock = !GONGOZ_API_KEY || GONGOZ_API_KEY.includes('mock') || GONGOZ_API_KEY.includes('your-');
   if (isMock) {

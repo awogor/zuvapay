@@ -26,7 +26,7 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-            Hello, {profile?.title ? `${profile.title} ` : ''}{profile?.first_name || 'KorrectPay User'} 👋
+            Hello, {profile?.title ? `${profile.title} ` : ''}{profile?.first_name || 'ZuvaPay User'} 👋
           </h1>
           <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400">
             Welcome back to your unified financial and digital operations center.
@@ -62,7 +62,7 @@ export default function DashboardPage() {
                 </span>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
-                Enable 1-click @username transfers, receive payments directly to your handle, and prepare for KorrectPay Commerce.
+                Enable 1-click @username transfers, receive payments directly to your handle, and prepare for ZuvaPay Commerce.
               </p>
             </div>
           </div>

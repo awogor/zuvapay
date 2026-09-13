@@ -1,8 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { gongozFetch, CABLE_IDS } from '@/lib/vendors/gongoz';
+import { subscribeCableTv, getCableTvPlans } from '@/lib/vendors/strowallet';
 import { GONGOZ_CABLE_PLANS } from '@/lib/data/gongozCatalog';
-
 import { getPricingConfig, computeRetailPrice } from '@/lib/pricing/pricingStore';
 
 export async function GET(request: NextRequest) {
@@ -13,13 +12,49 @@ export async function GET(request: NextRequest) {
   const globalRule = pricingConfig.gongoz.cable.globalRule;
   const overrides = pricingConfig.gongoz.cable.overrides;
 
+  // Try live StroWallet plans if provider requested
+  if (provider) {
+    try {
+      const liveRes = await getCableTvPlans(provider);
+      if (!liveRes.isMock && liveRes.ok && liveRes.data) {
+        const rawPlans =
+          liveRes.data?.data?.varations ||
+          liveRes.data?.varations ||
+          liveRes.data?.data?.variations ||
+          liveRes.data?.variations ||
+          (Array.isArray(liveRes.data) ? liveRes.data : liveRes.data?.plans || liveRes.data?.data);
+        if (Array.isArray(rawPlans) && rawPlans.length > 0) {
+          const mapped = rawPlans.map((p: any) => {
+            const rawPrice = parseFloat(p.variation_amount || p.amount || p.price || '0');
+            const planId = p.variation_code || p.id || String(p.service_name);
+            // Cable TV has NO fees / markups added; sell at exact face-value amount
+            return {
+              id: planId,
+              name: p.name || p.variation_name || p.service_name,
+              price: Math.round(rawPrice),
+              variationCode: p.variation_code || planId,
+              provider,
+            };
+          });
+
+          return NextResponse.json({
+            success: true,
+            bouquets: mapped,
+          });
+        }
+      }
+    } catch {
+      // Graceful fallback to static catalog
+    }
+  }
+
   const getPricedBouquets = (prov: string) => {
     return GONGOZ_CABLE_PLANS.filter((p) => p.provider === prov).map((b) => {
-      const override = overrides[b.id];
-      const { retailPrice } = computeRetailPrice(b.price, globalRule, override);
+      // Cable TV has NO fees / markups added; sell at exact face-value amount
       return {
         ...b,
-        price: retailPrice,
+        price: b.price,
+        variationCode: b.id,
       };
     });
   };
@@ -50,36 +85,45 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { provider, iucNumber, bouquetId, customerName, reference } = body;
+    const { provider, iucNumber, bouquetId, customerName, reference, amount, phone } = body;
 
-    const cableId = CABLE_IDS[provider.toLowerCase()] || 1;
     const bouquet = GONGOZ_CABLE_PLANS.find((b) => b.id === bouquetId);
+    const bouquetName = bouquet?.name || body.bouquetName || 'Cable Bouquet';
+    const variationCode = body.variationCode || bouquetId;
+    const userPhone = phone || user.phone || user.user_metadata?.phone || user.user_metadata?.phone_number || '08012345678';
+    const finalAmount = amount || bouquet?.price || 1000;
 
-    // Call GongozConcept API endpoint: POST /cablesub/
-    const gongozRes = await gongozFetch('cablesub/', {
-      method: 'POST',
-      body: JSON.stringify({
-        cablename: cableId,
-        cableplan: bouquet?.gongozPlanId || 1,
-        smart_card_number: iucNumber,
-      }),
+    // Call StroWallet API: POST /api/cable-subscription/request
+    const stroRes = await subscribeCableTv({
+      serviceId: provider,
+      serviceName: bouquetName,
+      variationCode,
+      customerId: iucNumber,
+      amount: finalAmount,
+      phone: userPhone,
     });
 
-    if (!gongozRes.isMock) {
-      const { data, ok } = gongozRes;
-      if (!ok || data?.status === 'failed') {
+    if (!stroRes.isMock) {
+      const { data, ok } = stroRes;
+      if (!ok || data?.success === false || data?.error) {
+        const errMsg =
+          (typeof data?.message === 'string' ? data.message : null) ||
+          data?.response?.response_description ||
+          data?.error ||
+          'Cable TV provider activation failed';
+
         return NextResponse.json(
-          { success: false, error: data?.message || data?.error || 'Cable TV provider activation failed' },
+          { success: false, error: errMsg },
           { status: 502 }
         );
       }
 
       return NextResponse.json({
         success: true,
-        operatorReference: data?.id || `GONGOZ-CAB-${Date.now()}`,
+        operatorReference: data?.response?.transactions?.transactionId || data?.reference || `STRO-CAB-${Date.now()}`,
         provider,
         iucNumber,
-        bouquetName: bouquet?.name,
+        bouquetName,
       });
     }
 
@@ -95,10 +139,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      operatorReference: `GONGOZ-CAB-${Date.now()}`,
+      operatorReference: `STRO-CAB-${Date.now()}`,
       provider,
       iucNumber,
-      bouquetName: bouquet?.name || 'Selected Bouquet',
+      bouquetName,
       customerName: customerName || 'Verified Cable Subscriber',
     });
   } catch (err: any) {

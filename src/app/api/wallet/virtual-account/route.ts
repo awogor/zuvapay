@@ -57,11 +57,11 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = user.id;
-    const userEmail = user.email || 'customer@korrectpay.com';
+    const userEmail = user.email || 'customer@zuvapay.com';
     const userName =
       user.user_metadata?.first_name && user.user_metadata?.last_name
         ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
-        : user.user_metadata?.first_name || 'KorrectPay User';
+        : user.user_metadata?.first_name || 'ZuvaPay User';
 
     const korapaySecretKey = process.env.KORAPAY_SECRET_KEY;
     const isMockOrTest =
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          account_name: `KorrectPay - ${userName}`,
+          account_name: `ZuvaPay - ${userName}`,
           account_reference: accountRef,
           permanent: true,
           bank_code: bankCode,
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
         bank_name: selectedBankName,
         bank_code: bankCode,
         account_number: randomAcc,
-        account_name: `KorrectPay - ${userName}`,
+        account_name: `ZuvaPay - ${userName}`,
         account_reference: accountRef,
         unique_id: `KPY-VA-${Date.now()}`,
         status: 'active',

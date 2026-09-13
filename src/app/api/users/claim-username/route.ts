@@ -9,7 +9,7 @@ const RESERVED_USERNAMES = new Set([
   'administrator',
   'support',
   'help',
-  'korrectpay',
+  'zuvapay',
   'official',
   'billing',
   'security',
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       username: cleanUsername,
-      message: `Congratulations! @${cleanUsername} is now your official KorrectPay handle.`,
+      message: `Congratulations! @${cleanUsername} is now your official ZuvaPay handle.`,
     });
   } catch (err: any) {
     console.error('Error claiming username:', err);

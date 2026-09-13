@@ -124,7 +124,7 @@ export function MarketingFooter() {
             <ul className="space-y-2 text-xs">
               <li>
                 <Link
-                  href="https://wa.me/2348000000000?text=Hello%20KorrectPay%20Customer%20Desk"
+                  href="https://wa.me/2348000000000?text=Hello%20ZuvaPay%20Customer%20Desk"
                   target="_blank"
                   className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 font-semibold"
                 >

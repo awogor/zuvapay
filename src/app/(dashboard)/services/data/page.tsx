@@ -68,10 +68,24 @@ export default function DataBundlePage() {
     loadPlans();
   }, [network]);
 
-  // Extract unique plan types for current network
+  // Extract unique plan types for current network and place Direct in the middle with priority
   const availableTypes = useMemo(() => {
-    const types = Array.from(new Set(plans.map((p) => p.type))).filter(Boolean);
-    return ['All', ...types];
+    const rawTypes = Array.from(new Set(plans.map((p) => p.type))).filter(Boolean);
+    const hasDirect = rawTypes.includes('Direct');
+    const otherTypes = rawTypes.filter((t) => t !== 'Direct');
+
+    // Place 'Direct' strategically in the middle of the list
+    if (hasDirect) {
+      const mid = Math.floor(otherTypes.length / 2);
+      const reordered = [
+        ...otherTypes.slice(0, mid),
+        'Direct',
+        ...otherTypes.slice(mid),
+      ];
+      return ['All', ...reordered];
+    }
+
+    return ['All', ...rawTypes];
   }, [plans]);
 
   // Filter plans by selected plan category
@@ -156,6 +170,11 @@ export default function DataBundlePage() {
           network,
           phone,
           planId: selectedPlan.id,
+          vendor: selectedPlan.vendor || 'gongoz',
+          variationCode: selectedPlan.variationCode,
+          serviceName: selectedPlan.serviceName,
+          serviceId: selectedPlan.serviceId,
+          amount: selectedPlan.price,
           reference,
         }),
       });
@@ -236,10 +255,15 @@ export default function DataBundlePage() {
             label="Plan Category"
             placeholder="-- Select Plan Category --"
             searchPlaceholder="Search category..."
-            items={availableTypes.map((t) => ({
-              id: t,
-              name: t === 'All' ? 'All Plan Types' : `${t} Plans`,
-            }))}
+            items={availableTypes.map((t) => {
+              const isDirect = t.toLowerCase() === 'direct';
+              return {
+                id: t,
+                name: t === 'All' ? 'All Plan Types' : isDirect ? 'DIRECT Plans' : `${t} Plans`,
+                badge: isDirect ? '(HOT)' : undefined,
+                badgeColor: isDirect ? 'hot' : undefined,
+              };
+            })}
             selectedId={selectedPlanType}
             onSelect={(item) => setSelectedPlanType(String(item.id))}
             disabled={fetchingPlans || !network}

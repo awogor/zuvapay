@@ -62,7 +62,7 @@ export function Navbar({ onOpenMobileMenu, onOpenFundModal }: NavbarProps) {
   const [notifDropdown, setNotifDropdown] = useState(false);
   const [lastReadTime, setLastReadTime] = useState<number>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('korrectpay_notifs_read_at');
+      const saved = localStorage.getItem('zuvapay_notifs_read_at');
       return saved ? parseInt(saved, 10) : 0;
     }
     return 0;
@@ -80,7 +80,7 @@ export function Navbar({ onOpenMobileMenu, onOpenFundModal }: NavbarProps) {
     const now = Date.now();
     setLastReadTime(now);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('korrectpay_notifs_read_at', String(now));
+      localStorage.setItem('zuvapay_notifs_read_at', String(now));
     }
   };
 

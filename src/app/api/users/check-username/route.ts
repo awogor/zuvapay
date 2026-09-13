@@ -9,7 +9,7 @@ const RESERVED_USERNAMES = new Set([
   'administrator',
   'support',
   'help',
-  'korrectpay',
+  'zuvapay',
   'official',
   'billing',
   'security',

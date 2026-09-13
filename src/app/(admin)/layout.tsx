@@ -29,7 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     profile?.role === 'admin' ||
     user?.user_metadata?.role === 'admin' ||
     user?.email === 'awogorm@gmail.com' ||
-    user?.email === 'david@korrectpay.com';
+    user?.email === 'david@zuvapay.com';
 
   // Guard: Redirect non-admins back to dashboard
   if (!isAuthorizedAdmin) {
@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         <h2 className="text-xl font-black">Access Denied</h2>
         <p className="text-xs text-slate-400 max-w-sm">
-          You do not have administrative privileges to access the KorrectPay Admin Console.
+          You do not have administrative privileges to access the ZuvaPay Admin Console.
         </p>
         <Link
           href="/dashboard"

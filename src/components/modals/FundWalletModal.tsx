@@ -59,7 +59,7 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
           setVirtualAccount(data.account);
         } else {
           // Check local storage fallback for demo/sandbox user
-          const saved = localStorage.getItem(`korrectpay_vba_${user?.id || 'demo'}`);
+          const saved = localStorage.getItem(`zuvapay_vba_${user?.id || 'demo'}`);
           if (saved) {
             setVirtualAccount(JSON.parse(saved));
           } else {
@@ -99,7 +99,7 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
           bankCode: selectedBankCode,
           bvn: bvnInput || '22222222222',
           userId: user?.id,
-          name: profile ? `${profile.first_name} ${profile.last_name}` : 'KorrectPay Customer',
+          name: profile ? `${profile.first_name} ${profile.last_name}` : 'ZuvaPay Customer',
           email: user?.email,
         }),
       });
@@ -109,7 +109,7 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
       if (data.success && data.account) {
         setVirtualAccount(data.account);
         localStorage.setItem(
-          `korrectpay_vba_${user?.id || 'demo'}`,
+          `zuvapay_vba_${user?.id || 'demo'}`,
           JSON.stringify(data.account)
         );
         success(
@@ -195,7 +195,7 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
         {/* Header - Fixed at Top */}
         <div className="flex-shrink-0 flex items-center justify-between px-5 sm:px-6 pt-3 sm:pt-5 pb-3 border-b border-white/10">
           <div>
-            <h3 className="text-base sm:text-lg font-bold text-white">Fund KorrectPay Wallet</h3>
+            <h3 className="text-base sm:text-lg font-bold text-white">Fund ZuvaPay Wallet</h3>
             <p className="text-[11px] sm:text-xs text-slate-400">Add funds instantly via Korapay Dedicated Account or Card</p>
           </div>
           <button
@@ -272,7 +272,7 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
                   </div>
 
                   <p className="text-[11px] text-slate-400 text-center leading-relaxed">
-                    Transfer any amount from any Nigerian bank app to this account. Your KorrectPay wallet balance will update automatically via Korapay Webhook.
+                    Transfer any amount from any Nigerian bank app to this account. Your ZuvaPay wallet balance will update automatically via Korapay Webhook.
                   </p>
                 </div>
               ) : (

@@ -3,7 +3,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server';
 import crypto from 'crypto';
 
 function hashPin(pin: string, userId: string): string {
-  const salt = process.env.PIN_SALT || 'korrectpay_secure_salt_2026';
+  const salt = process.env.PIN_SALT || 'zuvapay_secure_salt_2026';
   return crypto.createHmac('sha256', salt).update(`${userId}:${pin}`).digest('hex');
 }
 

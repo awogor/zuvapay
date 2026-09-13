@@ -19,11 +19,15 @@ function LoginFormContent() {
 
   useEffect(() => {
     const reason = searchParams?.get('reason');
-    const localExpired = typeof window !== 'undefined' && localStorage.getItem('korrectpay_session_expired') === 'true';
+    const localExpired = typeof window !== 'undefined' && localStorage.getItem('zuvapay_session_expired') === 'true';
     if (reason === 'session_expired' || localExpired) {
       setSessionExpiredNotice(true);
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('korrectpay_session_expired');
+        localStorage.removeItem('zuvapay_session_expired');
+        // Clean URL query parameters completely so the URL is always pristine /login
+        if (window.location.search) {
+          window.history.replaceState({}, '', window.location.pathname);
+        }
       }
     }
   }, [searchParams]);
@@ -73,7 +77,7 @@ function LoginFormContent() {
           body: JSON.stringify({ status: 'success' }),
         }).catch(() => {});
 
-        success('Welcome Back!', 'Successfully signed in to your KorrectPay account.');
+        success('Welcome Back!', 'Successfully signed in to your ZuvaPay account.');
         // Full window navigation ensures fresh SSR session and wallet hydration
         window.location.href = '/dashboard';
       }
@@ -88,7 +92,7 @@ function LoginFormContent() {
     setIdentifier('davidadeleke');
     setPassword('password123');
     setLoading(true);
-    await signIn('david@korrectpay.com', 'password123');
+    await signIn('david@zuvapay.com', 'password123');
     success('Demo Access Granted', 'Signed in as verified user @davidadeleke');
     window.location.href = '/dashboard';
     setLoading(false);

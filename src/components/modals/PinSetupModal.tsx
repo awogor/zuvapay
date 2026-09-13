@@ -159,7 +159,7 @@ export function PinSetupModal({ isOpen, onSuccess }: PinSetupModalProps) {
         <p className="text-xs text-slate-400 mt-2 max-w-xs mx-auto leading-relaxed">
           {step === 'create'
             ? 'Set up your secret 4-digit transaction PIN. You will use this to authorize withdrawals, bill payments, and services.'
-            : 'Re-enter your 4-digit PIN to confirm and secure your KorrectPay wallet.'}
+            : 'Re-enter your 4-digit PIN to confirm and secure your ZuvaPay wallet.'}
         </p>
 
         {/* Step Indicator */}

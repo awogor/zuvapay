@@ -11,6 +11,7 @@ import {
   TrendingUp,
   ShoppingBag,
   ArrowUpRight,
+  Sparkles,
 } from 'lucide-react';
 
 export function ServicesGrid() {
@@ -75,6 +76,17 @@ export function ServicesGrid() {
       badgeColor: 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/20',
       color: 'from-pink-500/20 to-rose-500/10 border-pink-500/30 text-pink-400',
       iconBg: 'bg-pink-500/20 text-pink-400',
+    },
+    {
+      title: 'AI Tools & Subscriptions',
+      desc: 'Gemini Pro, CapCut Pro, Canva, Elevenlabs, ChatGPT & Cursor AI',
+      icon: Sparkles,
+      href: '/services/marketplace',
+      badge: 'Hot AI',
+      badgeColor: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20',
+      color: 'from-purple-500/20 to-indigo-500/10 border-purple-500/30 text-purple-400',
+      iconBg: 'bg-purple-500/20 text-purple-400',
+      featured: true,
     },
     {
       title: 'Account Logs & Software',

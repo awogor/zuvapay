@@ -75,7 +75,7 @@ export function ReceiptModal() {
               KP
             </div>
             <div>
-              <h3 className="text-base font-bold text-white tracking-wide">KorrectPay</h3>
+              <h3 className="text-base font-bold text-white tracking-wide">ZuvaPay</h3>
               <p className="text-[11px] text-slate-400">Transaction Receipt</p>
             </div>
           </div>
@@ -200,22 +200,32 @@ export function ReceiptModal() {
             {activeReceipt.metadata && (
               <>
                 {Object.entries(activeReceipt.metadata)
-                  .filter(([k]) => !['token', 'Token', 'meter_token', 'electricity_token'].includes(k))
-                  .map(([key, val]) => (
-                    <div key={key} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0">
-                      <span className="text-slate-400 text-xs">{formatMetaKey(key)}</span>
-                      <span className="text-slate-200 font-medium text-xs text-right max-w-[280px] break-all">
-                        {String(val)}
-                      </span>
-                    </div>
-                  ))}
+                  .filter(([k]) => {
+                    const lower = k.toLowerCase();
+                    // Exclude raw token (already rendered in hero token box)
+                    if (['token', 'meter_token', 'electricity_token'].includes(lower)) return false;
+                    // Strict security requirement: hide vendor/operator references from customer view
+                    if (['operatorreference', 'operator_reference', 'operator_ref', 'provider_ref', 'provider_reference', 'external_reference'].includes(lower)) return false;
+                    return true;
+                  })
+                  .map(([key, val]) => {
+                    if (val === null || val === undefined || val === '') return null;
+                    return (
+                      <div key={key} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0">
+                        <span className="text-slate-400 text-xs">{formatMetaKey(key)}</span>
+                        <span className="text-slate-200 font-medium text-xs text-right max-w-[280px] break-all">
+                          {String(val)}
+                        </span>
+                      </div>
+                    );
+                  })}
               </>
             )}
           </div>
 
           <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 pt-1 pb-1">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Verified Secure KorrectPay Transaction</span>
+            <span>Verified Secure ZuvaPay Transaction</span>
           </div>
         </div>
 

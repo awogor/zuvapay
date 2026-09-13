@@ -37,7 +37,7 @@ const DEMO_USER: User = {
   user_metadata: { username: 'davidadeleke', first_name: 'David', last_name: 'Adeleke', phone: '08031234567', role: 'admin' },
   aud: 'authenticated',
   created_at: new Date().toISOString(),
-  email: 'david@korrectpay.com',
+  email: 'david@zuvapay.com',
   phone: '08031234567',
   role: 'authenticated',
   updated_at: new Date().toISOString(),
@@ -128,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async function initAuth() {
       if (!isSupabaseConfigured) {
         // Fallback to local storage or demo session for immediate verification
-        const savedSession = localStorage.getItem('korrectpay_mock_user');
+        const savedSession = localStorage.getItem('zuvapay_mock_user');
         if (savedSession) {
           try {
             const parsed = JSON.parse(savedSession);
@@ -222,7 +222,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
 
     const INACTIVITY_LIMIT_MS = 60 * 60 * 1000; // 1 Hour (3,600,000 ms)
-    const STORAGE_KEY = 'korrectpay_last_active_time';
+    const STORAGE_KEY = 'zuvapay_last_active_time';
 
     // Record activity timestamp
     const recordActivity = () => {
@@ -247,7 +247,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           clearInterval(checkInterval);
           try {
             localStorage.removeItem(STORAGE_KEY);
-            localStorage.setItem('korrectpay_session_expired', 'true');
+            localStorage.setItem('zuvapay_session_expired', 'true');
+            localStorage.removeItem('zuvapay_mock_user');
+          } catch {}
+
+          // Synchronously trigger server-side cookie clearing
+          try {
+            await fetch('/api/auth/logout', { method: 'POST' });
           } catch {}
 
           if (isSupabaseConfigured) {
@@ -255,9 +261,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
           setUser(null);
           setProfile(null);
-          localStorage.removeItem('korrectpay_mock_user');
           if (typeof window !== 'undefined') {
-            window.location.href = '/login?reason=session_expired';
+            window.location.href = '/login';
           }
         }
       } catch (e) {
@@ -297,7 +302,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const mockProfile = { ...DEMO_PROFILE, first_name: email.split('@')[0] };
       setUser(mockUser);
       setProfile(mockProfile);
-      localStorage.setItem('korrectpay_mock_user', JSON.stringify({ user: mockUser, profile: mockProfile }));
+      localStorage.setItem('zuvapay_mock_user', JSON.stringify({ user: mockUser, profile: mockProfile }));
       return { error: null };
     }
 
@@ -350,7 +355,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
       setUser(mockUser);
       setProfile(mockProfile);
-      localStorage.setItem('korrectpay_mock_user', JSON.stringify({ user: mockUser, profile: mockProfile }));
+      localStorage.setItem('zuvapay_mock_user', JSON.stringify({ user: mockUser, profile: mockProfile }));
       return { error: null };
     }
 
@@ -391,6 +396,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
       if (isSupabaseConfigured) {
         await supabase.auth.signOut();
       }
@@ -399,8 +405,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setUser(null);
       setProfile(null);
-      localStorage.removeItem('korrectpay_mock_user');
-      localStorage.removeItem('korrectpay_last_active_time');
+      localStorage.removeItem('zuvapay_mock_user');
+      localStorage.removeItem('zuvapay_last_active_time');
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
       }
@@ -414,7 +420,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (profile) {
         const updated = { ...profile, ...updates };
         setProfile(updated);
-        localStorage.setItem('korrectpay_mock_user', JSON.stringify({ user, profile: updated }));
+        localStorage.setItem('zuvapay_mock_user', JSON.stringify({ user, profile: updated }));
       }
       return { error: null };
     }
@@ -460,7 +466,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile?.role === 'admin' ||
     user?.user_metadata?.role === 'admin' ||
     user?.email === 'awogorm@gmail.com' ||
-    user?.email === 'david@korrectpay.com';
+    user?.email === 'david@zuvapay.com';
 
   return (
     <AuthContext.Provider

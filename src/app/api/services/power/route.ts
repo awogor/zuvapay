@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { gongozFetch, DISCO_IDS } from '@/lib/vendors/gongoz';
+import { subscribeElectricity } from '@/lib/vendors/strowallet';
 import { sendTransactionalEmail } from '@/lib/email/sendEmail';
 
 export async function POST(request: NextRequest) {
@@ -73,34 +73,49 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const discoId = DISCO_IDS[disco.toLowerCase()] || 1;
-    // Gongoz Django choices: 'Prepaid' or 'Postpaid'
-    const mType = meterType?.toLowerCase() === 'postpaid' ? 'Postpaid' : 'Prepaid';
+    const mType = meterType?.toLowerCase() === 'postpaid' ? 'postpaid' : 'prepaid';
+    const userPhone = user.phone || user.user_metadata?.phone || user.user_metadata?.phone_number || '08012345678';
 
-    // Call GongozConcept API endpoint: POST /billpayment/
-    const gongozRes = await gongozFetch('billpayment/', {
-      method: 'POST',
-      body: JSON.stringify({
-        disco_name: discoId,
-        amount: parseFloat(amount),
-        meter_number: meterNumber,
-        MeterType: mType,
-      }),
+    // Call StroWallet API endpoint: POST /api/electricity/request
+    const stroRes = await subscribeElectricity({
+      meterNumber: String(meterNumber).trim(),
+      disco,
+      meterType: mType,
+      amount: String(amount),
+      phone: userPhone,
     });
 
-    if (!gongozRes.isMock) {
-      const { data, ok } = gongozRes;
-      if (!ok || data?.status === 'failed') {
+    if (!stroRes.isMock) {
+      const { data, ok } = stroRes;
+
+      if (!ok || data?.success === false || data?.error) {
+        const errMsg =
+          (typeof data?.message === 'string' ? data.message : null) ||
+          data?.response?.response_description ||
+          data?.error ||
+          'Electricity provider could not generate token at this time. Please verify meter number and amount.';
+
         return NextResponse.json(
-          { success: false, error: data?.message || data?.error || 'Electricity provider generation failed' },
+          { 
+            success: false, 
+            error: errMsg 
+          },
           { status: 502 }
         );
       }
 
-      const finalToken = data?.token || data?.purchased_code || '0000-0000-0000-0000-0000';
-      const finalUnits = data?.units || `${(parseFloat(amount) / 68.5).toFixed(1)} kWh`;
-      const finalCustName = data?.customer_name || customerName || 'Verified Customer';
-      const finalOpRef = data?.id || `GONGOZ-PWR-${Date.now()}`;
+      // StroWallet returns token in response.Token or purchased_code or message
+      const resp = data?.response || {};
+      const finalToken =
+        resp?.Token ||
+        (resp?.purchased_code ? resp.purchased_code.replace(/^Token\s*:\s*/i, '').trim() : null) ||
+        data?.token ||
+        '0000-0000-0000-0000-0000';
+
+      const finalUnits = resp?.Units ? `${resp.Units} kWh` : data?.units || null;
+      const finalCustName = resp?.CustomerName || data?.customer_name || customerName || 'Verified Customer';
+      const finalCustAddress = resp?.CustomerAddress || data?.customer_address || customerAddress || null;
+      const finalOpRef = resp?.transactions?.transactionId || resp?.requestId || resp?.Receipt || data?.reference || `STRO-PWR-${Date.now()}`;
       const targetEmail = recipientEmail || user.email;
 
       // Dispatched automatically in background
@@ -112,11 +127,11 @@ export async function POST(request: NextRequest) {
             name: user.user_metadata?.full_name || finalCustName || 'Valued Customer',
             disco: disco.toUpperCase(),
             meterNumber,
-            meterType: mType,
+            meterType: mType === 'postpaid' ? 'Postpaid' : 'Prepaid',
             customerName: finalCustName,
-            customerAddress,
+            customerAddress: finalCustAddress,
             token: finalToken,
-            units: finalUnits,
+            units: finalUnits || undefined,
             amount: parseFloat(amount),
             reference,
             operatorReference: finalOpRef,
@@ -133,7 +148,7 @@ export async function POST(request: NextRequest) {
         disco,
         meterNumber,
         customerName: finalCustName,
-        customerAddress,
+        customerAddress: finalCustAddress,
         emailSentTo: targetEmail,
       });
     }
@@ -152,7 +167,7 @@ export async function POST(request: NextRequest) {
     const mockToken = `${tokenPart()}-${tokenPart()}-${tokenPart()}-${tokenPart()}-${tokenPart()}`;
     const unitsVal = (parseFloat(amount) / 68.5).toFixed(1);
     const finalCustName = customerName || 'Verified Electricity Customer';
-    const finalOpRef = `GONGOZ-PWR-${Date.now()}`;
+    const finalOpRef = `STRO-PWR-${Date.now()}`;
     const targetEmail = recipientEmail || user.email;
 
     // Dispatched automatically in background
@@ -164,7 +179,7 @@ export async function POST(request: NextRequest) {
           name: user.user_metadata?.full_name || finalCustName || 'Valued Customer',
           disco: disco.toUpperCase(),
           meterNumber,
-          meterType: mType,
+          meterType: mType === 'postpaid' ? 'Postpaid' : 'Prepaid',
           customerName: finalCustName,
           customerAddress,
           token: mockToken,

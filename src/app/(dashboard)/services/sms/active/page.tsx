@@ -70,9 +70,9 @@ function ActiveOtpContent() {
         return;
       }
 
-      let saved = sessionStorage.getItem(`korrectpay_active_sms_${orderId}`);
+      let saved = sessionStorage.getItem(`zuvapay_active_sms_${orderId}`);
       if (!saved) {
-        saved = localStorage.getItem(`korrectpay_active_sms_${orderId}`);
+        saved = localStorage.getItem(`zuvapay_active_sms_${orderId}`);
       }
 
       if (saved) {

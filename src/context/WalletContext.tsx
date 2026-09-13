@@ -132,8 +132,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       const next = !prev;
       if (typeof window !== 'undefined') {
         try {
-          localStorage.setItem('korrectpay_hide_balance', String(next));
-          window.dispatchEvent(new Event('korrectpay_balance_hidden_changed'));
+          localStorage.setItem('zuvapay_hide_balance', String(next));
+          window.dispatchEvent(new Event('zuvapay_balance_hidden_changed'));
         } catch (e) {
           console.warn('Failed to save hide balance state', e);
         }
@@ -145,32 +145,32 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Read persisted preference on client mount
     try {
-      const stored = localStorage.getItem('korrectpay_hide_balance');
+      const stored = localStorage.getItem('zuvapay_hide_balance');
       if (stored !== null) {
         setIsBalanceHidden(stored === 'true');
       }
     } catch {}
 
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'korrectpay_hide_balance') {
+      if (e.key === 'zuvapay_hide_balance') {
         setIsBalanceHidden(e.newValue === 'true');
       }
     };
     const handleCustom = () => {
       try {
-        const stored = localStorage.getItem('korrectpay_hide_balance');
+        const stored = localStorage.getItem('zuvapay_hide_balance');
         setIsBalanceHidden(stored === 'true');
       } catch {}
     };
 
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', handleStorage);
-      window.addEventListener('korrectpay_balance_hidden_changed', handleCustom);
+      window.addEventListener('zuvapay_balance_hidden_changed', handleCustom);
     }
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('storage', handleStorage);
-        window.removeEventListener('korrectpay_balance_hidden_changed', handleCustom);
+        window.removeEventListener('zuvapay_balance_hidden_changed', handleCustom);
       }
     };
   }, []);
@@ -218,9 +218,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
     if (isMockMode) {
       // Local demo wallet
-      const savedWallet = localStorage.getItem(`korrectpay_wallet_${user.id}`);
-      const savedTxs = localStorage.getItem(`korrectpay_txs_${user.id}`);
-      const savedUsd = localStorage.getItem(`korrectpay_usd_${user.id}`);
+      const savedWallet = localStorage.getItem(`zuvapay_wallet_${user.id}`);
+      const savedTxs = localStorage.getItem(`zuvapay_txs_${user.id}`);
+      const savedUsd = localStorage.getItem(`zuvapay_usd_${user.id}`);
 
       if (savedWallet) {
         setWallet(JSON.parse(savedWallet));
@@ -234,21 +234,21 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
           updated_at: new Date().toISOString(),
         };
         setWallet(defaultWallet);
-        localStorage.setItem(`korrectpay_wallet_${user.id}`, JSON.stringify(defaultWallet));
+        localStorage.setItem(`zuvapay_wallet_${user.id}`, JSON.stringify(defaultWallet));
       }
 
       if (savedTxs) {
         setTransactions(JSON.parse(savedTxs));
       } else {
         setTransactions(INITIAL_DEMO_TRANSACTIONS);
-        localStorage.setItem(`korrectpay_txs_${user.id}`, JSON.stringify(INITIAL_DEMO_TRANSACTIONS));
+        localStorage.setItem(`zuvapay_txs_${user.id}`, JSON.stringify(INITIAL_DEMO_TRANSACTIONS));
       }
 
       if (savedUsd) {
         setUsdBalance(parseFloat(savedUsd));
       } else {
         setUsdBalance(25.50);
-        localStorage.setItem(`korrectpay_usd_${user.id}`, '25.50');
+        localStorage.setItem(`zuvapay_usd_${user.id}`, '25.50');
       }
 
       setLoading(false);
@@ -319,14 +319,14 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     };
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', handleSync);
-      window.addEventListener('korrectpay_wallet_updated', handleSync);
+      window.addEventListener('zuvapay_wallet_updated', handleSync);
     }
 
     if (!user || isMockMode) {
       return () => {
         if (typeof window !== 'undefined') {
           window.removeEventListener('storage', handleSync);
-          window.removeEventListener('korrectpay_wallet_updated', handleSync);
+          window.removeEventListener('zuvapay_wallet_updated', handleSync);
         }
       };
     }
@@ -378,7 +378,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('storage', handleSync);
-        window.removeEventListener('korrectpay_wallet_updated', handleSync);
+        window.removeEventListener('zuvapay_wallet_updated', handleSync);
       }
       supabase.removeChannel(channel);
     };
@@ -433,8 +433,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       setTransactions(updatedTxs);
 
       if (user) {
-        localStorage.setItem(`korrectpay_wallet_${user.id}`, JSON.stringify(updatedWallet));
-        localStorage.setItem(`korrectpay_txs_${user.id}`, JSON.stringify(updatedTxs));
+        localStorage.setItem(`zuvapay_wallet_${user.id}`, JSON.stringify(updatedWallet));
+        localStorage.setItem(`zuvapay_txs_${user.id}`, JSON.stringify(updatedTxs));
       }
 
       return {
@@ -606,8 +606,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       setTransactions(updatedTxs);
 
       if (user) {
-        localStorage.setItem(`korrectpay_wallet_${user.id}`, JSON.stringify(updatedWallet));
-        localStorage.setItem(`korrectpay_txs_${user.id}`, JSON.stringify(updatedTxs));
+        localStorage.setItem(`zuvapay_wallet_${user.id}`, JSON.stringify(updatedWallet));
+        localStorage.setItem(`zuvapay_txs_${user.id}`, JSON.stringify(updatedTxs));
       }
 
       return { success: true };
@@ -703,8 +703,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       setTransactions(updatedTxs);
 
       if (user) {
-        localStorage.setItem(`korrectpay_wallet_${user.id}`, JSON.stringify(updatedWallet));
-        localStorage.setItem(`korrectpay_txs_${user.id}`, JSON.stringify(updatedTxs));
+        localStorage.setItem(`zuvapay_wallet_${user.id}`, JSON.stringify(updatedWallet));
+        localStorage.setItem(`zuvapay_txs_${user.id}`, JSON.stringify(updatedTxs));
       }
 
       return { success: true };
@@ -782,8 +782,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       setTransactions((prev) => [swapTx, ...prev]);
 
       if (user && isMockMode) {
-        localStorage.setItem(`korrectpay_wallet_${user.id}`, JSON.stringify({ ...wallet, balance: newNgn }));
-        localStorage.setItem(`korrectpay_usd_${user.id}`, newUsd.toString());
+        localStorage.setItem(`zuvapay_wallet_${user.id}`, JSON.stringify({ ...wallet, balance: newNgn }));
+        localStorage.setItem(`zuvapay_usd_${user.id}`, newUsd.toString());
       }
 
       return { success: true };
@@ -814,8 +814,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       setTransactions((prev) => [swapTx, ...prev]);
 
       if (user && isMockMode) {
-        localStorage.setItem(`korrectpay_wallet_${user.id}`, JSON.stringify({ ...wallet, balance: newNgn }));
-        localStorage.setItem(`korrectpay_usd_${user.id}`, newUsd.toString());
+        localStorage.setItem(`zuvapay_wallet_${user.id}`, JSON.stringify({ ...wallet, balance: newNgn }));
+        localStorage.setItem(`zuvapay_usd_${user.id}`, newUsd.toString());
       }
 
       return { success: true };
@@ -883,10 +883,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
       if (user) {
         try {
-          localStorage.setItem(`korrectpay_wallet_${user.id}`, JSON.stringify(updatedWallet));
-          const prevTxsStr = localStorage.getItem(`korrectpay_txs_${user.id}`);
+          localStorage.setItem(`zuvapay_wallet_${user.id}`, JSON.stringify(updatedWallet));
+          const prevTxsStr = localStorage.getItem(`zuvapay_txs_${user.id}`);
           const prevTxs = prevTxsStr ? JSON.parse(prevTxsStr) : [];
-          localStorage.setItem(`korrectpay_txs_${user.id}`, JSON.stringify([newTx, ...prevTxs]));
+          localStorage.setItem(`zuvapay_txs_${user.id}`, JSON.stringify([newTx, ...prevTxs]));
         } catch (e) {
           console.error('Error writing adjusted wallet to localStorage', e);
         }
@@ -894,7 +894,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('storage'));
-        window.dispatchEvent(new CustomEvent('korrectpay_wallet_updated'));
+        window.dispatchEvent(new CustomEvent('zuvapay_wallet_updated'));
       }
 
       if (!isMockMode) {

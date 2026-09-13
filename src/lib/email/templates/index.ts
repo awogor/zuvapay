@@ -23,7 +23,7 @@ export function renderWelcomeEmail({
 }): { subject: string; html: string } {
   const contentHtml = `
     <h1 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 900; color: #0F172A; letter-spacing: -0.5px;">
-      Welcome to the KorrectPay family, ${name}! 👋
+      Welcome to the ZuvaPay family, ${name}! 👋
     </h1>
     <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 22px; color: #475569;">
       Your account is fully activated. Say goodbye to hanging airtime, failed electricity tokens, and declining cards for foreign SMS codes.
@@ -78,9 +78,9 @@ export function renderWelcomeEmail({
   `;
 
   return {
-    subject: `Welcome to KorrectPay, ${name}! Your Account is Ready 🚀`,
+    subject: `Welcome to ZuvaPay, ${name}! Your Account is Ready 🚀`,
     html: renderBaseEmailLayout({
-      previewText: `Welcome to KorrectPay! Your account is active. Instant airtime, cheap SME data, and power tokens at wholesale rates.`,
+      previewText: `Welcome to ZuvaPay! Your account is active. Instant airtime, cheap SME data, and power tokens at wholesale rates.`,
       headerBadge: 'Account Ready',
       badgeColor: '#10B981',
       contentHtml,
@@ -155,7 +155,7 @@ export function renderWalletCreditEmail({
   return {
     subject: `Credit Alert: ₦${amount.toLocaleString('en-NG')} received in your wallet! 💰`,
     html: renderBaseEmailLayout({
-      previewText: `₦${amount.toLocaleString('en-NG')} successfully credited to your KorrectPay wallet. New Balance: ₦${newBalance.toLocaleString('en-NG')}.`,
+      previewText: `₦${amount.toLocaleString('en-NG')} successfully credited to your ZuvaPay wallet. New Balance: ₦${newBalance.toLocaleString('en-NG')}.`,
       headerBadge: 'Credit Alert',
       badgeColor: '#10B981',
       contentHtml,
@@ -352,7 +352,7 @@ export function renderSecurityPinEmail({
         Security Notification
       </h1>
       <p style="margin: 0; font-size: 13px; color: #64748B;">
-        Important security activity was detected on your KorrectPay account: <strong>${actionType}</strong>.
+        Important security activity was detected on your ZuvaPay account: <strong>${actionType}</strong>.
       </p>
     </div>
 
@@ -392,9 +392,9 @@ export function renderSecurityPinEmail({
   `;
 
   return {
-    subject: `Security Alert: ${actionType} on your KorrectPay Account`,
+    subject: `Security Alert: ${actionType} on your ZuvaPay Account`,
     html: renderBaseEmailLayout({
-      previewText: `Security alert: ${actionType} was recently performed on your KorrectPay profile.`,
+      previewText: `Security alert: ${actionType} was recently performed on your ZuvaPay profile.`,
       headerBadge: 'Security Alert',
       badgeColor: '#EF4444',
       contentHtml,

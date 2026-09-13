@@ -122,8 +122,8 @@ export async function sendTransactionalEmail(
     case 'admin_broadcast':
       rendered = renderAdminBroadcastEmail({
         name: data.name || 'Valued Customer',
-        headline: data.headline || 'Important Update from KorrectPay',
-        bodyHtml: data.bodyHtml || '<p>Here is an update regarding your KorrectPay account.</p>',
+        headline: data.headline || 'Important Update from ZuvaPay',
+        bodyHtml: data.bodyHtml || '<p>Here is an update regarding your ZuvaPay account.</p>',
         ctaText: data.ctaText,
         ctaUrl: data.ctaUrl,
       });

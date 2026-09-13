@@ -3,8 +3,24 @@ import { createClient } from '@/lib/supabase/server';
 import { DataPlan } from '@/types';
 import { gongozFetch, NETWORK_IDS } from '@/lib/vendors/gongoz';
 import { GONGOZ_DATA_PLANS } from '@/lib/data/gongozCatalog';
-
+import { getStroWalletDataPlans, buyStroWalletData } from '@/lib/vendors/strowallet';
 import { getPricingConfig, computeRetailPrice } from '@/lib/pricing/pricingStore';
+
+function parseStroDataAmount(name: string): string {
+  const match = name.match(/(\d+(?:\.\d+)?\s*(?:MB|GB|TB))/i);
+  return match ? match[1].toUpperCase() : 'Data Bundle';
+}
+
+function parseStroValidity(name: string): string {
+  if (/(\d+\s*days?|daily)/i.test(name)) {
+    const dMatch = name.match(/(\d+\s*days?|daily)/i);
+    return dMatch ? dMatch[0] : 'Daily';
+  }
+  if (/weekly|(\d+\s*weeks?)/i.test(name)) return '7 Days';
+  if (/monthly|30\s*days?/i.test(name)) return '30 Days';
+  if (/night/i.test(name)) return 'Night (12am - 5am)';
+  return 'Standard';
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -14,23 +30,78 @@ export async function GET(request: NextRequest) {
   const globalRule = pricingConfig.gongoz.data.globalRule;
   const overrides = pricingConfig.gongoz.data.overrides;
 
-  const dynamicallyPricedPlans = GONGOZ_DATA_PLANS.map((p) => {
+  // Base Gongoz plans (SME, Gifting, Corporate)
+  const dynamicallyPricedGongozPlans: DataPlan[] = GONGOZ_DATA_PLANS.map((p) => {
     const override = overrides[p.id];
     const { retailPrice } = computeRetailPrice(p.price, globalRule, override);
     return {
       ...p,
       price: retailPrice,
+      vendor: 'gongoz',
     };
   });
 
+  let allPlans = dynamicallyPricedGongozPlans;
+
+  // If a specific network is requested, also fetch live StroWallet Direct plans
   if (network) {
-    const filtered = dynamicallyPricedPlans.filter(
-      (p) => p.network.toLowerCase() === network.toLowerCase()
+    const netLower = network.toLowerCase();
+    const filteredGongoz = dynamicallyPricedGongozPlans.filter(
+      (p) => p.network.toLowerCase() === netLower
     );
-    return NextResponse.json({ success: true, plans: filtered });
+
+    let stroPlans: DataPlan[] = [];
+    try {
+      const liveStroRes = await getStroWalletDataPlans(netLower);
+      if (!liveStroRes.isMock && liveResIsOk(liveStroRes)) {
+        const rawPlans =
+          liveStroRes.data?.data?.varations ||
+          liveStroRes.data?.data?.variations ||
+          liveStroRes.data?.varations ||
+          liveStroRes.data?.variations ||
+          [];
+
+        if (Array.isArray(rawPlans) && rawPlans.length > 0) {
+          const serviceName = liveStroRes.data?.data?.service_name || `${netLower}-data`;
+          const serviceId = liveStroRes.data?.data?.service_id || `${netLower}-data`;
+
+          stroPlans = rawPlans.map((p: any) => {
+            const rawPrice = parseFloat(p.variation_amount || p.amount || p.price || '0');
+            const variationCode = p.variation_code || p.id;
+            const planId = `stro-${netLower}-${variationCode}`;
+            const planName = p.name || p.variation_name || `${network} Direct Bundle`;
+
+            return {
+              id: planId,
+              network: network.toUpperCase(),
+              type: 'Direct',
+              name: planName,
+              validity: parseStroValidity(planName),
+              price: Math.round(rawPrice),
+              dataAmount: parseStroDataAmount(planName),
+              vendor: 'strowallet' as const,
+              variationCode,
+              serviceName,
+              serviceId,
+            };
+          });
+        }
+      }
+    } catch (err) {
+      console.warn('Failed fetching live StroWallet direct data plans:', err);
+    }
+
+    return NextResponse.json({
+      success: true,
+      plans: [...filteredGongoz, ...stroPlans],
+    });
   }
 
-  return NextResponse.json({ success: true, plans: dynamicallyPricedPlans });
+  return NextResponse.json({ success: true, plans: allPlans });
+}
+
+function liveResIsOk(res: any): boolean {
+  return res && res.ok && res.data && (res.data.success === true || res.data.status === 'success' || Array.isArray(res.data?.data?.varations));
 }
 
 export async function POST(request: NextRequest) {
@@ -43,8 +114,66 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { network, phone, planId, reference } = body;
+    const { network, phone, planId, vendor, variationCode, serviceName, serviceId, amount } = body;
 
+    // -------------------------------------------------------------
+    // 1. STROWALLET DIRECT DATA FULFILLMENT
+    // -------------------------------------------------------------
+    if (vendor === 'strowallet' || String(planId).startsWith('stro-')) {
+      const code = variationCode || String(planId).replace(/^stro-[^-]+-/, '');
+      const finalAmount = amount || 100;
+
+      const stroRes = await buyStroWalletData({
+        network,
+        phone,
+        variationCode: code,
+        amount: finalAmount,
+        serviceName,
+        serviceId,
+      });
+
+      if (!stroRes.isMock) {
+        const { data, ok } = stroRes;
+        if (!ok || data?.success === false || data?.error) {
+          const errMsg =
+            (typeof data?.message === 'string' ? data.message : null) ||
+            data?.response?.response_description ||
+            data?.error ||
+            'StroWallet Direct Data delivery failed';
+
+          return NextResponse.json(
+            { success: false, error: errMsg },
+            { status: 502 }
+          );
+        }
+
+        return NextResponse.json({
+          success: true,
+          operatorReference: data?.response?.transactions?.transactionId || data?.reference || `STRO-DAT-${Date.now()}`,
+          network,
+          phone,
+          planName: body.planName || `${network} Direct Data`,
+          price: finalAmount,
+          vendor: 'strowallet',
+        });
+      }
+
+      // Simulation fallback for StroWallet
+      await new Promise((res) => setTimeout(res, 500));
+      return NextResponse.json({
+        success: true,
+        operatorReference: `STRO-DAT-${Date.now()}`,
+        network,
+        phone,
+        planName: body.planName || `${network} Direct Data`,
+        price: finalAmount,
+        vendor: 'strowallet',
+      });
+    }
+
+    // -------------------------------------------------------------
+    // 2. GONGOZ DATA FULFILLMENT (SME, Gifting, Corporate)
+    // -------------------------------------------------------------
     const plan = GONGOZ_DATA_PLANS.find((p) => p.id === planId);
     if (!plan) {
       return NextResponse.json(
@@ -83,6 +212,7 @@ export async function POST(request: NextRequest) {
         phone,
         planName: plan.name,
         price: plan.price,
+        vendor: 'gongoz',
       });
     }
 
@@ -102,6 +232,7 @@ export async function POST(request: NextRequest) {
       phone,
       planName: plan.name,
       price: plan.price,
+      vendor: 'gongoz',
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

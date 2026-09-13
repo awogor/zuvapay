@@ -25,6 +25,7 @@ import {
   Zap,
   FileText,
   RotateCcw,
+  BookOpen,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdminTransactionModal } from '@/components/modals/AdminTransactionModal';
@@ -34,6 +35,7 @@ import { FaddedPricingModal } from '@/components/admin/FaddedPricingModal';
 import { MomoPricingModal } from '@/components/admin/MomoPricingModal';
 import { SMSPricingModal } from '@/components/admin/SMSPricingModal';
 import { AdminEmailTab } from '@/components/admin/AdminEmailTab';
+import { AdminBusinessDocsTab } from '@/components/admin/AdminBusinessDocsTab';
 
 function renderFormattedDescription(text: string) {
   if (!text) return null;
@@ -63,7 +65,7 @@ export default function AdminDashboardPage() {
   const [usersList, setUsersList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'adjust' | 'vendors' | 'reports' | 'email'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'adjust' | 'vendors' | 'reports' | 'email' | 'business-docs'>('overview');
   const [selectedAuditTx, setSelectedAuditTx] = useState<any | null>(null);
   const [selectedDetailUser, setSelectedDetailUser] = useState<any | null>(null);
   const [openGongozModal, setOpenGongozModal] = useState(false);
@@ -118,7 +120,7 @@ export default function AdminDashboardPage() {
   };
 
   useEffect(() => {
-    if (urlTab && ['overview', 'users', 'adjust', 'vendors', 'reports', 'email'].includes(urlTab)) {
+    if (urlTab && ['overview', 'users', 'adjust', 'vendors', 'reports', 'email', 'business-docs'].includes(urlTab)) {
       setActiveTab(urlTab as any);
     } else if (!urlTab) {
       setActiveTab('overview');
@@ -143,10 +145,14 @@ export default function AdminDashboardPage() {
       const dataStats = await resStats.json();
       const dataUsers = await resUsers.json();
 
-      if (dataStats.success) setStats(dataStats.stats);
-      if (dataUsers.success) setUsersList(dataUsers.users || []);
+      if (dataStats.success) {
+        setStats(dataStats.stats);
+      }
+      if (dataUsers.success) {
+        setUsersList(dataUsers.users || []);
+      }
     } catch (err: any) {
-      error('Fetch Error', err.message || 'Failed to load admin telemetry');
+      error('Data Load Error', err.message || 'Failed to fetch admin metrics');
     } finally {
       setLoading(false);
     }
@@ -271,7 +277,7 @@ export default function AdminDashboardPage() {
               Super Admin Portal
             </span>
             <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
-              KorrectPay Operations Console
+              ZuvaPay Operations Console
             </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -282,7 +288,20 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <Link
+            href="/admin?tab=business-docs"
+            onClick={() => setActiveTab('business-docs')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-bold transition-all shadow-sm ${
+              activeTab === 'business-docs'
+                ? 'bg-brand-orange text-slate-950 border-brand-orange'
+                : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            Operations & Business Manual
+          </Link>
+
           <button
             onClick={loadAdminData}
             disabled={loading}
@@ -293,7 +312,7 @@ export default function AdminDashboardPage() {
           </button>
           <Link
             href="/dashboard"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-orange text-slate-950 font-bold text-xs hover:bg-amber-400 transition-all shadow-md"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs hover:opacity-90 transition-all shadow-md"
           >
             Return to App
           </Link>
@@ -704,6 +723,35 @@ export default function AdminDashboardPage() {
           <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Zap className="w-4 h-4 text-emerald-500" />
+                StroWallet Gateway
+              </h4>
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold border border-emerald-200 dark:border-emerald-500/20">
+                LIVE PRODUCTION
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Airtime VTU (All Networks), Direct Telco Data, 11 Electricity DISCOs, and Cable TV (DStv, GOtv, StarTimes).
+            </p>
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200/80 dark:border-white/5 font-mono text-[11px] text-slate-700 dark:text-slate-300 space-y-1">
+              <p>Base URL: https://strowallet.com/api</p>
+              <p>Public Key: Configured & Verified</p>
+              <p>Direct Services: Airtime, Electricity, Cable TV (₦0 fee), Direct Data (HOT)</p>
+              <p>Status: Healthy & Active</p>
+            </div>
+            <Link
+              href="/admin?tab=business-docs"
+              onClick={() => setActiveTab('business-docs')}
+              className="w-full py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-xs border border-emerald-500/20 flex items-center justify-center gap-2 transition-all shadow-sm"
+            >
+              <BookOpen className="w-4 h-4" />
+              View StroWallet Routing Spec
+            </Link>
+          </div>
+
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Zap className="w-4 h-4 text-amber-500" />
                 GongozAPI Gateway
               </h4>
@@ -712,10 +760,10 @@ export default function AdminDashboardPage() {
               </span>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400">
-              Airtime VTU, Data SME/Gifting, Electricity DISCOs, and Cable TV packages.
+              Wholesale Data Subscriptions (SME, Gifting, Corporate Gifting) across all networks.
             </p>
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200/80 dark:border-white/5 font-mono text-[11px] text-slate-700 dark:text-slate-300 space-y-1">
-              <p>Base URL: https://api.gongoz.com/v1</p>
+              <p>Base URL: https://www.gongozconcept.com/api</p>
               <p>Automated Debit-First, Refund-on-Error Protocol: Enabled</p>
               <p>Status: Healthy & Configured</p>
             </div>
@@ -991,6 +1039,9 @@ export default function AdminDashboardPage() {
 
       {/* Tab: Email Campaigns & SMTP */}
       {activeTab === 'email' && <AdminEmailTab />}
+
+      {/* Tab: Business Model, Architecture & Vendor Operations Manual */}
+      {activeTab === 'business-docs' && <AdminBusinessDocsTab />}
 
       {/* Admin Audit Transaction Telemetry Modal */}
       <AdminTransactionModal

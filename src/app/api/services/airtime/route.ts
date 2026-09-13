@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { gongozFetch, NETWORK_IDS } from '@/lib/vendors/gongoz';
+import { buyAirtime } from '@/lib/vendors/strowallet';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,33 +20,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const netUpper = network.toUpperCase();
-    const networkId = NETWORK_IDS[netUpper] || 1;
-
-    // Call GongozConcept API endpoint: POST /topup/
-    const gongozRes = await gongozFetch('topup/', {
-      method: 'POST',
-      body: JSON.stringify({
-        network: networkId,
-        amount: parseFloat(amount),
-        mobile_number: phone,
-        Ported_number: true,
-        airtime_type: 'VTU',
-      }),
+    // Call StroWallet API: POST /api/buyairtime/request
+    const stroRes = await buyAirtime({
+      phone,
+      network,
+      amount,
     });
 
-    if (!gongozRes.isMock) {
-      const { data, ok } = gongozRes;
-      if (!ok || data?.status === 'failed') {
+    if (!stroRes.isMock) {
+      const { data, ok } = stroRes;
+      if (!ok || data?.success === false || data?.status === 'failed') {
         return NextResponse.json(
-          { success: false, error: data?.message || data?.error || 'GongozConcept rejected airtime recharge' },
+          { 
+            success: false, 
+            error: data?.message || data?.error || 'StroWallet telco airtime delivery failed' 
+          },
           { status: 502 }
         );
       }
 
       return NextResponse.json({
         success: true,
-        operatorReference: data?.id || data?.operator_ref || `GONGOZ-AIR-${Date.now()}`,
+        operatorReference: data?.reference || data?.transaction_id || `STRO-AIR-${Date.now()}`,
         network,
         phone,
         amount,
@@ -64,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      operatorReference: `GONGOZ-AIR-${Date.now()}`,
+      operatorReference: `STRO-AIR-${Date.now()}`,
       network,
       phone,
       amount,

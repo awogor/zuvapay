@@ -1,5 +1,5 @@
 -- ========================================================
--- KorrectPay Database Schema & Hardened Security Setup
+-- ZuvaPay Database Schema & Hardened Security Setup
 -- Idempotent & Migration-Safe (for new or existing databases)
 -- ========================================================
 

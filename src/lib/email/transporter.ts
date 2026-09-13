@@ -22,8 +22,8 @@ export function getSmtpConfig(): SmtpConfig {
   const secure = process.env.SMTP_SECURE === 'true' || port === 465;
   const user = process.env.SMTP_USER?.trim() || '';
   const pass = process.env.SMTP_PASS?.trim() || '';
-  const fromEmail = process.env.SMTP_FROM_EMAIL?.trim() || 'support@korrectpay.com';
-  const fromName = process.env.SMTP_FROM_NAME?.trim() || 'KorrectPay';
+  const fromEmail = process.env.SMTP_FROM_EMAIL?.trim() || 'support@zuvapay.com';
+  const fromName = process.env.SMTP_FROM_NAME?.trim() || 'ZuvaPay';
 
   const isConfigured = Boolean(host && user && pass);
 

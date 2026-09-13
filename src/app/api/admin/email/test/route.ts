@@ -32,11 +32,11 @@ export async function POST(request: NextRequest) {
         case 'welcome':
           rendered = renderWelcomeEmail({
             name,
-            email: targetEmail || 'david@korrectpay.com',
+            email: targetEmail || 'david@zuvapay.com',
             virtualAccount: sampleData.virtualAccount || {
               bankName: 'Moniepoint Microfinance Bank',
               accountNumber: '8102938192',
-              accountName: 'KorrectPay / David Adeleke',
+              accountName: 'ZuvaPay / David Adeleke',
             },
           });
           break;
@@ -113,14 +113,14 @@ export async function POST(request: NextRequest) {
             headline: sampleData.headline || 'Scheduled Maintenance: MTN Data Switch Upgraded',
             bodyHtml:
               sampleData.bodyHtml ||
-              '<p>Hello,</p><p>We have successfully upgraded our MTN SME & Gifting route to a direct tier-1 telco gateway. Fulfillment latency is now consistently under 1.5 seconds.</p><p>Thank you for choosing KorrectPay!</p>',
+              '<p>Hello,</p><p>We have successfully upgraded our MTN SME & Gifting route to a direct tier-1 telco gateway. Fulfillment latency is now consistently under 1.5 seconds.</p><p>Thank you for choosing ZuvaPay!</p>',
             ctaText: 'Test Speed in Dashboard',
             ctaUrl: 'http://localhost:3000/dashboard',
           });
           break;
 
         default:
-          rendered = renderWelcomeEmail({ name, email: targetEmail || 'david@korrectpay.com' });
+          rendered = renderWelcomeEmail({ name, email: targetEmail || 'david@zuvapay.com' });
       }
 
       return NextResponse.json({
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
       virtualAccount: {
         bankName: 'Moniepoint MFB',
         accountNumber: '8910293819',
-        accountName: 'KorrectPay / Test User',
+        accountName: 'ZuvaPay / Test User',
       },
       details: {
         Recipient: targetEmail,

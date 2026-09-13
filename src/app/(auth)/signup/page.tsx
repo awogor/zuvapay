@@ -137,7 +137,7 @@ export default function SignUpPage() {
           }),
         }).catch(() => {});
 
-        success('Welcome to KorrectPay!', 'Your account has been created.');
+        success('Welcome to ZuvaPay!', 'Your account has been created.');
         router.push('/dashboard');
       }
     } catch (err: any) {

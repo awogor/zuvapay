@@ -23,10 +23,19 @@ export default function DashboardLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [swapModalOpen, setSwapModalOpen] = useState(false);
 
-  // Authentication guard: Redirect to /login if session is terminated
+  // Authentication guard & URL sanitizer
   useEffect(() => {
+    // Strip any unwanted query parameters (like ?reason=...) from dashboard URL immediately
+    if (typeof window !== 'undefined' && window.location.search.includes('reason=')) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
     if (!authLoading && !user) {
-      router.replace('/login');
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      } else {
+        router.replace('/login');
+      }
     }
   }, [authLoading, user, router]);
 
@@ -38,7 +47,7 @@ export default function DashboardLayout({
       <div className="flex h-screen w-full items-center justify-center bg-slate-950">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 text-brand-orange animate-spin" />
-          <p className="text-xs text-slate-400 font-medium">Verifying KorrectPay Session...</p>
+          <p className="text-xs text-slate-400 font-medium">Verifying ZuvaPay Session...</p>
         </div>
       </div>
     );

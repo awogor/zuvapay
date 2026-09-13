@@ -16,6 +16,7 @@ export type TransactionCategory =
   | 'sms'
   | 'social'
   | 'logs'
+  | 'marketplace'
   | 'refund';
 
 export type UserTitle = 'Mr' | 'Mrs' | 'Miss';
@@ -100,6 +101,10 @@ export interface DataPlan {
   price: number;
   dataAmount: string;
   gongozPlanId?: number;
+  vendor?: 'gongoz' | 'strowallet';
+  variationCode?: string;
+  serviceId?: string;
+  serviceName?: string;
 }
 
 export interface DiscoProvider {
@@ -177,3 +182,42 @@ export interface AccountLogItem {
     cookies?: string;
   };
 }
+
+// AI Plug Marketplace Types
+export interface AIProductItem {
+  id: string;
+  name: string;
+  summary: string;
+  description: string;
+  category: string;
+  warranty?: string;
+  accessType?: string;
+  stock: number;
+  resellerPriceKobo: number;
+  retailPriceKobo: number;
+  priceNgn: number;
+  resellerPriceNgn: number;
+  savingsNgn: number;
+  autoFulfill: boolean;
+  requiresCustomerEmail: boolean;
+}
+
+export interface AIMarketplaceOrder {
+  id: string;
+  reference: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  amountNgn: number;
+  status: 'fulfilled' | 'awaiting_manual' | 'processing' | 'failed';
+  deliveryMode: string;
+  deliveryDetails?: {
+    credentials?: string;
+    activationLink?: string;
+    instructions?: string;
+    email?: string;
+    raw?: any;
+  };
+  createdAt: string;
+}
+
