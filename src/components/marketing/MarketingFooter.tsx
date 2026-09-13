@@ -40,7 +40,7 @@ export function MarketingFooter() {
             <div className="flex flex-wrap items-center gap-2 pt-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-semibold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Moniepoint & Wema Bank Virtual Accounts
+                Dedicated Automated Virtual Accounts
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[11px] font-semibold">
                 <ShieldCheck className="w-3.5 h-3.5" />
@@ -147,17 +147,13 @@ export function MarketingFooter() {
           </div>
         </div>
 
-        {/* Regulatory & Legal Disclaimers (Platnova model) */}
+        {/* Regulatory & Legal Disclaimers (Diplomatic, Partner-Agnostic) */}
         <div className="pt-8 pb-6 border-b border-slate-800/80 space-y-3 text-[11px] leading-relaxed text-slate-400">
           <p>
-            ZuvaPay Technologies Limited is FCCPC approved and NDPR compliant, with registered business operating address in Lagos, Nigeria.
+            ZuvaPay Technologies Limited is FCCPC approved and NDPR compliant, with registered operating address in Lagos, Nigeria.
           </p>
           <p>
-            ZuvaPay is a financial technology platform, not a bank. Banking services and dedicated virtual accounts are provided by CBN-licensed partner institutions (including Moniepoint MFB and Wema Bank Plc). Regulated utility and payment services are facilitated through licensed third-party switches. See{' '}
-            <Link href="/terms" className="text-slate-300 underline underline-offset-2 hover:text-white transition-colors">
-              Terms &amp; Conditions
-            </Link>{' '}
-            for more information.
+            ZuvaPay is a financial technology platform, not a bank. All payment processing, banking services, and dedicated virtual accounts are provided by licensed financial institution partners. Regulated utility and telecommunication services are delivered through licensed switches and authorized service providers.
           </p>
         </div>
 

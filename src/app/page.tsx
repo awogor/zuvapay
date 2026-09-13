@@ -41,7 +41,7 @@ export default function HomePage() {
     },
     {
       q: 'How do I fund my wallet without card fraud or chargebacks?',
-      a: 'Once you register, KorrectPay generates a dedicated Nigerian virtual account in your name via Moniepoint or Wema Bank. Any transfer sent to this account credits your wallet balance immediately for checkout — even at 2 AM.',
+      a: 'Once you register, ZuvaPay generates a dedicated Nigerian virtual account in your name. Any transfer sent to this account credits your wallet balance immediately for checkout — even at 2 AM.',
     },
     {
       q: 'Can I pay in both USD and Naira?',
@@ -334,7 +334,7 @@ export default function HomePage() {
               <div>
                 <h4 className="text-lg font-bold text-slate-900">Dedicated Virtual Payment Accounts</h4>
                 <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                  Receive an automated 10-digit virtual account in your name via Moniepoint or Wema Bank. Instant wallet funding for bill checkouts 24/7.
+                  Receive an automated 10-digit dedicated virtual account in your name. Instant wallet funding for bill checkouts 24/7.
                 </p>
               </div>
               <ul className="text-[11px] text-slate-700 space-y-1.5 pt-2 border-t border-slate-200/60">
@@ -439,7 +439,7 @@ export default function HomePage() {
                 <div>
                   <h4 className="text-base font-bold text-white">Cash Out Whenever You Want</h4>
                   <p className="text-xs text-slate-400 mt-1">
-                    Commissions accumulate in real time. Transfer to your Kuda, Moniepoint, or GTBank account 24/7.
+                    Commissions accumulate in real time. Transfer to your local Nigerian bank account 24/7.
                   </p>
                 </div>
               </div>
@@ -595,7 +595,7 @@ export default function HomePage() {
             </h2>
 
             <p className="text-sm text-orange-50 max-w-xl mx-auto leading-relaxed">
-              Create your account in under 60 seconds. Get your dedicated Moniepoint or Wema bank account number instantly and start enjoying payments that never fail.
+              Create your account in under 60 seconds. Get your dedicated virtual account number instantly and start enjoying payments that never fail.
             </p>
 
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">

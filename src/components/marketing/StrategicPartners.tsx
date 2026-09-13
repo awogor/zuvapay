@@ -30,25 +30,25 @@ export function StrategicPartners() {
               </div>
               <div>
                 <h3 className="text-sm font-black text-slate-900 font-display">Banking Settlement</h3>
-                <p className="text-[11px] text-slate-500 font-medium">CBN Regulated Partners</p>
+                <p className="text-[11px] text-slate-500 font-medium">Regulated Financial Partners</p>
               </div>
             </div>
 
             <ul className="space-y-3 text-xs">
               <li className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="font-bold text-slate-800">Moniepoint MFB</span>
+                <span className="font-bold text-slate-800">Commercial Banking Rails</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold">Virtual Accounts</span>
               </li>
               <li className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="font-bold text-slate-800">Wema Bank (ALAT)</span>
+                <span className="font-bold text-slate-800">Tier-1 Settlement Switch</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-semibold">Auto-Credit</span>
               </li>
               <li className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="font-bold text-slate-800">Interswitch &amp; NIBSS</span>
+                <span className="font-bold text-slate-800">Interbank Clearing Switch</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Instant Switch</span>
               </li>
               <li className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="font-bold text-slate-800">Korapay &amp; Paystack</span>
+                <span className="font-bold text-slate-800">Direct Payment Gateways</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-semibold">Gateway Switch</span>
               </li>
             </ul>

@@ -85,7 +85,7 @@ export function MobileAppShowcase() {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-zuva-solar flex-shrink-0" />
-                  <span>Instant Moniepoint Bank Account</span>
+                  <span>Instant Automated Virtual Account</span>
                 </div>
               </div>
 
@@ -222,7 +222,7 @@ export function MobileAppShowcase() {
                         ₦500,000.00
                       </h3>
                       <p className="text-[9px] font-mono text-slate-900/80">
-                        Moniepoint • 8140291048
+                        Virtual Account • 8140291048
                       </p>
                     </div>
 
@@ -295,8 +295,8 @@ export function MobileAppShowcase() {
                         <div className="flex items-center gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                           <div>
-                            <p className="font-bold text-white text-[10px]">Moniepoint Deposit</p>
-                            <p className="text-[8px] text-slate-400">Wallet Funded</p>
+                            <p className="font-bold text-white text-[10px]">Wallet Topup</p>
+                            <p className="text-[8px] text-slate-400">Bank Transfer</p>
                           </div>
                         </div>
                         <span className="font-mono font-bold text-emerald-400">+₦120,000</span>

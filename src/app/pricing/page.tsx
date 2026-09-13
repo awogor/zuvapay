@@ -64,7 +64,7 @@ export default function PricingPage() {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  Dedicated Moniepoint / Wema account
+                  Dedicated automated virtual account
                 </li>
               </ul>
             </div>

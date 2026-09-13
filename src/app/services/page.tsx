@@ -360,7 +360,7 @@ export default function ServicesPage() {
             </div>
             <h4 className="text-base font-bold text-slate-900">Dedicated Virtual Accounts</h4>
             <p className="text-xs text-slate-600">
-              10-digit virtual bank account (Moniepoint MFB & Wema ALAT) issued in your name for instant, automated wallet top-ups.
+              Automated 10-digit dedicated virtual account issued in your name for instant, seamless wallet top-ups.
             </p>
             <p className="font-mono text-xs font-bold text-emerald-600">Zero Maintenance Charge</p>
           </div>

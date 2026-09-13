@@ -229,7 +229,7 @@ export function MarketingNavbar() {
                     Get Instant Access to ZuvaPay Utilities
                   </h3>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Enjoy wholesale SME data from ₦240/GB, 1.1s instant electricity meter tokens, and dedicated Moniepoint virtual accounts that fund on the first try.
+                    Enjoy wholesale SME data from ₦240/GB, 1.1s instant electricity meter tokens, and dedicated automated virtual accounts that fund on the first try.
                   </p>
                 </div>
 
@@ -409,11 +409,11 @@ export function MarketingNavbar() {
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <h4 className="text-sm font-bold text-slate-900">
-                    Banking Partners & NDPR
+                    Licensed Partners & NDPR
                   </h4>
                 </div>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Partnered with Moniepoint MFB and Wema Bank (ALAT). Regulated settlement and 256-bit TLS encryption.
+                  Settlement powered by CBN-licensed financial partners with 256-bit TLS encryption.
                 </p>
               </div>
             </div>
@@ -429,62 +429,56 @@ export function MarketingNavbar() {
           onMouseLeave={() => setActiveDropdown(null)}
           className="hidden md:block absolute top-full left-1/2 -translate-x-1/2 w-full max-w-5xl border-x border-b border-slate-200/80 bg-white shadow-2xl rounded-b-3xl animate-in fade-in slide-in-from-top-2 duration-200"
         >
-          <div className="px-6 py-8">
+          <div className="p-8">
             <div className="grid grid-cols-3 gap-6">
               <Link
-                href="/#faqs"
+                href="https://wa.me/2348000000000?text=Hello%20KorrectPay%20Help%20Desk"
+                target="_blank"
                 onClick={() => setActiveDropdown(null)}
-                className="p-5 rounded-2xl hover:bg-slate-50 transition-colors border border-slate-200/80 hover:border-zuva-solar/40 space-y-2 group"
+                className="p-5 rounded-2xl bg-slate-50 hover:bg-emerald-50 border border-slate-200/80 hover:border-emerald-200 transition-all group"
               >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-orange-100 text-zuva-solar">
-                    <HelpCircle className="w-4 h-4" />
-                  </div>
-                  <h4 className="text-sm font-bold text-slate-900 group-hover:text-zuva-solar transition-colors">
-                    FAQs & Answers
-                  </h4>
+                <div className="p-3 rounded-xl bg-emerald-100 text-emerald-600 w-fit mb-3 group-hover:scale-110 transition-transform">
+                  <MessageCircle className="w-5 h-5" />
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Learn about auto-refund guarantees, virtual OTP lines, and funding speeds.
+                <h4 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                  WhatsApp Instant Help
+                </h4>
+                <p className="text-xs text-slate-500 mt-1">
+                  Connect directly with our 24/7 human support team in Lagos.
                 </p>
               </Link>
 
-              <a
-                href="https://wa.me/2348000000000?text=Hello%20ZuvaPay%20Support%2C%20I%20need%20assistance"
-                target="_blank"
-                rel="noreferrer"
-                className="p-5 rounded-2xl hover:bg-slate-50 transition-colors border border-slate-200/80 hover:border-emerald-500/40 space-y-2 group"
+              <Link
+                href="/#faqs"
+                onClick={() => setActiveDropdown(null)}
+                className="p-5 rounded-2xl bg-slate-50 hover:bg-orange-50 border border-slate-200/80 hover:border-orange-200 transition-all group"
               >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-emerald-100 text-emerald-700">
-                    <MessageCircle className="w-4 h-4" />
-                  </div>
-                  <h4 className="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors flex items-center gap-1">
-                    <span>WhatsApp Support</span>
-                    <ExternalLink className="w-3 h-3 text-slate-400" />
-                  </h4>
+                <div className="p-3 rounded-xl bg-orange-100 text-zuva-solar w-fit mb-3 group-hover:scale-110 transition-transform">
+                  <HelpCircle className="w-5 h-5" />
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Chat directly with our human customer care specialists in Lagos (Average reply &lt; 3 mins).
+                <h4 className="text-sm font-bold text-slate-900 group-hover:text-zuva-solar transition-colors">
+                  Knowledge Base &amp; FAQ
+                </h4>
+                <p className="text-xs text-slate-500 mt-1">
+                  Step-by-step guides on virtual SIM setup, SME data, and tokens.
                 </p>
-              </a>
+              </Link>
 
-              <a
+              <Link
                 href="mailto:support@zuvapay.com"
-                className="p-5 rounded-2xl hover:bg-slate-50 transition-colors border border-slate-200/80 hover:border-blue-500/40 space-y-2 group"
+                onClick={() => setActiveDropdown(null)}
+                className="p-5 rounded-2xl bg-slate-50 hover:bg-purple-50 border border-slate-200/80 hover:border-purple-200 transition-all group"
               >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-blue-100 text-blue-700">
-                    <Mail className="w-4 h-4" />
-                  </div>
-                  <h4 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                    Email Desk
-                  </h4>
+                <div className="p-3 rounded-xl bg-purple-100 text-purple-600 w-fit mb-3 group-hover:scale-110 transition-transform">
+                  <Mail className="w-5 h-5" />
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Write to support@zuvapay.com for billing resolutions, partnership, or enterprise questions.
+                <h4 className="text-sm font-bold text-slate-900 group-hover:text-purple-700 transition-colors">
+                  Email Support Desk
+                </h4>
+                <p className="text-xs text-slate-500 mt-1">
+                  Official inquiries, partnerships, and high-volume merchant queries.
                 </p>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -494,33 +488,35 @@ export function MarketingNavbar() {
           MOBILE DRAWER WITH ACCORDION SUBMENUS
          ========================================================================= */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-slate-200 px-6 py-6 space-y-4 shadow-2xl animate-in slide-in-from-top-4 max-h-[85vh] overflow-y-auto">
+        <div className="md:hidden border-b border-slate-200/80 bg-white/95 backdrop-blur-2xl px-5 pt-3 pb-6 space-y-4 animate-in slide-in-from-top-2 duration-200 max-h-[85vh] overflow-y-auto">
           {/* Services Accordion */}
           <div className="border-b border-slate-100 pb-3">
             <button
-              onClick={() => toggleMobileSection('services')}
-              className="w-full flex items-center justify-between text-sm font-bold text-slate-900 py-2"
+              onClick={() => setMobileExpandedSection(mobileExpandedSection === 'services' ? null : 'services')}
+              className="flex items-center justify-between w-full py-2 text-sm font-bold text-slate-900"
             >
               <span>Services</span>
               <ChevronDown
-                className={`w-4 h-4 transition-transform ${mobileExpanded.services ? 'rotate-180 text-zuva-solar' : 'text-slate-400'}`}
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  mobileExpandedSection === 'services' ? 'rotate-180 text-zuva-solar' : 'text-slate-400'
+                }`}
               />
             </button>
-            {mobileExpanded.services && (
-              <div className="pl-3 py-2 space-y-2.5 text-xs text-slate-600 animate-in fade-in">
+            {mobileExpandedSection === 'services' && (
+              <div className="pl-3 pt-2 space-y-2.5 text-xs text-slate-600">
                 <Link
                   href="/services#data"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-1 hover:text-zuva-solar font-medium"
                 >
-                  📱 Airtime & SME Data (from ₦240)
+                  📱 Airtime &amp; SME Data (₦240/GB)
                 </Link>
                 <Link
                   href="/services#power"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-1 hover:text-zuva-solar font-medium"
                 >
-                  ⚡ Prepaid Electricity Tokens
+                  ⚡ Prepaid Electricity Tokens (0% Fee)
                 </Link>
                 <Link
                   href="/services#sms"
@@ -534,7 +530,7 @@ export function MarketingNavbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-1 hover:text-zuva-solar font-medium"
                 >
-                  🏦 Virtual Bank Accounts (Moniepoint)
+                  🏦 Dedicated Virtual Accounts
                 </Link>
               </div>
             )}
