@@ -1,16 +1,16 @@
-# Firebase App Hosting Configuration
-# Documentation: https://firebase.google.com/docs/app-hosting/configure
-
-generatedIncludes:
-  # Next.js App Router / SSR Backend
+# Settings for Cloud Run backend instances
 runConfig:
-  # Scales to zero when idle to conserve compute resources and avoid unnecessary charges
   minInstances: 0
-  maxInstances: 5
+  maxInstances: 10
   concurrency: 80
   cpu: 1
   memoryMiB: 1024
 
+# Environment variable mappings
+# In production on Firebase App Hosting, sensitive secrets can also be managed via Google Secret Manager
 env:
-  - variable: NODE_ENV
-    value: production
+  - variable: NEXT_PUBLIC_APP_URL
+    value: https://zuvapay.web.app
+    availability:
+      - BUILD
+      - RUNTIME

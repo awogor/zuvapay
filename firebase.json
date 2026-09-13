@@ -1,0 +1,6 @@
+{
+  "apphosting": {
+    "backendId": "zuvapay-web",
+    "rootDir": "."
+  }
+}
