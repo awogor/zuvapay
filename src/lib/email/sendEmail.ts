@@ -11,6 +11,7 @@ import {
   renderElectricityTokenEmail,
   renderAdminBroadcastEmail,
   renderAdminLowBalanceEmail,
+  getEmailAppUrl,
 } from './templates';
 
 export interface SendEmailOptions {
@@ -64,7 +65,7 @@ export async function sendTransactionalEmail(
       rendered = renderEmailVerificationEmail({
         name: data.name || 'Valued Customer',
         email: to,
-        verifyUrl: data.verifyUrl || `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login?verified=true`,
+        verifyUrl: data.verifyUrl || `${getEmailAppUrl()}/login?verified=true`,
         token: data.token,
       });
       break;
@@ -73,7 +74,7 @@ export async function sendTransactionalEmail(
       rendered = renderPasswordResetEmail({
         name: data.name || 'Valued Customer',
         email: to,
-        resetUrl: data.resetUrl || `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password`,
+        resetUrl: data.resetUrl || `${getEmailAppUrl()}/reset-password`,
         ipAddress: data.ipAddress,
       });
       break;

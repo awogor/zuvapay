@@ -16,9 +16,11 @@ export async function POST(request: NextRequest) {
 
     const cleanEmail = email.trim().toLowerCase();
     const origin =
-      request.headers.get('origin') ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      'http://localhost:3000';
+      process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes('localhost')
+        ? process.env.NEXT_PUBLIC_APP_URL
+        : request.headers.get('origin') && !request.headers.get('origin')?.includes('localhost')
+        ? request.headers.get('origin')!
+        : 'https://zuvapay.com';
 
     const supabaseAdmin = createAdminClient();
 

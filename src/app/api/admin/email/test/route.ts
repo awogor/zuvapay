@@ -13,6 +13,7 @@ import {
   renderEmailVerificationEmail,
   renderPasswordResetEmail,
   renderAdminLowBalanceEmail,
+  getEmailAppUrl,
 } from '@/lib/email/templates';
 
 export async function GET() {
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
               sampleData.bodyHtml ||
               '<p>Hello,</p><p>We have successfully upgraded our MTN SME & Gifting route to a direct tier-1 telco gateway. Fulfillment latency is now consistently under 1.5 seconds.</p><p>Thank you for choosing ZuvaPay!</p>',
             ctaText: 'Test Speed in Dashboard',
-            ctaUrl: 'http://localhost:3000/dashboard',
+            ctaUrl: `${getEmailAppUrl()}/dashboard`,
           });
           break;
 
@@ -126,7 +127,7 @@ export async function POST(request: NextRequest) {
           rendered = renderEmailVerificationEmail({
             name,
             email: targetEmail || 'david@zuvapay.com',
-            verifyUrl: sampleData.verifyUrl || sampleData.verificationUrl || 'http://localhost:3000/auth/callback?type=signup&next=/dashboard',
+            verifyUrl: sampleData.verifyUrl || sampleData.verificationUrl || `${getEmailAppUrl()}/auth/callback?type=signup&next=/dashboard`,
           });
           break;
 
@@ -134,7 +135,7 @@ export async function POST(request: NextRequest) {
           rendered = renderPasswordResetEmail({
             name,
             email: targetEmail || 'david@zuvapay.com',
-            resetUrl: sampleData.resetUrl || 'http://localhost:3000/reset-password',
+            resetUrl: sampleData.resetUrl || `${getEmailAppUrl()}/reset-password`,
             ipAddress: '102.89.23.14 (Lagos, NG)',
           });
           break;
@@ -179,8 +180,8 @@ export async function POST(request: NextRequest) {
       category: sampleData.category || 'DATA',
       reason: 'Simulated Gateway Failure (100% Refunded)',
       actionType: 'Security PIN Setup',
-      verificationUrl: 'http://localhost:3000/auth/callback?type=signup&next=/dashboard',
-      resetUrl: 'http://localhost:3000/reset-password',
+      verificationUrl: `${getEmailAppUrl()}/auth/callback?type=signup&next=/dashboard`,
+      resetUrl: `${getEmailAppUrl()}/reset-password`,
       ipAddress: '102.89.23.14 (Lagos, NG)',
       virtualAccount: {
         bankName: 'Moniepoint MFB',

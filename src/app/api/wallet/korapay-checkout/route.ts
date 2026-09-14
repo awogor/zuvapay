@@ -38,7 +38,10 @@ export async function POST(request: NextRequest) {
 
     const reference = `KP-CHG-${userId.substring(0, 8)}-${Date.now().toString(36).toUpperCase()}`;
     const baseUrl = process.env.KORAPAY_BASE_URL || 'https://api.korapay.com/merchant/api/v1';
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      request.headers.get('origin') ||
+      'https://zuvapay.com';
 
     if (!isMock) {
       // Real Korapay Standard Checkout Initialize

@@ -1,5 +1,18 @@
 import { renderBaseEmailLayout } from './baseLayout';
 
+/**
+ * Safely resolves the public domain for all customer-facing emails.
+ * Never outputs 'localhost' in email templates to ensure 100% deliverability
+ * and prevent spam filters (e.g. Google Mail, Yahoo) from penalizing emails with high spam scores.
+ */
+export function getEmailAppUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+    return envUrl.replace(/\/$/, '');
+  }
+  return 'https://zuvapay.com';
+}
+
 export type EmailTemplateType =
   | 'welcome'
   | 'email_verification'
@@ -52,7 +65,7 @@ export function renderWelcomeEmail({
 
     <!-- Action Button -->
     <div style="text-align: center; margin: 28px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://zuvapay.com'}/dashboard" style="display: inline-block; padding: 12px 28px; background-color: #FF6B00; color: #FFFFFF; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 10px;">
+      <a href="${getEmailAppUrl()}/dashboard" style="display: inline-block; padding: 12px 28px; background-color: #FF6B00; color: #FFFFFF; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 10px;">
         Go to Your Dashboard &rarr;
       </a>
     </div>
@@ -131,7 +144,7 @@ export function renderWalletCreditEmail({
     </table>
 
     <div style="text-align: center; margin-top: 24px;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard" style="display: inline-block; padding: 12px 24px; background-color: #0F172A; color: #FFFFFF; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 10px;">
+      <a href="${getEmailAppUrl()}/dashboard" style="display: inline-block; padding: 12px 24px; background-color: #0F172A; color: #FFFFFF; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 10px;">
         View Transaction in Dashboard
       </a>
     </div>
@@ -696,6 +709,10 @@ export function renderEmailVerificationEmail({
   verifyUrl: string;
   token?: string;
 }): { subject: string; html: string } {
+  const safeVerifyUrl = (verifyUrl || `${getEmailAppUrl()}/auth/callback?type=signup&next=/dashboard`)
+    .replace(/https?:\/\/localhost(:\d+)?/gi, 'https://zuvapay.com')
+    .replace(/https?:\/\/127\.0\.0\.1(:\d+)?/gi, 'https://zuvapay.com');
+
   const contentHtml = `
     <h1 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 900; color: #0F172A; letter-spacing: -0.5px;">
       Verify your email address, ${name} ✨
@@ -713,7 +730,7 @@ export function renderEmailVerificationEmail({
         Click the button below to instantly verify your account and unlock your dedicated virtual funding account.
       </p>
       <div style="text-align: center; margin: 16px 0;">
-        <a href="${verifyUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #FF6B00 0%, #EA580C 100%); color: #FFFFFF; font-size: 14px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);">
+        <a href="${safeVerifyUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #FF6B00 0%, #EA580C 100%); color: #FFFFFF; font-size: 14px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);">
           Verify My Email Address →
         </a>
       </div>
@@ -732,7 +749,7 @@ export function renderEmailVerificationEmail({
         Button not working? Copy and paste this link into your browser:
       </p>
       <p style="margin: 0; font-size: 11px; font-family: monospace; word-break: break-all; color: #3B82F6;">
-        ${verifyUrl}
+        ${safeVerifyUrl}
       </p>
     </div>
 
@@ -771,6 +788,10 @@ export function renderPasswordResetEmail({
   resetUrl: string;
   ipAddress?: string;
 }): { subject: string; html: string } {
+  const safeResetUrl = (resetUrl || `${getEmailAppUrl()}/reset-password`)
+    .replace(/https?:\/\/localhost(:\d+)?/gi, 'https://zuvapay.com')
+    .replace(/https?:\/\/127\.0\.0\.1(:\d+)?/gi, 'https://zuvapay.com');
+
   const contentHtml = `
     <h1 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 900; color: #0F172A; letter-spacing: -0.5px;">
       Reset your ZuvaPay password 🔒
@@ -788,7 +809,7 @@ export function renderPasswordResetEmail({
         Click the button below to choose a strong, new password. For your security, this recovery link will expire in <strong>7 minutes</strong>.
       </p>
       <div style="text-align: center; margin: 18px 0;">
-        <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #FF6B00 0%, #EA580C 100%); color: #FFFFFF; font-size: 14px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);">
+        <a href="${safeResetUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #FF6B00 0%, #EA580C 100%); color: #FFFFFF; font-size: 14px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);">
           Set New Password →
         </a>
       </div>
@@ -822,7 +843,7 @@ export function renderPasswordResetEmail({
         Button not opening? Copy and paste this URL into your browser:
       </p>
       <p style="margin: 0; font-size: 11px; font-family: monospace; word-break: break-all; color: #3B82F6;">
-        ${resetUrl}
+        ${safeResetUrl}
       </p>
     </div>
 
@@ -831,7 +852,7 @@ export function renderPasswordResetEmail({
         ⚠️ Didn't request a password reset?
       </p>
       <p style="margin: 0; font-size: 11px; color: #64748B;">
-        If you didn't initiate this request, your account may be at risk. We recommend reviewing your security settings or reaching out immediately to <strong>support@zuvapay.com</strong>.
+        If you didn't initiate this request, your account may be at risk. We recommend reviewing your security settings or reaching out immediately to <strong>hello@zuvapay.com</strong>.
       </p>
     </div>
   `;
