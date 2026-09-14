@@ -9,6 +9,7 @@ export interface SmtpConfig {
   pass: string;
   fromEmail: string;
   fromName: string;
+  replyTo: string;
   isConfigured: boolean;
 }
 
@@ -22,8 +23,9 @@ export function getSmtpConfig(): SmtpConfig {
   const secure = process.env.SMTP_SECURE === 'true' || port === 465;
   const user = process.env.SMTP_USER?.trim() || '';
   const pass = process.env.SMTP_PASS?.trim() || '';
-  const fromEmail = process.env.SMTP_FROM_EMAIL?.trim() || 'support@zuvapay.com';
+  const fromEmail = process.env.SMTP_FROM_EMAIL?.trim() || user || 'm@send.zuvapay.com';
   const fromName = process.env.SMTP_FROM_NAME?.trim() || 'ZuvaPay';
+  const replyTo = process.env.SMTP_REPLY_TO?.trim() || 'hello@zuvapay.com';
 
   const isConfigured = Boolean(host && user && pass);
 
@@ -35,6 +37,7 @@ export function getSmtpConfig(): SmtpConfig {
     pass,
     fromEmail,
     fromName,
+    replyTo,
     isConfigured,
   };
 }

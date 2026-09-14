@@ -191,6 +191,7 @@ export async function sendTransactionalEmail(
   try {
     const info = await transporter.sendMail({
       from: `"${config.fromName}" <${config.fromEmail}>`,
+      replyTo: config.replyTo || 'hello@zuvapay.com',
       to,
       subject,
       html: rendered.html,
