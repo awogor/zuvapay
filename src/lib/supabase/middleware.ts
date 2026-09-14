@@ -36,9 +36,21 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/forgot-password');
-  // /services is public marketing catalog; /services/* (like /services/airtime) are dashboard action pages
+  // Public marketing pages under /services
+  const publicServicesMarketingRoutes = [
+    '/services',
+    '/services/bill-payment',
+    '/services/sme-data',
+    '/services/electricity',
+    '/services/cable-tv',
+    '/services/virtual-number',
+    '/services/virtual-dollar-card',
+  ];
+  const isPublicServiceMarketing = publicServicesMarketingRoutes.includes(pathname);
+
+  // Protected dashboard action routes
   const isProtectedRoute = pathname.startsWith('/dashboard') || 
-    (pathname.startsWith('/services/') && pathname !== '/services') || 
+    (pathname.startsWith('/services/') && !isPublicServiceMarketing) || 
     pathname.startsWith('/transactions') || 
     pathname.startsWith('/profile');
 

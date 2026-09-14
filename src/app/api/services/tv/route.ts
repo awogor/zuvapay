@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { subscribeCableTv, getCableTvPlans } from '@/lib/vendors/strowallet';
 import { GONGOZ_CABLE_PLANS } from '@/lib/data/gongozCatalog';
 import { getPricingConfig, computeRetailPrice } from '@/lib/pricing/pricingStore';
+import { checkServiceAvailability } from '@/lib/services/serviceStatusStore';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -77,6 +78,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const serviceCheck = checkServiceAvailability('tv');
+    if (!serviceCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: serviceCheck.message },
+        { status: 503 }
+      );
+    }
+
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 

@@ -122,7 +122,7 @@ create or replace function public.is_admin()
 returns boolean
 language sql
 security definer
-set search_path = public
+set search_path = public, pg_temp
 as $$
   select exists (
     select 1 from public.profiles
@@ -130,12 +130,16 @@ as $$
   );
 $$;
 
+-- Security hardening: revoke execute from public and anon, grant only to authenticated and service_role
+revoke execute on function public.is_admin() from public, anon;
+grant execute on function public.is_admin() to authenticated, service_role;
+
 -- 6. Automatic User Initialization Trigger
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, pg_temp
 as $$
 declare
   _role text;
@@ -187,6 +191,9 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
+-- Trigger functions should never be exposed or callable via RPC API
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
+
 -- 7. Hardened Row Level Security (RLS) Rules
 alter table public.profiles enable row level security;
 alter table public.wallets enable row level security;
@@ -230,6 +237,8 @@ create policy "Users can view own virtual account or admin view all"
   using (auth.uid() = user_id or public.is_admin());
 
 -- 8. Atomic Debit & Refund RPC Functions (Hardened Security Definer with Search Path)
+drop function if exists public.debit_wallet_for_bill(uuid, numeric, text, text, text);
+
 create or replace function public.debit_wallet_for_bill(
   p_wallet_id uuid,
   p_amount numeric(12, 2),
@@ -240,7 +249,7 @@ create or replace function public.debit_wallet_for_bill(
 ) returns json
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, pg_temp
 as $$
 declare
   v_balance numeric(12, 2);
@@ -257,7 +266,7 @@ begin
     return json_build_object('success', false, 'error', 'Wallet not found');
   end if;
 
-  if auth.uid() is not null and auth.uid() <> v_user_id and auth.role() <> 'service_role' then
+  if auth.role() <> 'service_role' and (auth.uid() is null or auth.uid() <> v_user_id) then
     return json_build_object('success', false, 'error', 'Unauthorized wallet operation');
   end if;
 
@@ -288,6 +297,11 @@ begin
 end;
 $$;
 
+revoke execute on function public.debit_wallet_for_bill(uuid, numeric, text, text, text, jsonb) from public, anon;
+grant execute on function public.debit_wallet_for_bill(uuid, numeric, text, text, text, jsonb) to authenticated, service_role;
+
+drop function if exists public.refund_wallet_for_bill(uuid, numeric, text, text, text);
+
 create or replace function public.refund_wallet_for_bill(
   p_wallet_id uuid,
   p_amount numeric(12, 2),
@@ -298,7 +312,7 @@ create or replace function public.refund_wallet_for_bill(
 ) returns json
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, pg_temp
 as $$
 declare
   v_balance numeric(12, 2);
@@ -310,7 +324,7 @@ begin
   end if;
 
   -- Lock wallet row to prevent concurrent lost updates
-  select user_id into v_user_id
+  select balance, user_id into v_balance, v_user_id
   from public.wallets
   where id = p_wallet_id
   for update;
@@ -319,7 +333,7 @@ begin
     return json_build_object('success', false, 'error', 'Wallet not found');
   end if;
 
-  if auth.uid() is not null and auth.uid() <> v_user_id and auth.role() <> 'service_role' then
+  if auth.role() <> 'service_role' and (auth.uid() is null or auth.uid() <> v_user_id) then
     return json_build_object('success', false, 'error', 'Unauthorized refund operation');
   end if;
 
@@ -351,6 +365,9 @@ begin
 end;
 $$;
 
+revoke execute on function public.refund_wallet_for_bill(uuid, numeric, text, text, text, jsonb) from public, anon;
+grant execute on function public.refund_wallet_for_bill(uuid, numeric, text, text, text, jsonb) to authenticated, service_role;
+
 -- Atomic Deposit Crediting Function for Verified Gateway Webhooks (Fail-safe, Idempotent, with Row-Locking)
 create or replace function public.credit_wallet_deposit(
   p_wallet_id uuid,
@@ -361,7 +378,7 @@ create or replace function public.credit_wallet_deposit(
 ) returns json
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, pg_temp
 as $$
 declare
   v_balance numeric(12, 2);
@@ -408,6 +425,21 @@ begin
   );
 end;
 $$;
+
+-- Security hardening: credit_wallet_deposit can ONLY be executed by backend service_role (never client anon or authenticated)
+revoke execute on function public.credit_wallet_deposit(uuid, numeric, text, text, jsonb) from public, anon, authenticated;
+grant execute on function public.credit_wallet_deposit(uuid, numeric, text, text, jsonb) to service_role;
+
+-- Harden check_profile_update if it exists in the database
+do $$
+begin
+  if exists (
+    select 1 from pg_proc where proname = 'check_profile_update'
+  ) then
+    execute 'alter function public.check_profile_update() set search_path = public, pg_temp';
+    execute 'revoke execute on function public.check_profile_update() from public, anon, authenticated';
+  end if;
+end $$;
 
 -- ========================================================
 -- Realtime Synchronization Configuration

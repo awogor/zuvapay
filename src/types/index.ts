@@ -17,7 +17,10 @@ export type TransactionCategory =
   | 'social'
   | 'logs'
   | 'marketplace'
-  | 'refund';
+  | 'refund'
+  | 'card'
+  | 'virtual_card'
+  | 'virtual_card_topup';
 
 export type UserTitle = 'Mr' | 'Mrs' | 'Miss';
 export type UserRole = 'admin' | 'customer';

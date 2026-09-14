@@ -339,7 +339,7 @@ export default function MarketplacePage() {
 
       {/* Products Grid */}
       {fetching ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
@@ -365,13 +365,13 @@ export default function MarketplacePage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {filteredProducts.map((product) => {
             const hasStock = product.stock > 0;
             return (
               <div
                 key={product.id}
-                className="group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 hover:border-purple-500/40 dark:hover:border-purple-500/40 transition-all hover:shadow-lg hover:shadow-purple-500/5"
+                className="group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 sm:p-6 hover:border-purple-500/40 dark:hover:border-purple-500/40 transition-all hover:shadow-lg hover:shadow-purple-500/5"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
@@ -390,10 +390,11 @@ export default function MarketplacePage() {
                   </div>
 
                   <div>
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors line-clamp-1">
+                    {/* Full Product Title without abbreviation or ellipsis */}
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors leading-snug">
                       {product.name}
                     </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 min-h-[32px]">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1.5 leading-relaxed">
                       {product.summary}
                     </p>
                   </div>
@@ -410,37 +411,37 @@ export default function MarketplacePage() {
                   </div>
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[11px] text-slate-400">Price</p>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-lg font-black text-slate-900 dark:text-white">
+                <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] sm:text-[11px] text-slate-400">Price</p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-base sm:text-lg lg:text-xl font-black text-slate-900 dark:text-white truncate">
                         {formatNaira(product.priceNgn)}
                       </span>
                       {product.savingsNgn > 0 && (
-                        <span className="text-[11px] text-slate-400 line-through">
+                        <span className="text-[10px] sm:text-[11px] text-slate-400 line-through hidden sm:inline">
                           {formatNaira(product.priceNgn + product.savingsNgn)}
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                     <button
                       onClick={() => handleOpenDetails(product)}
-                      className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all"
+                      className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all whitespace-nowrap"
                       title="View product specifications and instructions"
                     >
-                      <Eye className="w-3.5 h-3.5 text-slate-400" />
+                      <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400" />
                       <span>Details</span>
                     </button>
 
                     <button
                       disabled={!hasStock}
                       onClick={() => handleOpenPurchase(product)}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-purple-600/20"
+                      className="inline-flex items-center gap-1 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-purple-600/20 whitespace-nowrap"
                     >
-                      <ShoppingCart className="w-3.5 h-3.5" />
+                      <ShoppingCart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       <span>Buy Now</span>
                     </button>
                   </div>

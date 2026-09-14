@@ -2,12 +2,15 @@ import { getEmailTransporter } from './transporter';
 import {
   EmailTemplateType,
   renderWelcomeEmail,
+  renderEmailVerificationEmail,
+  renderPasswordResetEmail,
   renderWalletCreditEmail,
   renderServiceReceiptEmail,
   renderRefundEmail,
   renderSecurityPinEmail,
   renderElectricityTokenEmail,
   renderAdminBroadcastEmail,
+  renderAdminLowBalanceEmail,
 } from './templates';
 
 export interface SendEmailOptions {
@@ -54,6 +57,24 @@ export async function sendTransactionalEmail(
         name: data.name || 'Valued Customer',
         email: to,
         virtualAccount: data.virtualAccount,
+      });
+      break;
+
+    case 'email_verification':
+      rendered = renderEmailVerificationEmail({
+        name: data.name || 'Valued Customer',
+        email: to,
+        verifyUrl: data.verifyUrl || `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login?verified=true`,
+        token: data.token,
+      });
+      break;
+
+    case 'password_reset':
+      rendered = renderPasswordResetEmail({
+        name: data.name || 'Valued Customer',
+        email: to,
+        resetUrl: data.resetUrl || `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password`,
+        ipAddress: data.ipAddress,
       });
       break;
 
@@ -126,6 +147,18 @@ export async function sendTransactionalEmail(
         bodyHtml: data.bodyHtml || '<p>Here is an update regarding your ZuvaPay account.</p>',
         ctaText: data.ctaText,
         ctaUrl: data.ctaUrl,
+      });
+      break;
+
+    case 'admin_low_balance':
+      rendered = renderAdminLowBalanceEmail({
+        productName: data.productName || 'Digital Good / Subscription',
+        providerName: data.providerName || 'API Supplier',
+        customerEmail: data.customerEmail || 'Customer',
+        orderReference: data.orderReference || 'N/A',
+        amount: data.amount || 0,
+        errorMessage: data.errorMessage || 'Low reseller wallet balance',
+        portalUrl: data.portalUrl,
       });
       break;
 

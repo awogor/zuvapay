@@ -34,7 +34,7 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
   const { user, profile } = useAuth();
   const { success, error, info } = useToast();
 
-  const [tab, setTab] = useState<'transfer' | 'card'>('transfer');
+  const [tab, setTab] = useState<'transfer' | 'card'>('card');
   const [amount, setAmount] = useState<string>('5000');
   const [loading, setLoading] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
@@ -196,7 +196,6 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
         <div className="flex-shrink-0 flex items-center justify-between px-5 sm:px-6 pt-3 sm:pt-5 pb-3 border-b border-white/10">
           <div>
             <h3 className="text-base sm:text-lg font-bold text-white">Fund ZuvaPay Wallet</h3>
-            <p className="text-[11px] sm:text-xs text-slate-400">Add funds instantly via Korapay Dedicated Account or Card</p>
           </div>
           <button
             onClick={onClose}
@@ -208,133 +207,7 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto overscroll-contain">
-          {/* Tab switcher */}
-          <div className="grid grid-cols-2 p-2 sm:p-3 gap-2 bg-slate-950/60 mx-4 sm:mx-6 mt-4 rounded-xl border border-white/5">
-          <button
-            onClick={() => setTab('transfer')}
-            className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all ${
-              tab === 'transfer'
-                ? 'bg-brand-orange text-slate-950 shadow-md font-bold'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Building2 className="w-4 h-4" />
-            Korapay Dedicated Account
-          </button>
-          <button
-            onClick={() => setTab('card')}
-            className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all ${
-              tab === 'card'
-                ? 'bg-brand-orange text-slate-950 shadow-md font-bold'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <CreditCard className="w-4 h-4" />
-            Instant Card / Sandbox
-          </button>
-        </div>
-
-        <div className="p-6 space-y-5">
-          {tab === 'transfer' ? (
-            <div className="space-y-4">
-              {fetchingAccount ? (
-                <div className="p-6 rounded-2xl bg-slate-950/60 border border-white/5 text-center text-xs text-slate-400 animate-pulse">
-                  Checking for your dedicated Korapay bank account...
-                </div>
-              ) : virtualAccount ? (
-                /* Active Dedicated Virtual Account Card */
-                <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-brand-orange/40 shadow-xl space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs uppercase text-slate-400 font-semibold tracking-wider flex items-center gap-1.5">
-                      Korapay Dedicated NGN Account
-                    </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">
-                      Auto-credits in ~5s
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/90 border border-white/10">
-                    <div>
-                      <p className="text-2xl font-mono font-black text-white tracking-widest">
-                        {virtualAccount.account_number}
-                      </p>
-                      <p className="text-xs text-slate-300 font-medium mt-0.5">
-                        {virtualAccount.bank_name} • {virtualAccount.account_name}
-                      </p>
-                    </div>
-                    <button
-                      onClick={handleCopyAccount}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-orange/20 hover:bg-brand-orange/30 text-brand-orange text-xs font-bold transition-all"
-                    >
-                      {copiedAccount ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      {copiedAccount ? 'Copied' : 'Copy'}
-                    </button>
-                  </div>
-
-                  <p className="text-[11px] text-slate-400 text-center leading-relaxed">
-                    Transfer any amount from any Nigerian bank app to this account. Your ZuvaPay wallet balance will update automatically via Korapay Webhook.
-                  </p>
-                </div>
-              ) : (
-                /* Generate Virtual Account Card */
-                <form
-                  onSubmit={handleGenerateAccount}
-                  className="p-5 rounded-2xl bg-slate-950/80 border border-white/10 space-y-3.5"
-                >
-                  <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-white">
-                      Generate Your Permanent Virtual Bank Account
-                    </h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      Assign a dedicated account number (Wema Bank or Moniepoint) powered by Korapay.
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      Select Preferred Bank
-                    </label>
-                    <select
-                      value={selectedBankCode}
-                      onChange={(e) => setSelectedBankCode(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs text-white focus:outline-none focus:border-brand-orange font-medium"
-                    >
-                      {BANKS.map((b) => (
-                        <option key={b.code} value={b.code}>
-                          {b.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      Bank Verification Number (BVN)
-                    </label>
-                    <input
-                      type="text"
-                      value={bvnInput}
-                      onChange={(e) => setBvnInput(e.target.value)}
-                      placeholder="Enter 11-digit BVN (or leave empty for test)"
-                      maxLength={11}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-orange font-mono"
-                    />
-                    <p className="text-[10px] text-slate-500 mt-1">
-                      CBN mandatory regulation since Jan 2024. In sandbox mode, default test BVN is applied automatically.
-                    </p>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={generatingAccount}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-brand-orange hover:bg-amber-500 text-slate-950 text-xs font-bold transition-all shadow-md disabled:opacity-50"
-                  >
-                    {generatingAccount ? 'Contacting Korapay...' : 'Generate Dedicated Account Now'}
-                  </button>
-                </form>
-              )}
-            </div>
-          ) : (
+          <div className="p-6 space-y-5">
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1.5">
@@ -380,20 +253,19 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-sm transition-all shadow-lg hover:shadow-orange-500/20 disabled:opacity-50"
                 >
                   <CreditCard className="w-4 h-4" />
-                  {loading ? 'Opening Checkout...' : `Pay with Card / Bank Transfer (${formatNaira(parseFloat(amount) || 0)})`}
+                  {loading ? 'Opening Checkout...' : 'Pay with Card / Bank Transfer'}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
-          )}
 
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 pt-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>256-bit Encrypted Banking Grade Gateway via Korapay</span>
+            <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 pt-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>256-bit Encrypted Banking Grade Gateway via Korapay</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
   );
 }

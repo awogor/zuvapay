@@ -5,6 +5,7 @@ import { gongozFetch, NETWORK_IDS } from '@/lib/vendors/gongoz';
 import { GONGOZ_DATA_PLANS } from '@/lib/data/gongozCatalog';
 import { getStroWalletDataPlans, buyStroWalletData } from '@/lib/vendors/strowallet';
 import { getPricingConfig, computeRetailPrice } from '@/lib/pricing/pricingStore';
+import { checkServiceAvailability } from '@/lib/services/serviceStatusStore';
 
 function parseStroDataAmount(name: string): string {
   const match = name.match(/(\d+(?:\.\d+)?\s*(?:MB|GB|TB))/i);
@@ -106,6 +107,14 @@ function liveResIsOk(res: any): boolean {
 
 export async function POST(request: NextRequest) {
   try {
+    const serviceCheck = checkServiceAvailability('data');
+    if (!serviceCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: serviceCheck.message },
+        { status: 503 }
+      );
+    }
+
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 

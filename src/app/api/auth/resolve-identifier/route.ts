@@ -22,11 +22,6 @@ export async function POST(request: NextRequest) {
     // Otherwise treat as a username (strip leading @ if provided)
     const cleanUsername = rawIdentifier.replace(/^@/, '').toLowerCase().trim();
 
-    // Fallback demo user support for local test environments
-    if (cleanUsername === 'davidadeleke' || cleanUsername === 'david') {
-      return NextResponse.json({ email: 'david@zuvapay.com' });
-    }
-
     const supabase = createAdminClient();
 
     // 1. Search in auth.users user_metadata (Primary & guaranteed)

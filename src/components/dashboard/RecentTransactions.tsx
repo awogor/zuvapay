@@ -15,6 +15,7 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   ArrowRightLeft,
+  CreditCard,
   Search,
   ExternalLink,
 } from 'lucide-react';
@@ -74,6 +75,10 @@ export function RecentTransactions({ limit = 5, showFilters = true }: RecentTran
         return <ShoppingBag className="w-3.5 h-3.5 text-cyan-400" />;
       case 'swap':
         return <ArrowRightLeft className="w-3.5 h-3.5 text-indigo-400" />;
+      case 'card':
+      case 'virtual_card':
+      case 'virtual_card_topup':
+        return <CreditCard className="w-3.5 h-3.5 text-amber-400" />;
       default:
         return type === 'credit' ? (
           <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-400" />

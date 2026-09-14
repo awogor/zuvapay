@@ -7,10 +7,74 @@ import { ToastProvider } from '@/components/common/Toast';
 import { ReceiptModal } from '@/components/modals/ReceiptModal';
 import { SupportProvider } from '@/components/modals/SupportModal';
 
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://zuvapay.web.app';
+
 export const metadata: Metadata = {
-  title: 'ZuvaPay — Cheap SME Data, Bill Payments & Communication Tools',
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: 'Cheap SME Data, Bill Payments & Virtual Dollar Cards — ZuvaPay',
+    template: '%s — ZuvaPay',
+  },
   description:
-    'ZuvaPay is the all-in-one digital platform for cheap SME data, 20-digit electricity tokens, foreign virtual SMS OTP numbers, and automated utility bill payments in Nigeria.',
+    'ZuvaPay is the all-in-one digital platform for cheap SME data, 20-digit electricity tokens, virtual dollar cards, virtual phone numbers, and automated utility bill payments in Nigeria.',
+  applicationName: 'ZuvaPay',
+  keywords: [
+    'ZuvaPay',
+    'buy SME data Nigeria',
+    'instant electricity tokens',
+    'virtual dollar card Nigeria',
+    'Mastercard virtual card',
+    'virtual phone numbers',
+    'international payments Nigeria',
+    'automated bill payment Nigeria',
+  ],
+  authors: [{ name: 'ZuvaPay Technologies' }],
+  creator: 'ZuvaPay Technologies',
+  publisher: 'ZuvaPay Technologies',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_NG',
+    url: baseUrl,
+    siteName: 'ZuvaPay',
+    title: 'ZuvaPay — Fast SME Data, Electricity Tokens & Virtual Dollar Cards',
+    description:
+      'Power your everyday digital payments with zero delay. Instant wholesale SME data, prepaid electricity tokens, virtual dollar cards, and foreign carrier virtual phone numbers.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'ZuvaPay — Instant Bill Payments, SME Data & Virtual Dollar Cards',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ZuvaPay — Fast SME Data, Electricity Tokens & Digital Subscriptions',
+    description:
+      'Power your everyday digital payments in Nigeria with instant wholesale SME data, 20-digit electricity tokens, foreign SMS OTPs, and verified AI tools.',
+    images: ['/og-image.png'],
+    creator: '@zuvapay',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({

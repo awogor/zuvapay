@@ -34,17 +34,17 @@ export function MarketingFooter() {
             </Link>
 
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-              The high-velocity digital platform for bill payments and communication tools. Cheap SME data, instant airtime, electricity tokens, foreign SMS OTP numbers, and automated wallet funding.
+              The high-velocity digital platform for Nigerian bill payments and global transactions. Cheap SME data, instant airtime, electricity tokens, virtual phone numbers, and virtual dollar cards.
             </p>
 
             <div className="flex flex-wrap items-center gap-2 pt-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-semibold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Dedicated Automated Virtual Accounts
+                Instant Automated Delivery
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[11px] font-semibold">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                NDPR Compliant
+                256-Bit SSL Encrypted
               </span>
             </div>
           </div>
@@ -52,37 +52,37 @@ export function MarketingFooter() {
           {/* Col 2: Services */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-              Utilities & Services
+              Utilities &amp; Services
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
-                <Link href="/services#data" className="hover:text-white transition-colors">
-                  Buy Airtime (MTN, Airtel, Glo, 9mobile)
+                <Link href="/services/bill-payment" className="hover:text-white transition-colors">
+                  Bill Payments (Airtime &amp; Utilities)
                 </Link>
               </li>
               <li>
-                <Link href="/services#data" className="hover:text-white transition-colors">
-                  Cheap SME Data from ₦240/GB
+                <Link href="/services/sme-data" className="hover:text-white transition-colors">
+                  SME Data Subscription (From ₦240/GB)
                 </Link>
               </li>
               <li>
-                <Link href="/services#power" className="hover:text-white transition-colors">
-                  Prepaid Meter Tokens (IKEDC, AEDC)
+                <Link href="/services/electricity" className="hover:text-white transition-colors">
+                  Electricity Payment (Prepaid Tokens)
                 </Link>
               </li>
               <li>
-                <Link href="/services#power" className="hover:text-white transition-colors">
-                  Cable TV (DSTV, GOtv, Startimes)
+                <Link href="/services/cable-tv" className="hover:text-white transition-colors">
+                  Cable TV Subscription (DStv, GOtv)
                 </Link>
               </li>
               <li>
-                <Link href="/services#sms" className="hover:text-white transition-colors">
-                  Virtual Foreign SMS (US/UK OTP)
+                <Link href="/services/virtual-number" className="hover:text-white transition-colors">
+                  Virtual Phone Number (150+ Countries)
                 </Link>
               </li>
               <li>
-                <Link href="/services#sms" className="hover:text-white transition-colors">
-                  Social Media Growth & Followers
+                <Link href="/services/virtual-dollar-card" className="hover:text-white transition-colors">
+                  Virtual Dollar Card (Mastercard &amp; Visa)
                 </Link>
               </li>
             </ul>
@@ -105,6 +105,12 @@ export function MarketingFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/agent" className="text-amber-400 hover:text-amber-300 font-semibold transition-colors flex items-center gap-1">
+                  <span>Become an Agent</span>
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30">REQUEST</span>
+                </Link>
+              </li>
+              <li>
                 <span className="text-slate-300">Automatic Wallet Refunds</span>
               </li>
               <li>
@@ -124,7 +130,7 @@ export function MarketingFooter() {
             <ul className="space-y-2 text-xs">
               <li>
                 <Link
-                  href="https://wa.me/2348000000000?text=Hello%20ZuvaPay%20Customer%20Desk"
+                  href="https://wa.me/2349038416331?text=Hello%20ZuvaPay%20Customer%20Desk"
                   target="_blank"
                   className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 font-semibold"
                 >
@@ -133,7 +139,7 @@ export function MarketingFooter() {
                 </Link>
               </li>
               <li className="text-slate-400">
-                Email: <span className="text-slate-200">support@zuvapay.com</span>
+                Email: <span className="text-slate-200">hello@zuvapay.com</span>
               </li>
               <li className="text-slate-400">
                 Operating Hub: <span className="text-slate-300">Victoria Island, Lagos, Nigeria</span>
@@ -147,14 +153,27 @@ export function MarketingFooter() {
           </div>
         </div>
 
-        {/* Regulatory & Legal Disclaimers (Diplomatic, Partner-Agnostic) */}
+        {/* Legal Disclaimers */}
         <div className="pt-8 pb-6 border-b border-slate-800/80 space-y-3 text-[11px] leading-relaxed text-slate-400">
           <p>
-            ZuvaPay Technologies Limited is FCCPC approved and NDPR compliant, with registered operating address in Lagos, Nigeria.
+            ZuvaPay (ZuvaPay.com) is an automated bill payment and digital services platform operated by ZuvaPay Technologies Limited in Nigeria.
           </p>
           <p>
-            ZuvaPay is a financial technology platform, not a bank. All payment processing, banking services, and dedicated virtual accounts are provided by licensed financial institution partners. Regulated utility and telecommunication services are delivered through licensed switches and authorized service providers.
+            ZuvaPay is a technology aggregator, not a bank or telecommunication operator. Bill payment processing, telecommunication airtime, SME data bundles, electricity meter tokens, and digital subscription services are provisioned and fulfilled by licensed third-party partners and regulated carriers.
           </p>
+          <div className="flex flex-wrap items-center gap-4 pt-1 text-slate-300 font-medium">
+            <Link href="/privacy" className="hover:text-white transition-colors underline decoration-slate-600 underline-offset-4">
+              NDPC Privacy Policy
+            </Link>
+            <span>•</span>
+            <Link href="/terms" className="hover:text-white transition-colors underline decoration-slate-600 underline-offset-4">
+              Terms &amp; Conditions
+            </Link>
+            <span>•</span>
+            <Link href="/agent" className="hover:text-white transition-colors underline decoration-slate-600 underline-offset-4">
+              Become an Agent (Request Access)
+            </Link>
+          </div>
         </div>
 
         {/* Bottom copyright & security badges */}

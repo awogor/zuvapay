@@ -61,56 +61,7 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 const NGN_USD_RATE = 1550; // Current standard bank rate
 
-// Initial mock transactions for demo/dev state
-const INITIAL_DEMO_TRANSACTIONS: Transaction[] = [
-  {
-    id: 'tx-1',
-    wallet_id: 'mock-wallet',
-    amount: 50000,
-    type: 'credit',
-    category: 'deposit',
-    description: 'Wallet Funding via Bank Transfer',
-    reference: 'KP-DEP-884920',
-    status: 'completed',
-    created_at: new Date(Date.now() - 3600000 * 24 * 2).toISOString(),
-  },
-  {
-    id: 'tx-2',
-    wallet_id: 'mock-wallet',
-    amount: 1500,
-    type: 'debit',
-    category: 'airtime',
-    description: 'MTN Airtime Recharge (08031234567)',
-    reference: 'KP-AIR-992381',
-    status: 'completed',
-    created_at: new Date(Date.now() - 3600000 * 12).toISOString(),
-    metadata: { network: 'MTN', phone: '08031234567' },
-  },
-  {
-    id: 'tx-3',
-    wallet_id: 'mock-wallet',
-    amount: 4500,
-    type: 'debit',
-    category: 'data',
-    description: 'Airtel 10GB Monthly Data Bundle',
-    reference: 'KP-DAT-338291',
-    status: 'completed',
-    created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
-    metadata: { network: 'Airtel', plan: '10GB Monthly' },
-  },
-  {
-    id: 'tx-4',
-    wallet_id: 'mock-wallet',
-    amount: 1200,
-    type: 'debit',
-    category: 'sms',
-    description: 'WhatsApp Virtual Number (USA)',
-    reference: 'KP-SMS-774829',
-    status: 'completed',
-    created_at: new Date(Date.now() - 3600000).toISOString(),
-    metadata: { country: 'USA', service: 'WhatsApp' },
-  }
-];
+const INITIAL_DEMO_TRANSACTIONS: Transaction[] = [];
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
   const { user, isMockMode } = useAuth();
@@ -228,7 +179,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         const defaultWallet: Wallet = {
           id: 'mock-wallet-' + user.id,
           user_id: user.id,
-          balance: 42800.00,
+          balance: 0.00,
           currency: 'NGN',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -247,8 +198,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       if (savedUsd) {
         setUsdBalance(parseFloat(savedUsd));
       } else {
-        setUsdBalance(25.50);
-        localStorage.setItem(`zuvapay_usd_${user.id}`, '25.50');
+        setUsdBalance(0.00);
+        localStorage.setItem(`zuvapay_usd_${user.id}`, '0.00');
       }
 
       setLoading(false);

@@ -20,6 +20,11 @@ import {
   Users,
   Building2,
   ExternalLink,
+  Sparkles,
+  Flame,
+  CreditCard,
+  Tv,
+  Wifi,
 } from 'lucide-react';
 
 type DropdownType = 'services' | 'company' | 'help' | null;
@@ -165,6 +170,19 @@ export function MarketingNavbar() {
                 />
               </button>
             </div>
+
+            {/* 5. Virtual Dollar Card Link */}
+            <Link
+              href="/services/virtual-dollar-card"
+              onClick={() => setActiveDropdown(null)}
+              className="flex items-center gap-1.5 hover:text-slate-950 text-slate-700 font-semibold transition-colors py-2 relative group"
+            >
+              <CreditCard className="w-4 h-4 text-zuva-solar" />
+              <span>Virtual Card</span>
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-white shadow-sm shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+                USD
+              </span>
+            </Link>
           </nav>
 
           {/* Right Action Group */}
@@ -229,7 +247,7 @@ export function MarketingNavbar() {
                     Get Instant Access to ZuvaPay Utilities
                   </h3>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Enjoy wholesale SME data from ₦240/GB, 1.1s instant electricity meter tokens, and dedicated automated virtual accounts that fund on the first try.
+                    Enjoy wholesale SME data from ₦240/GB, 1.1s instant electricity meter tokens, and automated wallet funding that works on the first try.
                   </p>
                 </div>
 
@@ -248,73 +266,112 @@ export function MarketingNavbar() {
               {/* Column 2: Service Links Directory (ZojaPay style) */}
               <div className="col-span-5 grid grid-cols-1 gap-2.5">
                 <Link
-                  href="/services#data"
+                  href="/services/bill-payment"
                   onClick={() => setActiveDropdown(null)}
-                  className="p-3.5 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200/80 flex items-start gap-3.5 group"
+                  className="p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200/80 flex items-start gap-3 group"
                 >
-                  <div className="p-2.5 rounded-xl bg-orange-100 text-zuva-solar group-hover:scale-105 transition-transform">
-                    <Smartphone className="w-5 h-5" />
+                  <div className="p-2 rounded-xl bg-orange-100 text-zuva-solar group-hover:scale-105 transition-transform">
+                    <Smartphone className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 group-hover:text-zuva-solar transition-colors">
-                      Airtime & SME Data
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-zuva-solar transition-colors">
+                      Bill Payments (Airtime &amp; Utilities)
                     </h4>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      MTN, Airtel, Glo, 9mobile from ₦240/GB with 100% automated refund.
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Airtime recharges with 2% cashback discount &amp; automated receipts.
                     </p>
                   </div>
                 </Link>
 
                 <Link
-                  href="/services#power"
+                  href="/services/sme-data"
                   onClick={() => setActiveDropdown(null)}
-                  className="p-3.5 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200/80 flex items-start gap-3.5 group"
+                  className="p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200/80 flex items-start gap-3 group"
                 >
-                  <div className="p-2.5 rounded-xl bg-teal-100 text-teal-700 group-hover:scale-105 transition-transform">
-                    <Zap className="w-5 h-5" />
+                  <div className="p-2 rounded-xl bg-sky-100 text-sky-700 group-hover:scale-105 transition-transform">
+                    <Wifi className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 group-hover:text-zuva-solar transition-colors">
-                      Prepaid Electricity Tokens
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-zuva-solar transition-colors">
+                      SME Data Subscription
                     </h4>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      MTN, Airtel, Glo, 9mobile wholesale data bundles from ₦240/GB.
+                    </p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/services/electricity"
+                  onClick={() => setActiveDropdown(null)}
+                  className="p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200/80 flex items-start gap-3 group"
+                >
+                  <div className="p-2 rounded-xl bg-teal-100 text-teal-700 group-hover:scale-105 transition-transform">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-zuva-solar transition-colors">
+                      Electricity Payment
+                    </h4>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
                       IKEDC, EKEDC, AEDC instant 20-digit token generation without convenience fee.
                     </p>
                   </div>
                 </Link>
 
                 <Link
-                  href="/services#sms"
+                  href="/services/cable-tv"
                   onClick={() => setActiveDropdown(null)}
-                  className="p-3.5 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200/80 flex items-start gap-3.5 group"
+                  className="p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200/80 flex items-start gap-3 group"
                 >
-                  <div className="p-2.5 rounded-xl bg-purple-100 text-purple-700 group-hover:scale-105 transition-transform">
-                    <MessageSquareCode className="w-5 h-5" />
+                  <div className="p-2 rounded-xl bg-sky-100 text-sky-700 group-hover:scale-105 transition-transform">
+                    <Tv className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 group-hover:text-zuva-solar transition-colors">
-                      Virtual SMS Phone Numbers (OTPs)
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-zuva-solar transition-colors">
+                      Cable TV Subscription
                     </h4>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Real US, UK, and Kenya lines for WhatsApp, OpenAI, and Telegram verification.
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      DStv, GOtv &amp; StarTimes bouquet activation with live IUC validation.
                     </p>
                   </div>
                 </Link>
 
                 <Link
-                  href="/#mobile-app"
+                  href="/services/virtual-number"
                   onClick={() => setActiveDropdown(null)}
-                  className="p-3.5 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200/80 flex items-start gap-3.5 group"
+                  className="p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200/80 flex items-start gap-3 group"
                 >
-                  <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-700 group-hover:scale-105 transition-transform">
-                    <ShieldCheck className="w-5 h-5" />
+                  <div className="p-2 rounded-xl bg-purple-100 text-purple-700 group-hover:scale-105 transition-transform">
+                    <MessageSquareCode className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 group-hover:text-zuva-solar transition-colors">
-                      Instant Wallet Funding
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-zuva-solar transition-colors">
+                      Virtual Phone Number
                     </h4>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Dedicated automated virtual account to fund your bill payment wallet in seconds.
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Real non-VoIP carrier lines for international verification (150+ countries).
+                    </p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/services/virtual-dollar-card"
+                  onClick={() => setActiveDropdown(null)}
+                  className="p-3 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200/80 flex items-start gap-3 group"
+                >
+                  <div className="p-2 rounded-xl bg-amber-100 text-amber-700 group-hover:scale-105 transition-transform">
+                    <CreditCard className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-xs font-bold text-slate-900 group-hover:text-zuva-solar transition-colors">
+                        Virtual Dollar Card
+                      </h4>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">USD</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Mastercard &amp; Visa for international checkout: Netflix, Apple, AWS &amp; Spotify.
                     </p>
                   </div>
                 </Link>
@@ -386,13 +443,34 @@ export function MarketingNavbar() {
               </Link>
 
               <Link
-                href="/#ambassador"
+                href="/agent"
                 onClick={() => setActiveDropdown(null)}
                 className="p-5 rounded-2xl hover:bg-slate-50 transition-colors border border-slate-200/80 hover:border-zuva-solar/40 space-y-2 group"
               >
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 rounded-xl bg-amber-100 text-amber-700">
                     <Users className="w-4 h-4" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-bold text-slate-900 group-hover:text-zuva-solar transition-colors">
+                      Become an Agent
+                    </h4>
+                    <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-orange-500 text-white">NEW</span>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Request access to wholesale rates and POS merchant pricing. No signup required.
+                </p>
+              </Link>
+
+              <Link
+                href="/#ambassador"
+                onClick={() => setActiveDropdown(null)}
+                className="p-5 rounded-2xl hover:bg-slate-50 transition-colors border border-slate-200/80 hover:border-zuva-solar/40 space-y-2 group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-purple-100 text-purple-700">
+                    <Sparkles className="w-4 h-4" />
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 group-hover:text-zuva-solar transition-colors">
                     Campus Ambassador Program
@@ -409,11 +487,11 @@ export function MarketingNavbar() {
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <h4 className="text-sm font-bold text-slate-900">
-                    Licensed Partners & NDPR
+                    Security &amp; Encryption
                   </h4>
                 </div>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Settlement powered by CBN-licensed financial partners with 256-bit TLS encryption.
+                  Enterprise-grade 256-bit SSL encryption with 4-digit transaction PIN protection.
                 </p>
               </div>
             </div>
@@ -432,7 +510,7 @@ export function MarketingNavbar() {
           <div className="p-8">
             <div className="grid grid-cols-3 gap-6">
               <Link
-                href="https://wa.me/2348000000000?text=Hello%20ZuvaPay%20Help%20Desk"
+                href="https://wa.me/2349038416331?text=Hello%20ZuvaPay%20Help%20Desk"
                 target="_blank"
                 onClick={() => setActiveDropdown(null)}
                 className="p-5 rounded-2xl bg-slate-50 hover:bg-emerald-50 border border-slate-200/80 hover:border-emerald-200 transition-all group"
@@ -465,7 +543,7 @@ export function MarketingNavbar() {
               </Link>
 
               <Link
-                href="mailto:support@zuvapay.com"
+                href="mailto:hello@zuvapay.com"
                 onClick={() => setActiveDropdown(null)}
                 className="p-5 rounded-2xl bg-slate-50 hover:bg-purple-50 border border-slate-200/80 hover:border-purple-200 transition-all group"
               >
@@ -505,32 +583,46 @@ export function MarketingNavbar() {
             {mobileExpanded.services && (
               <div className="pl-3 pt-2 space-y-2.5 text-xs text-slate-600">
                 <Link
-                  href="/services#data"
+                  href="/services/bill-payment"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-1 hover:text-zuva-solar font-medium"
                 >
-                  📱 Airtime &amp; SME Data (₦240/GB)
+                  📱 Bill Payments (Airtime &amp; Utilities)
                 </Link>
                 <Link
-                  href="/services#power"
+                  href="/services/sme-data"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-1 hover:text-zuva-solar font-medium"
                 >
-                  ⚡ Prepaid Electricity Tokens (0% Fee)
+                  📶 SME Data Subscription (From ₦240/GB)
                 </Link>
                 <Link
-                  href="/services#sms"
+                  href="/services/electricity"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-1 hover:text-zuva-solar font-medium"
                 >
-                  💬 Virtual Foreign SMS (US/UK OTP)
+                  ⚡ Electricity Payment (0% Fee)
                 </Link>
                 <Link
-                  href="/#mobile-app"
+                  href="/services/cable-tv"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block py-1 hover:text-zuva-solar font-medium"
                 >
-                  🏦 Dedicated Virtual Accounts
+                  📺 Cable TV Subscription (DStv, GOtv)
+                </Link>
+                <Link
+                  href="/services/virtual-number"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1 hover:text-zuva-solar font-medium"
+                >
+                  🌐 Virtual Phone Number (150+ Countries)
+                </Link>
+                <Link
+                  href="/services/virtual-dollar-card"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1 hover:text-zuva-solar font-medium"
+                >
+                  💳 Virtual Dollar Card (Mastercard &amp; Visa)
                 </Link>
               </div>
             )}
@@ -555,6 +647,13 @@ export function MarketingNavbar() {
                   className="block py-1 hover:text-zuva-solar font-medium"
                 >
                   🏢 Our Story & Mission
+                </Link>
+                <Link
+                  href="/agent"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1 hover:text-zuva-solar font-medium text-zuva-solar font-bold"
+                >
+                  🏪 Become an Agent (Request Access)
                 </Link>
                 <Link
                   href="/#ambassador"
@@ -599,7 +698,7 @@ export function MarketingNavbar() {
                   ❓ FAQs & Answers
                 </Link>
                 <a
-                  href="https://wa.me/2348000000000?text=Hello%20ZuvaPay%20Support"
+                  href="https://wa.me/2349038416331?text=Hello%20ZuvaPay%20Support"
                   target="_blank"
                   rel="noreferrer"
                   className="block py-1 text-emerald-600 font-bold"
@@ -608,6 +707,22 @@ export function MarketingNavbar() {
                 </a>
               </div>
             )}
+          </div>
+
+          {/* Direct Virtual Dollar Card Link */}
+          <div className="border-b border-slate-100 pb-3">
+            <Link
+              href="/services/virtual-dollar-card"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-between text-sm font-bold text-slate-900 py-2 hover:text-zuva-solar"
+            >
+              <div className="flex items-center gap-2">
+                <span>💳 Virtual Dollar Card</span>
+              </div>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-white shadow-sm">
+                USD
+              </span>
+            </Link>
           </div>
 
           {/* Action buttons */}

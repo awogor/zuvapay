@@ -44,12 +44,18 @@ export interface SMSPoolPricingConfig {
   overrides: Record<string, number>; // serviceId -> base retail price NGN
 }
 
+export interface MarketplacePricingConfig {
+  globalRule: MarginRule; // e.g. { type: 'percentage', value: 20 }
+  overrides: Record<string, number>; // productId -> retail price NGN
+}
+
 export interface ProviderPricingConfig {
   gongoz: GongozPricingConfig;
   fadded: FaddedPricingConfig;
   momo: MomoPricingConfig;
   grizzly: GrizzlyPricingConfig;
   smspool: SMSPoolPricingConfig;
+  marketplace: MarketplacePricingConfig;
   updatedAt?: string;
 }
 
@@ -85,6 +91,10 @@ const DEFAULT_CONFIG: ProviderPricingConfig = {
   smspool: {
     usdToNgnRate: 1650,
     globalRule: { type: 'percentage', value: 25 },
+    overrides: {},
+  },
+  marketplace: {
+    globalRule: { type: 'percentage', value: 20 },
     overrides: {},
   },
 };
@@ -134,6 +144,10 @@ export function getPricingConfigSync(): ProviderPricingConfig {
           usdToNgnRate: Number(parsed?.smspool?.usdToNgnRate) || DEFAULT_CONFIG.smspool.usdToNgnRate,
           globalRule: parsed?.smspool?.globalRule || DEFAULT_CONFIG.smspool.globalRule,
           overrides: parsed?.smspool?.overrides || {},
+        },
+        marketplace: {
+          globalRule: parsed?.marketplace?.globalRule || DEFAULT_CONFIG.marketplace.globalRule,
+          overrides: parsed?.marketplace?.overrides || {},
         },
         updatedAt: parsed?.updatedAt,
       };

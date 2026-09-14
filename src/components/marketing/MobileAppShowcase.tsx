@@ -66,7 +66,7 @@ export function MobileAppShowcase() {
               </h2>
 
               <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-xl mx-auto lg:mx-0">
-                Enjoy lightning-fast payments on any smartphone you have. Instant SME data refills, 1.1s electricity meter tokens in the dark, foreign SMS OTP lines, and instant bank-funded virtual accounts right from your pocket.
+                Enjoy lightning-fast payments on any smartphone you have. Instant SME data refills, 1.1s electricity meter tokens in the dark, foreign SMS OTP lines, and AI subscriptions right from your pocket.
               </p>
 
               {/* Feature bullet highlights */}
@@ -85,7 +85,7 @@ export function MobileAppShowcase() {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-zuva-solar flex-shrink-0" />
-                  <span>Instant Automated Virtual Account</span>
+                  <span>AI &amp; Software Subscriptions</span>
                 </div>
               </div>
 
@@ -222,7 +222,7 @@ export function MobileAppShowcase() {
                         ₦500,000.00
                       </h3>
                       <p className="text-[9px] font-mono text-slate-900/80">
-                        Virtual Account • 8140291048
+                        Available Wallet Balance
                       </p>
                     </div>
 

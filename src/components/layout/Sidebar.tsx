@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   HelpCircle,
   Sparkles,
+  CreditCard,
 } from 'lucide-react';
 import { useSupport } from '@/components/modals/SupportModal';
 
@@ -64,34 +65,8 @@ export function Sidebar({ onOpenFundModal, onCloseMobile }: SidebarProps) {
         { name: 'Internet Data', href: '/services/data', icon: Wifi },
         { name: 'Electricity Bill', href: '/services/power', icon: Zap },
         { name: 'Cable TV', href: '/services/tv', icon: Tv },
-      ],
-    },
-    {
-      label: 'Digital & Growth',
-      items: [
-        {
-          name: 'Virtual SMS / OTP',
-          href: '/services/sms',
-          icon: MessageSquareCode,
-          highlight: true,
-        },
-        {
-          name: 'Social Boost',
-          href: '/services/social/youtube',
-          icon: TrendingUp,
-        },
-        {
-          name: 'AI Marketplace',
-          href: '/services/marketplace',
-          icon: Sparkles,
-          highlight: true,
-          badge: 'Hot',
-        },
-        {
-          name: 'Account Logs',
-          href: '/services/logs/all',
-          icon: ShoppingBag,
-        },
+        { name: 'Virtual Phone Number', href: '/services/sms', icon: MessageSquareCode, badge: 'Global' },
+        { name: 'Virtual Dollar Card', href: '/services/cards', icon: CreditCard, badge: 'USD', highlight: true },
       ],
     },
     {

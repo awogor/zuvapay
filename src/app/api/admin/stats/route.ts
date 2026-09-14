@@ -89,22 +89,22 @@ export async function GET() {
         ? (wallets as any[])
             .filter((w: any) => w.currency === 'NGN')
             .reduce((sum: number, w: any) => sum + parseFloat(w.balance || 0), 0)
-        : 63200;
+        : 0;
 
     const totalUsdBalance =
       wallets && wallets.length > 0
         ? (wallets as any[])
             .filter((w: any) => w.currency === 'USD')
             .reduce((sum: number, w: any) => sum + parseFloat(w.balance || 0), 0)
-        : 25.50;
+        : 0;
 
     return NextResponse.json({
       success: true,
       stats: {
-        totalUsers: userCount || 3,
+        totalUsers: userCount || 0,
         totalNgnBalance,
         totalUsdBalance,
-        totalTransactions: txCount || (recentTxs?.length || 4),
+        totalTransactions: txCount || (recentTxs?.length || 0),
         korapayStatus: 'Operational',
         gongozStatus: 'Operational',
         grizzlyStatus: 'Operational',

@@ -148,6 +148,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
+        // Enforce 10-Minute Inactivity Limit upon session restoration
+        const INACTIVITY_LIMIT_MS = 10 * 60 * 1000;
+        const lastActiveStr = typeof window !== 'undefined' ? localStorage.getItem('zuvapay_last_active_time') : null;
+        if (lastActiveStr) {
+          const lastActive = parseInt(lastActiveStr, 10);
+          if (Date.now() - lastActive >= INACTIVITY_LIMIT_MS) {
+            console.warn('[Security] Restored session expired after 10 minutes of inactivity. Logging out...');
+            try {
+              localStorage.removeItem('zuvapay_last_active_time');
+              localStorage.setItem('zuvapay_session_expired', 'true');
+              localStorage.removeItem('zuvapay_mock_user');
+            } catch {}
+            fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+            await supabase.auth.signOut().catch(() => {});
+            setUser(null);
+            setProfile(null);
+            setLoading(false);
+            if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+              window.location.href = '/login';
+            }
+            return;
+          }
+        }
+
         const { data: { session } } = await supabase.auth.getSession();
         if (!mounted) return;
 
@@ -216,12 +240,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase, isSupabaseConfigured]);
 
   // =========================================================================
-  // 1-Hour Inactivity Auto-Logout Tracking (FinTech / Banking Security Spec)
+  // 10-Minute Inactivity Auto-Logout Tracking (FinTech / Banking Security Spec)
   // =========================================================================
   useEffect(() => {
     if (!user) return;
 
-    const INACTIVITY_LIMIT_MS = 60 * 60 * 1000; // 1 Hour (3,600,000 ms)
+    const INACTIVITY_LIMIT_MS = 10 * 60 * 1000; // 10 Minutes (600,000 ms)
     const STORAGE_KEY = 'zuvapay_last_active_time';
 
     // Record activity timestamp
@@ -232,10 +256,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch {}
     };
 
+    // Perform immediate check on mount / tab reload
+    const lastActiveStr = localStorage.getItem(STORAGE_KEY);
+    if (lastActiveStr) {
+      const lastActive = parseInt(lastActiveStr, 10);
+      if (Date.now() - lastActive >= INACTIVITY_LIMIT_MS) {
+        console.warn('[Security] User session expired after 10 minutes of inactivity. Logging out...');
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.setItem('zuvapay_session_expired', 'true');
+          localStorage.removeItem('zuvapay_mock_user');
+        } catch {}
+        fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+        if (isSupabaseConfigured) {
+          supabase.auth.signOut().catch(() => {});
+        }
+        setUser(null);
+        setProfile(null);
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        return;
+      }
+    }
+
     // Initialize timestamp on login/mount
     recordActivity();
 
-    // Check periodically whether the user has been inactive for > 1 hour
+    // Check periodically whether the user has been inactive for > 10 minutes
     const checkInterval = setInterval(async () => {
       try {
         const lastActiveStr = localStorage.getItem(STORAGE_KEY);
@@ -243,7 +291,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const elapsed = Date.now() - lastActive;
 
         if (elapsed >= INACTIVITY_LIMIT_MS) {
-          console.warn('[Security] User session expired after 1 hour of inactivity. Logging out...');
+          console.warn('[Security] User session expired after 10 minutes of inactivity. Logging out...');
           clearInterval(checkInterval);
           try {
             localStorage.removeItem(STORAGE_KEY);
@@ -268,7 +316,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         console.error('Error during inactivity check:', e);
       }
-    }, 15000); // Check every 15 seconds
+    }, 10000); // Check every 10 seconds
 
     // Throttled activity listener
     let throttleTimeout: any = null;
@@ -360,34 +408,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username: cleanUsername,
-            title: title || 'Mr',
-            first_name: firstName,
-            last_name: lastName,
-            phone: phone,
-            phone_number: phone,
-          },
-        },
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          username: cleanUsername,
+          email,
+          password,
+          firstName,
+          lastName,
+          phone,
+        }),
       });
 
-      if (error) return { error: error.message };
-
-      // Ensure username is updated on profile row if user was created
-      if (data.user) {
-        await supabase
-          .from('profiles')
-          .update({ username: cleanUsername })
-          .eq('id', data.user.id);
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return { error: data.error || 'Failed to complete registration' };
       }
 
       return {
         error: null,
-        requiresEmailVerification: Boolean(data.user && data.session === null),
+        requiresEmailVerification: Boolean(data.requiresEmailVerification),
       };
     } catch (err: any) {
       return { error: err.message || 'An error occurred during registration' };

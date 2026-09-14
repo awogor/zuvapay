@@ -26,7 +26,15 @@ export function AdminEmailTab() {
   // Email form state
   const [targetEmail, setTargetEmail] = useState('');
   const [templateType, setTemplateType] = useState<
-    'welcome' | 'wallet_credit' | 'service_receipt' | 'refund_alert' | 'security_pin' | 'electricity_token' | 'admin_broadcast'
+    | 'welcome'
+    | 'email_verification'
+    | 'password_reset'
+    | 'wallet_credit'
+    | 'service_receipt'
+    | 'refund_alert'
+    | 'security_pin'
+    | 'electricity_token'
+    | 'admin_broadcast'
   >('welcome');
   const [customSubject, setCustomSubject] = useState('');
   const [recipientName, setRecipientName] = useState('David Adeleke');
@@ -246,12 +254,14 @@ export function AdminEmailTab() {
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white font-medium focus:outline-none focus:border-brand-orange"
               >
                 <option value="welcome">👋 1. Welcome to ZuvaPay (Account Ready)</option>
-                <option value="wallet_credit">💰 2. Wallet Funded (Credit Receipt)</option>
-                <option value="service_receipt">⚡ 3. Service Purchase Receipt (Airtime/Data/Power)</option>
-                <option value="electricity_token">⚡ 4. NEPA Electricity Token Delivery (20-Digit Code)</option>
-                <option value="refund_alert">↩️ 5. Instant Auto-Refund Notification</option>
-                <option value="security_pin">🛡️ 6. Security & Transaction PIN Alert</option>
-                <option value="admin_broadcast">📢 7. Custom Platform Broadcast</option>
+                <option value="email_verification">✉️ 2. Verify Your Email Address (ZuvaPay Branded)</option>
+                <option value="password_reset">🔐 3. Password Reset Security Recovery (ZuvaPay Branded)</option>
+                <option value="wallet_credit">💰 4. Wallet Funded (Credit Receipt)</option>
+                <option value="service_receipt">⚡ 5. Service Purchase Receipt (Airtime/Data/Power)</option>
+                <option value="electricity_token">⚡ 6. NEPA Electricity Token Delivery (20-Digit Code)</option>
+                <option value="refund_alert">↩️ 7. Instant Auto-Refund Notification</option>
+                <option value="security_pin">🛡️ 8. Security & Transaction PIN Alert</option>
+                <option value="admin_broadcast">📢 9. Custom Platform Broadcast</option>
               </select>
             </div>
 

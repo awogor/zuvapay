@@ -26,6 +26,7 @@ import {
   FileText,
   RotateCcw,
   BookOpen,
+  Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdminTransactionModal } from '@/components/modals/AdminTransactionModal';
@@ -34,8 +35,12 @@ import { GongozPricingModal } from '@/components/admin/GongozPricingModal';
 import { FaddedPricingModal } from '@/components/admin/FaddedPricingModal';
 import { MomoPricingModal } from '@/components/admin/MomoPricingModal';
 import { SMSPricingModal } from '@/components/admin/SMSPricingModal';
+import { AIMarketplacePricingModal } from '@/components/admin/AIMarketplacePricingModal';
 import { AdminEmailTab } from '@/components/admin/AdminEmailTab';
 import { AdminBusinessDocsTab } from '@/components/admin/AdminBusinessDocsTab';
+import { AdminAgentReviewTab } from '@/components/admin/AdminAgentReviewTab';
+import { AdminServiceSwitchesTab } from '@/components/admin/AdminServiceSwitchesTab';
+import { AdminFinancialReportsTab } from '@/components/admin/AdminFinancialReportsTab';
 
 function renderFormattedDescription(text: string) {
   if (!text) return null;
@@ -65,13 +70,14 @@ export default function AdminDashboardPage() {
   const [usersList, setUsersList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'adjust' | 'vendors' | 'reports' | 'email' | 'business-docs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'agents' | 'switches' | 'adjust' | 'vendors' | 'reports' | 'email' | 'business-docs'>('overview');
   const [selectedAuditTx, setSelectedAuditTx] = useState<any | null>(null);
   const [selectedDetailUser, setSelectedDetailUser] = useState<any | null>(null);
   const [openGongozModal, setOpenGongozModal] = useState(false);
   const [openFaddedModal, setOpenFaddedModal] = useState(false);
   const [openMomoModal, setOpenMomoModal] = useState(false);
   const [openSMSModal, setOpenSMSModal] = useState(false);
+  const [openAIMarketplaceModal, setOpenAIMarketplaceModal] = useState(false);
   const [smsModalProvider, setSmsModalProvider] = useState<'grizzly' | 'smspool'>('grizzly');
 
   const getTxUser = (walletId: string, tx?: any) => {
@@ -106,21 +112,11 @@ export default function AdminDashboardPage() {
       };
     }
 
-    if (walletId === '26e7d4d2-eaa0-4e71-9708-a61e19752240') {
-      return {
-        id: 'a89f4ebe-f79a-4e06-8756-ab93c950c01a',
-        first_name: 'Awogor',
-        last_name: 'Matthew',
-        email: 'awogorm@gmail.com',
-        phone_number: '07012665024',
-      };
-    }
-
     return null;
   };
 
   useEffect(() => {
-    if (urlTab && ['overview', 'users', 'adjust', 'vendors', 'reports', 'email', 'business-docs'].includes(urlTab)) {
+    if (urlTab && ['overview', 'users', 'agents', 'switches', 'adjust', 'vendors', 'reports', 'email', 'business-docs'].includes(urlTab)) {
       setActiveTab(urlTab as any);
     } else if (!urlTab) {
       setActiveTab('overview');
@@ -594,6 +590,12 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
+      {/* Tab: Agent & API Reseller Review */}
+      {activeTab === 'agents' && <AdminAgentReviewTab />}
+
+      {/* Tab: Service Availability Kill Switches */}
+      {activeTab === 'switches' && <AdminServiceSwitchesTab />}
+
       {/* Tab 3: Adjust */}
       {activeTab === 'adjust' && (
         <div className="max-w-2xl mx-auto p-6 md:p-8 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-6">
@@ -889,152 +891,39 @@ export default function AdminDashboardPage() {
               Manage Products & Margins
             </button>
           </div>
+
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-purple-400" />
+                AI Marketplace (AIPlug Engine)
+              </h4>
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold border border-emerald-200 dark:border-emerald-500/20">
+                CONNECTED
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Premium AI Accounts & Subscriptions (ChatGPT Plus, Cursor Pro, Claude 3.5, Gemini Pro, Canva, CapCut).
+            </p>
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200/80 dark:border-white/5 font-mono text-[11px] text-slate-700 dark:text-slate-300 space-y-1">
+              <p>Base URL: https://resellers.aiplug.store/api/v1</p>
+              <p>Delivery: Automated Activation & Instant Credentials</p>
+              <p>Status: Operational</p>
+            </div>
+            <button
+              onClick={() => setOpenAIMarketplaceModal(true)}
+              className="w-full py-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 font-bold text-xs border border-purple-500/20 flex items-center justify-center gap-2 transition-all shadow-sm"
+            >
+              <Sliders className="w-4 h-4" />
+              Manage AI Catalog & Margins
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Tab 5: Reports & Audit Logs */}
+      {/* Tab 5: Reports & Financial Analytics */}
       {activeTab === 'reports' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
-              <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                <span className="text-xs font-semibold">Total Audited Events</span>
-                <FileText className="w-4 h-4 text-sky-500" />
-              </div>
-              <p className="text-2xl font-black text-slate-900 dark:text-white">{stats?.totalTransactions || 0}</p>
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">100% Immutable Ledger</p>
-            </div>
-
-            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
-              <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                <span className="text-xs font-semibold">Reconciliation Status</span>
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              </div>
-              <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">Reconciled</p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">Zero orphaned debits</p>
-            </div>
-
-            <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
-              <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                <span className="text-xs font-semibold">Platform Vault Liquidity</span>
-                <Wallet className="w-4 h-4 text-amber-500" />
-              </div>
-              <p className="text-2xl font-black text-slate-900 dark:text-white">
-                {formatNaira(stats?.totalNgnBalance || 0)}
-              </p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">Total NGN User Backing</p>
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/80 shadow-sm p-6 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-brand-orange" />
-                  Financial & Transaction Ledger Audit
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                  Complete chronological record of all system debits, credits, refunds, and adjustments.
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => window.print()}
-                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-white/5 transition-all shadow-sm"
-                >
-                  Print Report
-                </button>
-              </div>
-            </div>
-
-            {stats?.recentTransactions?.length === 0 ? (
-              <div className="p-10 text-center text-xs text-slate-400">
-                No system transactions recorded in the audit log yet.
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="border-b border-slate-200 dark:border-white/10 text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    <tr>
-                      <th className="pb-3 font-semibold">Type</th>
-                      <th className="pb-3 font-semibold">Category</th>
-                      <th className="pb-3 font-semibold">Description / Ref</th>
-                      <th className="pb-3 font-semibold">Amount</th>
-                      <th className="pb-3 font-semibold">Status</th>
-                      <th className="pb-3 font-semibold">Timestamp</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300 font-mono">
-                    {stats?.recentTransactions?.map((tx: any) => {
-                      const isTxRefund =
-                        tx.category === 'refund' ||
-                        tx.reference?.startsWith('KP-REF') ||
-                        (tx.description || '').toLowerCase().startsWith('refund');
-
-                      return (
-                        <tr
-                          key={tx.id}
-                          onClick={() => setSelectedAuditTx(tx)}
-                          className="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
-                          title="Click to view provider telemetry, wholesale cost, and order reference"
-                        >
-                          <td className="py-3">
-                            <span
-                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
-                                isTxRefund
-                                  ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30'
-                                  : tx.type === 'credit'
-                                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                                  : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
-                              }`}
-                            >
-                              {isTxRefund ? 'Refund' : tx.type}
-                            </span>
-                          </td>
-                          <td className="py-3 capitalize text-slate-600 dark:text-slate-300">
-                            {isTxRefund ? (
-                              <span className="px-2 py-0.5 rounded text-[9.5px] font-bold uppercase tracking-wider bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/25">
-                                Refund
-                              </span>
-                            ) : (
-                              tx.category
-                            )}
-                          </td>
-                          <td className="py-3 font-sans max-w-xs md:max-w-md">
-                            <p className="text-slate-800 dark:text-slate-200 font-normal text-[11px] leading-relaxed break-words">
-                              {renderFormattedDescription(tx.description || 'System Event')}
-                            </p>
-                            <p className="text-[9.5px] text-amber-600 dark:text-brand-orange font-mono font-medium">{tx.reference}</p>
-                          </td>
-                          <td
-                            className={`py-3 font-bold font-mono whitespace-nowrap ${
-                              isTxRefund
-                                ? 'text-purple-600 dark:text-purple-400'
-                                : tx.type === 'credit'
-                                ? 'text-emerald-600 dark:text-emerald-400'
-                                : 'text-rose-600 dark:text-rose-400'
-                            }`}
-                          >
-                            {tx.type === 'credit' ? '+' : '-'}
-                            {formatNaira(tx.amount)}
-                          </td>
-                          <td className="py-3">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
-                              {tx.status}
-                            </span>
-                          </td>
-                          <td className="py-3 text-slate-500 dark:text-slate-400 text-[11px] font-sans">
-                            {formatDate(tx.created_at)}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
+        <AdminFinancialReportsTab onSelectAuditTx={(tx) => setSelectedAuditTx(tx)} />
       )}
 
       {/* Tab: Email Campaigns & SMTP */}
@@ -1074,6 +963,12 @@ export default function AdminDashboardPage() {
         isOpen={openSMSModal}
         initialProvider={smsModalProvider}
         onClose={() => setOpenSMSModal(false)}
+      />
+
+      {/* AI Marketplace Pricing & Overrides Modal */}
+      <AIMarketplacePricingModal
+        isOpen={openAIMarketplaceModal}
+        onClose={() => setOpenAIMarketplaceModal(false)}
       />
 
       {/* Admin User Inspection & Moderation Modal */}

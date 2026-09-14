@@ -2,12 +2,15 @@ import { renderBaseEmailLayout } from './baseLayout';
 
 export type EmailTemplateType =
   | 'welcome'
+  | 'email_verification'
+  | 'password_reset'
   | 'wallet_credit'
   | 'service_receipt'
   | 'refund_alert'
   | 'security_pin'
   | 'electricity_token'
-  | 'admin_broadcast';
+  | 'admin_broadcast'
+  | 'admin_low_balance';
 
 /**
  * 1. Welcome Email Template
@@ -600,3 +603,265 @@ export function renderAdminBroadcastEmail({
     }),
   };
 }
+
+/**
+ * 7. Admin Action Required: API Provider Low Balance / Out-of-Stock Alert
+ */
+export function renderAdminLowBalanceEmail({
+  productName,
+  providerName,
+  customerEmail,
+  orderReference,
+  amount,
+  errorMessage,
+  portalUrl,
+}: {
+  productName: string;
+  providerName: string;
+  customerEmail: string;
+  orderReference: string;
+  amount: string | number;
+  errorMessage: string;
+  portalUrl?: string;
+}): { subject: string; html: string } {
+  const contentHtml = `
+    <div style="background-color: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 14px; padding: 20px; margin-bottom: 24px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <span style="font-size: 11px; font-weight: 900; color: #DC2626; text-transform: uppercase; letter-spacing: 0.5px;">
+          ⚠️ Action Required: Supplier Wallet Depleted
+        </span>
+      </div>
+      <h2 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 900; color: #991B1B;">
+        Customer purchase blocked due to low provider balance
+      </h2>
+      <p style="margin: 0; font-size: 13px; line-height: 20px; color: #7F1D1D;">
+        A customer tried to purchase <strong>${productName}</strong>, but the order could not be fulfilled by <strong>${providerName}</strong> because your reseller wallet balance is depleted.
+      </p>
+    </div>
+
+    <!-- Diagnostic Details Table -->
+    <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; padding: 18px; margin-bottom: 24px;">
+      <div style="font-size: 11px; font-weight: 800; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">
+        Diagnostic Incident Details
+      </div>
+
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 13px;">
+        <tr>
+          <td style="color: #64748B; padding: 6px 0;">Attempted Product:</td>
+          <td align="right" style="font-weight: 800; color: #0F172A; padding: 6px 0;">${productName}</td>
+        </tr>
+        <tr>
+          <td style="color: #64748B; padding: 6px 0;">API Provider / Gateway:</td>
+          <td align="right" style="font-weight: 800; color: #7C3AED; padding: 6px 0;">${providerName}</td>
+        </tr>
+        <tr>
+          <td style="color: #64748B; padding: 6px 0;">Order Value:</td>
+          <td align="right" style="font-weight: 800; color: #0F172A; padding: 6px 0;">₦${typeof amount === 'number' ? amount.toLocaleString() : amount}</td>
+        </tr>
+        <tr>
+          <td style="color: #64748B; padding: 6px 0;">Customer Account:</td>
+          <td align="right" style="font-weight: 700; color: #0F172A; padding: 6px 0;">${customerEmail}</td>
+        </tr>
+        <tr>
+          <td style="color: #64748B; padding: 6px 0;">Order Reference:</td>
+          <td align="right" style="font-family: monospace; font-weight: 700; color: #475569; padding: 6px 0;">${orderReference}</td>
+        </tr>
+        <tr>
+          <td style="color: #64748B; padding: 6px 0;">Provider Error Reason:</td>
+          <td align="right" style="font-weight: 800; color: #DC2626; padding: 6px 0;">${errorMessage}</td>
+        </tr>
+        <tr>
+          <td style="color: #64748B; padding: 6px 0;">User Status:</td>
+          <td align="right" style="font-weight: 800; color: #059669; padding: 6px 0;">Automatically Refunded to Wallet</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- CTA Button to Fund Provider -->
+    <div style="text-align: center; margin: 28px 0 16px 0;">
+      <a href="${portalUrl || 'https://resellers.aiplug.store'}" target="_blank" style="display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); color: #FFFFFF; font-size: 13px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);">
+        Fund ${providerName} Wallet Now →
+      </a>
+    </div>
+
+    <p style="text-align: center; font-size: 11px; color: #94A3B8; margin: 0;">
+      Once funded, subsequent customer orders for this product will complete automatically.
+    </p>
+  `;
+
+    return {
+    subject: `🚨 [URGENT] ${providerName} Wallet Low: Customer purchase of "${productName}" failed`,
+    html: renderBaseEmailLayout({
+      previewText: `Action required: Fund your ${providerName} wallet. Customer order failed due to low balance.`,
+      headerBadge: 'Low Provider Balance',
+      badgeColor: '#DC2626',
+      contentHtml,
+    }),
+  };
+}
+
+/**
+ * 9. Custom Email Verification Template
+ */
+export function renderEmailVerificationEmail({
+  name,
+  email,
+  verifyUrl,
+  token,
+}: {
+  name: string;
+  email: string;
+  verifyUrl: string;
+  token?: string;
+}): { subject: string; html: string } {
+  const contentHtml = `
+    <h1 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 900; color: #0F172A; letter-spacing: -0.5px;">
+      Verify your email address, ${name} ✨
+    </h1>
+    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 22px; color: #475569;">
+      Thank you for creating your account with <strong>ZuvaPay</strong>. Please confirm that <strong>${email}</strong> belongs to you to activate automated wallet funding and wholesale telecom utilities.
+    </p>
+
+    <!-- Security Box -->
+    <div style="background-color: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 14px; padding: 20px; margin-bottom: 24px;">
+      <div style="font-size: 11px; font-weight: 800; color: #15803D; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+        🛡️ Secure 1-Click Verification
+      </div>
+      <p style="margin: 0 0 14px 0; font-size: 13px; line-height: 20px; color: #166534;">
+        Click the button below to instantly verify your account and unlock your dedicated virtual funding account.
+      </p>
+      <div style="text-align: center; margin: 16px 0;">
+        <a href="${verifyUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #FF6B00 0%, #EA580C 100%); color: #FFFFFF; font-size: 14px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);">
+          Verify My Email Address →
+        </a>
+      </div>
+      ${token ? `
+      <div style="text-align: center; margin-top: 12px; font-size: 12px; color: #15803D;">
+        Or enter this 6-digit verification code on your screen:
+        <div style="font-size: 24px; font-family: monospace; font-weight: 900; letter-spacing: 4px; color: #0F172A; margin-top: 6px;">
+          ${token}
+        </div>
+      </div>` : ''}
+    </div>
+
+    <!-- Secondary Link Copy Box -->
+    <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-bottom: 24px;">
+      <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 700; color: #64748B;">
+        Button not working? Copy and paste this link into your browser:
+      </p>
+      <p style="margin: 0; font-size: 11px; font-family: monospace; word-break: break-all; color: #3B82F6;">
+        ${verifyUrl}
+      </p>
+    </div>
+
+    <div style="border-top: 1px solid #E2E8F0; padding-top: 16px; font-size: 12px; color: #64748B; line-height: 18px;">
+      <p style="margin: 0 0 6px 0;">
+        <strong>Didn't sign up for ZuvaPay?</strong> You can safely ignore this email. No account will be activated without verification.
+      </p>
+      <p style="margin: 0; font-size: 11px; color: #94A3B8;">
+        This verification link will expire in 7 minutes for your account security.
+      </p>
+    </div>
+  `;
+
+  return {
+    subject: `Verify your ZuvaPay account — ${name}`,
+    html: renderBaseEmailLayout({
+      previewText: `Confirm your email to activate your ZuvaPay account and unlock instant utilities.`,
+      headerBadge: 'Email Verification',
+      badgeColor: '#10B981',
+      contentHtml,
+    }),
+  };
+}
+
+/**
+ * 10. Custom Password Reset Template
+ */
+export function renderPasswordResetEmail({
+  name,
+  email,
+  resetUrl,
+  ipAddress,
+}: {
+  name: string;
+  email: string;
+  resetUrl: string;
+  ipAddress?: string;
+}): { subject: string; html: string } {
+  const contentHtml = `
+    <h1 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 900; color: #0F172A; letter-spacing: -0.5px;">
+      Reset your ZuvaPay password 🔒
+    </h1>
+    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 22px; color: #475569;">
+      We received a request to reset the password for your ZuvaPay account (<strong>${email}</strong>).
+    </p>
+
+    <!-- Reset Action Box -->
+    <div style="background-color: #FFF7ED; border: 1px solid #FFEDD5; border-radius: 14px; padding: 22px; margin-bottom: 24px;">
+      <div style="font-size: 11px; font-weight: 800; color: #C2410C; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+        🔑 Password Recovery
+      </div>
+      <p style="margin: 0 0 16px 0; font-size: 13px; line-height: 20px; color: #9A3412;">
+        Click the button below to choose a strong, new password. For your security, this recovery link will expire in <strong>7 minutes</strong>.
+      </p>
+      <div style="text-align: center; margin: 18px 0;">
+        <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #FF6B00 0%, #EA580C 100%); color: #FFFFFF; font-size: 14px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);">
+          Set New Password →
+        </a>
+      </div>
+    </div>
+
+    <!-- Security Advisory & Metadata -->
+    <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+      <div style="font-size: 11px; font-weight: 800; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">
+        Security Advisory & Request Details
+      </div>
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 12px;">
+        <tr>
+          <td style="color: #64748B; padding: 4px 0;">Target Account:</td>
+          <td align="right" style="font-weight: 700; color: #0F172A; padding: 4px 0;">${email}</td>
+        </tr>
+        <tr>
+          <td style="color: #64748B; padding: 4px 0;">Requested At:</td>
+          <td align="right" style="font-weight: 700; color: #0F172A; padding: 4px 0;">${new Date().toLocaleString('en-NG', { timeZone: 'Africa/Lagos' })} WAT</td>
+        </tr>
+        ${ipAddress ? `
+        <tr>
+          <td style="color: #64748B; padding: 4px 0;">Request IP Address:</td>
+          <td align="right" style="font-family: monospace; font-weight: 700; color: #475569; padding: 4px 0;">${ipAddress}</td>
+        </tr>` : ''}
+      </table>
+    </div>
+
+    <!-- Secondary Fallback Link -->
+    <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-bottom: 24px;">
+      <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 700; color: #64748B;">
+        Button not opening? Copy and paste this URL into your browser:
+      </p>
+      <p style="margin: 0; font-size: 11px; font-family: monospace; word-break: break-all; color: #3B82F6;">
+        ${resetUrl}
+      </p>
+    </div>
+
+    <div style="border-top: 1px solid #E2E8F0; padding-top: 16px; font-size: 12px; color: #64748B; line-height: 18px;">
+      <p style="margin: 0 0 6px 0; color: #DC2626; font-weight: 700;">
+        ⚠️ Didn't request a password reset?
+      </p>
+      <p style="margin: 0; font-size: 11px; color: #64748B;">
+        If you didn't initiate this request, your account may be at risk. We recommend reviewing your security settings or reaching out immediately to <strong>support@zuvapay.com</strong>.
+      </p>
+    </div>
+  `;
+
+  return {
+    subject: `Reset your ZuvaPay password`,
+    html: renderBaseEmailLayout({
+      previewText: `Reset your ZuvaPay password safely. Link expires in 7 minutes.`,
+      headerBadge: 'Security Alert',
+      badgeColor: '#F59E0B',
+      contentHtml,
+    }),
+  };
+}
+

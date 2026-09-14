@@ -34,8 +34,8 @@ export function HeroInteractiveDemo() {
 
   return (
     <div className="relative">
-      {/* Floating Live Transaction Pill (Zojapay / SquareMe style) */}
-      <div className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/95 border border-slate-200/90 shadow-lg shadow-slate-900/5 absolute -top-5 -left-6 z-20">
+      {/* Floating Live Transaction Pill */}
+      <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/95 border border-slate-200/90 shadow-lg shadow-slate-900/5 absolute -top-4 right-4 z-20">
         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
         <p className="text-[11px] font-semibold text-slate-800">
           <strong className="text-slate-950">Adaeze</strong> recharged 25GB SME Data — 2m ago
@@ -53,31 +53,31 @@ export function HeroInteractiveDemo() {
       </div>
 
       {/* Main Card Container */}
-      <div className="relative rounded-[28px] border border-slate-200/90 bg-white p-6 md:p-8 shadow-2xl shadow-slate-200/80 overflow-hidden">
+      <div className="relative rounded-2xl border border-slate-200/90 bg-white p-5 md:p-6 shadow-xl shadow-slate-200/70 overflow-hidden">
         {/* Soft Solar Glow inside Card */}
-        <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-orange-400/10 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-amber-300/15 blur-3xl pointer-events-none" />
+        <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-orange-400/10 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full bg-amber-300/15 blur-3xl pointer-events-none" />
 
         {/* Header with tabs */}
-        <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-4 mb-5">
+        <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-4">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-black uppercase tracking-wider text-slate-900 font-display">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[11px] font-black uppercase tracking-wider text-slate-900 font-display">
               Live Fulfillment Demo
             </span>
           </div>
         </div>
 
         {/* Tab Switcher */}
-        <div className="grid grid-cols-3 gap-2 p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200/80 mb-5">
+        <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-slate-100/90 border border-slate-200/80 mb-4">
           <button
             onClick={() => {
               setActiveTab('data');
               setSuccessStatus(null);
             }}
-            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all ${
               activeTab === 'data'
-                ? 'bg-gradient-to-r from-zuva-solar to-zuva-amber text-white shadow-md shadow-orange-500/25'
+                ? 'bg-gradient-to-r from-zuva-solar to-zuva-amber text-white shadow-sm shadow-orange-500/25'
                 : 'text-slate-600 hover:text-slate-950'
             }`}
           >
@@ -97,7 +97,7 @@ export function HeroInteractiveDemo() {
             }`}
           >
             <MessageSquareCode className="w-3.5 h-3.5" />
-            <span>Foreign SMS</span>
+            <span>Virtual Numbers</span>
           </button>
 
           <button
@@ -192,11 +192,11 @@ export function HeroInteractiveDemo() {
             onClick={handleSimulate}
             disabled={simulating}
             data-preserve-dark
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-gradient-to-r from-zuva-solar to-zuva-amber hover:from-orange-600 hover:to-amber-600 !text-white font-bold text-xs md:text-sm transition-all shadow-xl shadow-orange-500/25 active:scale-95 disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-zuva-solar to-zuva-amber hover:from-orange-600 hover:to-amber-600 !text-white font-bold text-xs transition-all shadow-md shadow-orange-500/20 active:scale-95 disabled:opacity-50"
           >
             {simulating ? (
               <>
-                <RefreshCw className="w-4 h-4 animate-spin !text-white" />
+                <RefreshCw className="w-3.5 h-3.5 animate-spin !text-white" />
                 <span className="!text-white font-bold">Connecting Carrier Switch...</span>
               </>
             ) : (

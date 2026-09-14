@@ -14,6 +14,7 @@ import {
 } from '@/lib/data/gongozCatalog';
 import { faddedFetch } from '@/lib/vendors/fadded';
 import { GRIZZLY_SERVICES, SMSPOOL_SERVICES } from '@/lib/data/smsCatalog';
+import { AI_MARKETPLACE_CATALOG } from '@/lib/data/aiMarketplaceCatalog';
 
 export async function GET(request: NextRequest) {
   try {
@@ -291,6 +292,43 @@ export async function GET(request: NextRequest) {
       };
     }
 
+    // Provider: AI Marketplace (AIPlug)
+    if (provider === 'all' || provider === 'marketplace') {
+      const marketplaceRule = config.marketplace?.globalRule || { type: 'percentage', value: 20 };
+      const marketplaceOverrides = config.marketplace?.overrides || {};
+
+      const productsWithPricing = AI_MARKETPLACE_CATALOG.map((p) => {
+        const wholesaleCost = p.resellerPriceNgn;
+        const override = marketplaceOverrides[p.id];
+        const { retailPrice, marginAmount, marginPercent, isOverridden } = computeRetailPrice(
+          wholesaleCost,
+          marketplaceRule,
+          override
+        );
+
+        return {
+          id: p.id,
+          name: p.name,
+          category: p.category,
+          summary: p.summary,
+          description: p.description,
+          wholesaleCost,
+          retailPrice,
+          marginAmount,
+          marginPercent,
+          isOverridden,
+          stock: p.stock,
+          accessType: p.accessType,
+          warranty: p.warranty,
+        };
+      });
+
+      result.marketplace = {
+        products: productsWithPricing,
+        globalRule: marketplaceRule,
+      };
+    }
+
     return NextResponse.json(result);
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -353,6 +391,9 @@ export async function POST(request: NextRequest) {
       } else if (provider === 'smspool') {
         if (!updated.smspool) updated.smspool = { globalRule: { type: 'percentage', value: 25 }, overrides: {} };
         updated.smspool.globalRule = { type: normalizedType, value: Number(rule.value) };
+      } else if (provider === 'marketplace') {
+        if (!updated.marketplace) updated.marketplace = { globalRule: { type: 'percentage', value: 20 }, overrides: {} };
+        updated.marketplace.globalRule = { type: normalizedType, value: Number(rule.value) };
       } else {
         return NextResponse.json({ success: false, error: 'Unknown provider' }, { status: 400 });
       }
@@ -396,6 +437,9 @@ export async function POST(request: NextRequest) {
       } else if (provider === 'smspool') {
         if (!updated.smspool) updated.smspool = { globalRule: { type: 'percentage', value: 25 }, overrides: {} };
         updated.smspool.overrides[String(itemId)] = Math.round(price);
+      } else if (provider === 'marketplace') {
+        if (!updated.marketplace) updated.marketplace = { globalRule: { type: 'percentage', value: 20 }, overrides: {} };
+        updated.marketplace.overrides[String(itemId)] = Math.round(price);
       }
     } else if (action === 'clear_override') {
       if (!itemId) {
@@ -421,6 +465,10 @@ export async function POST(request: NextRequest) {
       } else if (provider === 'smspool') {
         if (updated.smspool?.overrides) {
           delete updated.smspool.overrides[String(itemId)];
+        }
+      } else if (provider === 'marketplace') {
+        if (updated.marketplace?.overrides) {
+          delete updated.marketplace.overrides[String(itemId)];
         }
       }
     } else {

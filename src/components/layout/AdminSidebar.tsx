@@ -16,6 +16,8 @@ import {
   History,
   Lock,
   Mail,
+  Power,
+  UserCheck,
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -46,6 +48,20 @@ export function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
           badge: 'Live',
         },
         {
+          name: 'Agent Applications',
+          href: '/admin?tab=agents',
+          tabId: 'agents',
+          icon: UserCheck,
+          badge: 'Review',
+        },
+        {
+          name: 'Service Kill Switches',
+          href: '/admin?tab=switches',
+          tabId: 'switches',
+          icon: Power,
+          badge: 'Control',
+        },
+        {
           name: 'Wallet Adjustments',
           href: '/admin?tab=adjust',
           tabId: 'adjust',
@@ -57,17 +73,18 @@ export function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
       label: 'Monitoring & Communication',
       items: [
         {
-          name: 'Reports & Audit Logs',
+          name: 'Reports & Analytics',
           href: '/admin?tab=reports',
           tabId: 'reports',
           icon: FileText,
+          badge: 'Sales & Profit',
         },
         {
           name: 'Vendor Gateways',
           href: '/admin?tab=vendors',
           tabId: 'vendors',
           icon: Zap,
-          badge: '5 Gateways',
+          badge: '6 Gateways',
         },
         {
           name: 'Email & Campaigns',

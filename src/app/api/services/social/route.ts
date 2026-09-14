@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { addOrder, getOrderStatus, getMultipleOrdersStatus, getBalance, getServices, MomoServiceItem } from '@/lib/vendors/momo';
 import { getPricingConfig, computeRetailPrice } from '@/lib/pricing/pricingStore';
+import { checkServiceAvailability } from '@/lib/services/serviceStatusStore';
 
 // The 6 allowed platforms
 const ALLOWED_PLATFORMS = [
@@ -443,6 +444,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const serviceCheck = checkServiceAvailability('social');
+    if (!serviceCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: serviceCheck.message },
+        { status: 503 }
+      );
+    }
+
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 

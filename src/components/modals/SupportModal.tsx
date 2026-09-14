@@ -39,8 +39,8 @@ export function useSupport() {
 // Configurable ZuvaPay Official Support Contacts
 const SUPPORT_CONTACTS = {
   whatsapp: {
-    number: '+2348000000000',
-    cleanNumber: '2348000000000',
+    number: '+2349038416331',
+    cleanNumber: '2349038416331',
     label: 'WhatsApp Support',
     handle: 'Chat with Support Team',
   },
@@ -50,7 +50,7 @@ const SUPPORT_CONTACTS = {
     label: 'Telegram Official Desk',
   },
   email: {
-    address: 'support@zuvapay.com',
+    address: 'hello@zuvapay.com',
     label: 'Email Helpdesk',
   },
   phone: {

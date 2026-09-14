@@ -12,6 +12,7 @@ import {
 } from '@/lib/vendors/smspool';
 import { getPricingConfigSync, computeRetailPrice } from '@/lib/pricing/pricingStore';
 import { getDynamicSMSQuote } from '@/lib/pricing/smsPricing';
+import { checkServiceAvailability } from '@/lib/services/serviceStatusStore';
 
 // Helper to generate native emoji flag from ISO 2-letter country code
 function getCountryFlag(shortName?: string): string {
@@ -472,6 +473,14 @@ export async function POST(request: NextRequest) {
 
     // 1. BUY / RENT NUMBER
     if (action === 'buy') {
+      const serviceCheck = checkServiceAvailability('sms');
+      if (!serviceCheck.allowed) {
+        return NextResponse.json(
+          { success: false, error: serviceCheck.message },
+          { status: 503 }
+        );
+      }
+
       // ----------------------------------------------------
       // SERVER 2 ROUTE (SMSPool)
       // ----------------------------------------------------

@@ -2,9 +2,18 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { subscribeElectricity } from '@/lib/vendors/strowallet';
 import { sendTransactionalEmail } from '@/lib/email/sendEmail';
+import { checkServiceAvailability } from '@/lib/services/serviceStatusStore';
 
 export async function POST(request: NextRequest) {
   try {
+    const serviceCheck = checkServiceAvailability('power');
+    if (!serviceCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: serviceCheck.message },
+        { status: 503 }
+      );
+    }
+
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 

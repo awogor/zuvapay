@@ -10,46 +10,46 @@ export function StrategicPartners() {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-100 text-zuva-solar text-xs font-bold">
-            <span>Infrastructure & Compliance</span>
+            <span>Fast, Reliable Infrastructure</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-black text-slate-950 font-display tracking-tight">
-            Powered by Licensed Banking &amp; Tier-1 African Infrastructure
+            Built on Enterprise-Grade Payment &amp; Telecom Infrastructure
           </h2>
           <p className="text-sm text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            ZuvaPay integrates directly with CBN-licensed settlement institutions, direct telecom carrier switches, and electricity DisCos to guarantee sub-second delivery and 100% automated refunds.
+            ZuvaPay connects directly to automated payment rails, telecom switches, and electricity DisCos to guarantee sub-second delivery and automated wallet refunds.
           </p>
         </div>
 
         {/* 4 Infrastructure Pillars */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Pillar 1: Banking & Settlement */}
+          {/* Pillar 1: Automated Payments & Wallets */}
           <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow space-y-4">
             <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
               <div className="p-2.5 rounded-2xl bg-blue-50 text-blue-600">
                 <Building2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-black text-slate-900 font-display">Banking Settlement</h3>
-                <p className="text-[11px] text-slate-500 font-medium">Regulated Financial Partners</p>
+                <h3 className="text-sm font-black text-slate-900 font-display">Payments &amp; Funding</h3>
+                <p className="text-[11px] text-slate-500 font-medium">Instant Wallet Infrastructure</p>
               </div>
             </div>
 
             <ul className="space-y-3 text-xs">
               <li className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="font-bold text-slate-800">Commercial Banking Rails</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold">Virtual Accounts</span>
+                <span className="font-bold text-slate-800">Instant Wallet Top-Up</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold">Instant Credit</span>
               </li>
               <li className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="font-bold text-slate-800">Tier-1 Settlement Switch</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-semibold">Auto-Credit</span>
+                <span className="font-bold text-slate-800">Direct Bank Transfers</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-semibold">Auto-Synced</span>
               </li>
               <li className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="font-bold text-slate-800">Interbank Clearing Switch</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Instant Switch</span>
+                <span className="font-bold text-slate-800">Dual NGN &amp; USD Wallets</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Multi-Currency</span>
               </li>
               <li className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="font-bold text-slate-800">Direct Payment Gateways</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-semibold">Gateway Switch</span>
+                <span className="font-bold text-slate-800">Secure Payment Gateways</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-semibold">Card &amp; USSD</span>
               </li>
             </ul>
           </div>
@@ -130,34 +130,34 @@ export function StrategicPartners() {
             </ul>
           </div>
 
-          {/* Pillar 4: Security & Compliance */}
+          {/* Pillar 4: Security & Protection */}
           <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow space-y-4">
             <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
               <div className="p-2.5 rounded-2xl bg-indigo-50 text-indigo-600">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-black text-slate-900 font-display">Security &amp; Legal</h3>
-                <p className="text-[11px] text-slate-500 font-medium">NDPR Data Protection</p>
+                <h3 className="text-sm font-black text-slate-900 font-display">Account Security</h3>
+                <p className="text-[11px] text-slate-500 font-medium">Data Privacy &amp; Protection</p>
               </div>
             </div>
 
             <ul className="space-y-3 text-xs">
               <li className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="font-bold text-slate-800">NDPR Compliant</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Verified</span>
+                <span className="font-bold text-slate-800">Data Privacy Standard</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Protected</span>
               </li>
               <li className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                 <span className="font-bold text-slate-800">256-Bit SSL/TLS</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-semibold">Bank Grade</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-semibold">Encrypted</span>
               </li>
               <li className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                 <span className="font-bold text-slate-800">4-Digit PIN Lock</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-800 font-semibold">Protected</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-800 font-semibold">Secure</span>
               </li>
               <li className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                 <span className="font-bold text-slate-800">Atomic Auto-Refund</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">100% Funds Back</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Instant Credit</span>
               </li>
             </ul>
           </div>

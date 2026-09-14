@@ -109,7 +109,7 @@ export function renderBaseEmailLayout({
                     <div style="font-size: 11px; color: #64748B;">Our Lagos customer team responds in under 3 minutes on WhatsApp.</div>
                   </td>
                   <td align="right" style="vertical-align: middle;">
-                    <a href="https://wa.me/2348000000000?text=Hello%20ZuvaPay%20Helpdesk" target="_blank" style="display: inline-block; padding: 8px 14px; background-color: #10B981; color: #FFFFFF; font-size: 11px; font-weight: 800; text-decoration: none; border-radius: 8px;">
+                    <a href="https://wa.me/2349038416331?text=Hello%20ZuvaPay%20Helpdesk" target="_blank" style="display: inline-block; padding: 8px 14px; background-color: #10B981; color: #FFFFFF; font-size: 11px; font-weight: 800; text-decoration: none; border-radius: 8px;">
                       Chat Now
                     </a>
                   </td>
@@ -128,7 +128,7 @@ export function renderBaseEmailLayout({
                       🔒 256-Bit SSL Encrypted
                     </span>
                     <span style="display: inline-block; font-size: 11px; font-weight: 700; color: #475569; margin: 0 8px;">
-                      🛡️ NDPR Compliant
+                      🛡️ Data Privacy Protected
                     </span>
                     <span style="display: inline-block; font-size: 11px; font-weight: 700; color: #475569; margin: 0 8px;">
                       ⚡ 5-Sec Auto Refund

@@ -10,6 +10,9 @@ import {
   renderSecurityPinEmail,
   renderElectricityTokenEmail,
   renderAdminBroadcastEmail,
+  renderEmailVerificationEmail,
+  renderPasswordResetEmail,
+  renderAdminLowBalanceEmail,
 } from '@/lib/email/templates';
 
 export async function GET() {
@@ -119,6 +122,35 @@ export async function POST(request: NextRequest) {
           });
           break;
 
+        case 'email_verification':
+          rendered = renderEmailVerificationEmail({
+            name,
+            email: targetEmail || 'david@zuvapay.com',
+            verifyUrl: sampleData.verifyUrl || sampleData.verificationUrl || 'http://localhost:3000/auth/callback?type=signup&next=/dashboard',
+          });
+          break;
+
+        case 'password_reset':
+          rendered = renderPasswordResetEmail({
+            name,
+            email: targetEmail || 'david@zuvapay.com',
+            resetUrl: sampleData.resetUrl || 'http://localhost:3000/reset-password',
+            ipAddress: '102.89.23.14 (Lagos, NG)',
+          });
+          break;
+
+        case 'admin_low_balance':
+          rendered = renderAdminLowBalanceEmail({
+            productName: sampleData.productName || 'MTN SME Data 1GB',
+            providerName: sampleData.providerName || 'Gongoz Switch 1',
+            customerEmail: targetEmail || 'customer@zuvapay.com',
+            orderReference: sampleData.orderReference || 'KP-ORD-882190',
+            amount: sampleData.amount || 280,
+            errorMessage: sampleData.errorMessage || 'Reseller wallet balance insufficient (NGN 14.20 left)',
+            portalUrl: sampleData.portalUrl || 'https://resellers.aiplug.store',
+          });
+          break;
+
         default:
           rendered = renderWelcomeEmail({ name, email: targetEmail || 'david@zuvapay.com' });
       }
@@ -147,6 +179,9 @@ export async function POST(request: NextRequest) {
       category: sampleData.category || 'DATA',
       reason: 'Simulated Gateway Failure (100% Refunded)',
       actionType: 'Security PIN Setup',
+      verificationUrl: 'http://localhost:3000/auth/callback?type=signup&next=/dashboard',
+      resetUrl: 'http://localhost:3000/reset-password',
+      ipAddress: '102.89.23.14 (Lagos, NG)',
       virtualAccount: {
         bankName: 'Moniepoint MFB',
         accountNumber: '8910293819',
