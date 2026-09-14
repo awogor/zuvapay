@@ -70,6 +70,14 @@ export function Sidebar({ onOpenFundModal, onCloseMobile }: SidebarProps) {
       ],
     },
     {
+      label: 'Digital Marketplace',
+      items: [
+        { name: 'AI Marketplace', href: '/services/marketplace', icon: Sparkles, badge: 'Hot', highlight: true },
+        { name: 'Log Market', href: '/services/logs/all', icon: ShoppingBag, badge: 'Instant' },
+        { name: 'Social Boost', href: '/services/social/youtube', icon: TrendingUp },
+      ],
+    },
+    {
       label: 'Account',
       items: [
         { name: 'Profile & Security', href: '/profile', icon: UserCheck },

@@ -79,6 +79,37 @@ export function ServicesGrid() {
       iconBg: 'bg-purple-500/20 text-purple-400',
       featured: true,
     },
+    {
+      title: 'AI Tools & Marketplace',
+      desc: 'Gemini Pro, CapCut Pro, Canva, Elevenlabs, ChatGPT & Cursor AI',
+      icon: Sparkles,
+      href: '/services/marketplace',
+      badge: 'Hot AI',
+      badgeColor: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20',
+      color: 'from-indigo-500/20 to-purple-500/10 border-indigo-500/30 text-indigo-400',
+      iconBg: 'bg-indigo-500/20 text-indigo-400',
+      featured: true,
+    },
+    {
+      title: 'Account Logs & Software',
+      desc: 'Aged social accounts, VPNs, developer keys & streaming logs',
+      icon: ShoppingBag,
+      href: '/services/logs/all',
+      badge: 'Instant Delivery',
+      badgeColor: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20',
+      color: 'from-cyan-500/20 to-blue-500/10 border-cyan-500/30 text-cyan-400',
+      iconBg: 'bg-cyan-500/20 text-cyan-400',
+    },
+    {
+      title: 'Social Media Growth',
+      desc: 'Real followers, likes, views & engagement for YouTube, IG, TikTok & X',
+      icon: TrendingUp,
+      href: '/services/social/youtube',
+      badge: 'Trending',
+      badgeColor: 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/20',
+      color: 'from-pink-500/20 to-rose-500/10 border-pink-500/30 text-pink-400',
+      iconBg: 'bg-pink-500/20 text-pink-400',
+    },
   ];
 
   return (
