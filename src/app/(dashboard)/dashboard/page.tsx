@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useWallet } from '@/context/WalletContext';
 import { BalanceCard } from '@/components/dashboard/BalanceCard';
@@ -15,10 +15,44 @@ import Link from 'next/link';
 export default function DashboardPage() {
   const { user, profile } = useAuth();
   const { success } = useToast();
+  const { refreshWallet } = useWallet();
   const [fundModalOpen, setFundModalOpen] = useState(false);
   const [swapModalOpen, setSwapModalOpen] = useState(false);
+  const verifiedRef = useRef<string | null>(null);
 
   const effectiveUsername = profile?.username || user?.user_metadata?.username;
+
+  // Automatically verify payment on redirect and refresh wallet
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get('payment');
+    const ref = params.get('ref') || params.get('reference');
+
+    if (ref && ref !== verifiedRef.current) {
+      verifiedRef.current = ref;
+      fetch(`/api/wallet/verify-checkout?ref=${encodeURIComponent(ref)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            refreshWallet();
+            success(
+              'Deposit Confirmed',
+              data.amount
+                ? `₦${Number(data.amount).toLocaleString()} added to your wallet balance.`
+                : 'Your wallet balance has been updated.'
+            );
+          }
+        })
+        .catch((err) => console.error('[CHECKOUT_VERIFY_ERROR]', err))
+        .finally(() => {
+          window.history.replaceState({}, '', window.location.pathname);
+        });
+    } else if (payment === 'success') {
+      refreshWallet();
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [refreshWallet, success]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
