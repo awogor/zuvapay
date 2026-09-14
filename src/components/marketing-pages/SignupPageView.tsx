@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/common/Toast';
-import { Mail, Lock, User, Phone, ArrowRight, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User, Phone, ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 export function SignupPageView() {
   const router = useRouter();
@@ -22,6 +22,7 @@ export function SignupPageView() {
     password: '',
   });
 
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
@@ -122,52 +123,42 @@ export function SignupPageView() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-orange-50/80 via-amber-50/40 to-slate-100/90 relative overflow-hidden selection:bg-zuva-solar selection:text-white">
+    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-gradient-to-br from-orange-50/80 via-amber-50/40 to-slate-100/90 relative overflow-hidden selection:bg-zuva-solar selection:text-white">
       {/* Background ambient solar glow orbs */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-zuva-solar/15 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 h-96 w-96 rounded-full bg-zuva-amber/15 blur-[120px] pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-60 pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 h-80 w-80 rounded-full bg-zuva-solar/15 blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 h-80 w-80 rounded-full bg-zuva-amber/15 blur-[100px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-50 pointer-events-none" />
 
       {/* Floating back button */}
       <Link
         href="/"
-        className="absolute top-6 left-6 z-20 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 hover:bg-white border border-slate-200 shadow-sm text-xs font-bold text-slate-700 hover:text-slate-950 transition-all backdrop-blur-md"
+        className="absolute top-5 left-5 z-20 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 hover:bg-white border border-slate-200 shadow-sm text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all backdrop-blur-md"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
-        <span>Back to Home</span>
+        <span>Home</span>
       </Link>
 
-      {/* Form Container - Pops Out Crisp & Clean */}
-      <div className="relative z-10 w-full max-w-lg rounded-[28px] border border-slate-200/90 bg-white/95 p-8 sm:p-10 shadow-[0_25px_60px_-15px_rgba(255,107,0,0.12),0_12px_30px_-10px_rgba(15,23,42,0.08)] backdrop-blur-xl ring-1 ring-slate-900/5 my-8">
-        {/* Brand Header */}
-        <div className="flex flex-col items-center text-center space-y-3 mb-8">
-          <Link href="/" className="group">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-zuva-solar via-zuva-amber to-zuva-gold font-black text-xl text-slate-950 shadow-md shadow-orange-500/25 group-hover:scale-105 transition-transform duration-200">
-              ZP
-            </div>
-          </Link>
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-950 font-display">
-              Create Your Account
-            </h1>
-            <p className="text-xs text-slate-500">
-              One unified wallet for cheap SME data, electricity tokens, virtual dollar cards, and bill payments
-            </p>
-          </div>
+      {/* Form Container - Compact, popping white card with zero wasted gaps */}
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200/90 bg-white p-6 shadow-[0_20px_50px_-12px_rgba(255,107,0,0.12),0_8px_24px_-8px_rgba(15,23,42,0.06)] ring-1 ring-slate-900/5 my-4">
+        {/* Clean Small Heading - No Icon, No Subtitle */}
+        <div className="text-center mb-4">
+          <h1 className="text-lg font-bold tracking-tight text-slate-900">
+            Create an Account on <span className="text-zuva-solar">ZuvaPay</span>
+          </h1>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {/* Title and First Name row */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2.5">
             <div className="col-span-1">
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Title
               </label>
               <select
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                className="w-full px-3 py-3 rounded-xl bg-slate-50/90 border border-slate-200 text-slate-900 focus:outline-none focus:bg-white focus:border-zuva-solar focus:ring-4 focus:ring-orange-500/10 text-xs font-medium transition-all"
+                className="w-full px-2.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:bg-white focus:border-zuva-solar focus:ring-2 focus:ring-orange-500/10 text-xs font-medium transition-all"
               >
                 <option value="Mr">Mr</option>
                 <option value="Mrs">Mrs</option>
@@ -176,19 +167,19 @@ export function SignupPageView() {
             </div>
 
             <div className="col-span-2">
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 First Name
               </label>
               <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
-                  placeholder="e.g. David"
+                  placeholder="David"
                   required
-                  className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-slate-50/90 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-zuva-solar focus:ring-4 focus:ring-orange-500/10 text-xs font-medium transition-all"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-zuva-solar focus:ring-2 focus:ring-orange-500/10 text-xs font-medium transition-all"
                 />
               </div>
             </div>
@@ -196,30 +187,30 @@ export function SignupPageView() {
 
           {/* Last Name */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
               Last Name
             </label>
             <div className="relative">
-              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
-                placeholder="e.g. Adeleke"
+                placeholder="Adeleke"
                 required
-                className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-slate-50/90 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-zuva-solar focus:ring-4 focus:ring-orange-500/10 text-xs font-medium transition-all"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-zuva-solar focus:ring-2 focus:ring-orange-500/10 text-xs font-medium transition-all"
               />
             </div>
           </div>
 
-          {/* Unique Username Field with @ prefix */}
+          {/* Username Field */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
-              Choose Username (@handle)
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Choose Username
             </label>
             <div className="relative">
-              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-zuva-solar text-xs select-none">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-zuva-solar text-xs select-none">
                 @
               </div>
               <input
@@ -227,34 +218,29 @@ export function SignupPageView() {
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-                placeholder="e.g. davidadeleke, chidi_fintech"
+                placeholder="davidadeleke"
                 required
-                className="w-full pl-8 pr-28 py-3 rounded-xl bg-slate-50/90 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-zuva-solar focus:ring-4 focus:ring-orange-500/10 text-xs font-mono font-medium lowercase transition-all"
+                className="w-full pl-7 pr-24 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-zuva-solar focus:ring-2 focus:ring-orange-500/10 text-xs font-mono font-medium lowercase transition-all"
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold">
                 {checkingUsername && <span className="text-slate-400 animate-pulse">Checking...</span>}
                 {!checkingUsername && usernameAvailable === true && (
-                  <span className="text-emerald-600 flex items-center gap-1 font-bold">✓ Available</span>
+                  <span className="text-emerald-600 font-bold">✓ Available</span>
                 )}
                 {!checkingUsername && usernameAvailable === false && (
-                  <span className="text-rose-600 flex items-center gap-1 font-bold">✕ Taken</span>
+                  <span className="text-rose-600 font-bold">✕ Taken</span>
                 )}
               </div>
             </div>
-            {usernameFeedback && (
-              <p className={`text-[11px] mt-1 font-medium ${usernameAvailable === false ? 'text-rose-600' : 'text-emerald-600'}`}>
-                {usernameFeedback}
-              </p>
-            )}
           </div>
 
           {/* Phone Number */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
               Phone Number
             </label>
             <div className="relative">
-              <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="tel"
                 name="phone"
@@ -262,18 +248,18 @@ export function SignupPageView() {
                 onChange={handleChange}
                 placeholder="08012345678"
                 required
-                className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-slate-50/90 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-zuva-solar focus:ring-4 focus:ring-orange-500/10 text-xs font-medium transition-all"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-zuva-solar focus:ring-2 focus:ring-orange-500/10 text-xs font-medium transition-all"
               />
             </div>
           </div>
 
           {/* Email Address */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
               Email Address
             </label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="email"
                 name="email"
@@ -283,46 +269,53 @@ export function SignupPageView() {
                 required
                 autoCapitalize="none"
                 autoCorrect="off"
-                className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-slate-50/90 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-zuva-solar focus:ring-4 focus:ring-orange-500/10 text-xs font-medium transition-all"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-zuva-solar focus:ring-2 focus:ring-orange-500/10 text-xs font-medium transition-all"
               />
             </div>
           </div>
 
-          {/* Password */}
+          {/* Password with Visibility Toggle */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
               Password
             </label>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="••••••••"
+                placeholder="At least 6 characters"
                 required
-                className="w-full pl-10 pr-3.5 py-3 rounded-xl bg-slate-50/90 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-zuva-solar focus:ring-4 focus:ring-orange-500/10 text-xs font-medium transition-all"
+                className="w-full pl-9 pr-10 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-zuva-solar focus:ring-2 focus:ring-orange-500/10 text-xs font-medium transition-all"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
-            <p className="text-[10px] text-slate-400 mt-1">Must be at least 6 characters</p>
           </div>
 
-          <div className="pt-2">
+          <div className="pt-1">
             <button
               type="submit"
               disabled={loading || usernameAvailable === false}
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-zuva-solar to-zuva-amber hover:from-orange-600 hover:to-amber-600 text-white font-bold text-sm transition-all shadow-lg shadow-orange-500/25 hover:shadow-orange-500/35 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-1.5 py-3 rounded-xl bg-gradient-to-r from-zuva-solar to-zuva-amber hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs transition-all shadow-md shadow-orange-500/20 disabled:opacity-50"
             >
-              {loading ? 'Creating Account...' : 'Create Free Account'}
-              <ArrowRight className="w-4 h-4" />
+              {loading ? 'Creating Account...' : 'Create Account'}
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-slate-100 text-center text-xs text-slate-500">
+        <div className="mt-4 text-center text-xs text-slate-500">
           Already have an account?{' '}
-          <Link href="/login" className="font-bold text-zuva-solar hover:text-orange-700 hover:underline">
+          <Link href="/login" className="font-bold text-zuva-solar hover:underline">
             Sign In
           </Link>
         </div>
