@@ -25,6 +25,26 @@ export async function GET(request: NextRequest) {
       console.error('[AUTH_VERIFY_ERROR]', error.message);
       return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error.message)}`, requestUrl.origin));
     }
+
+    // Upon successful signup verification, dispatch branded Welcome onboarding email
+    if (type === 'signup' || type === 'email') {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.email) {
+          const { sendTransactionalEmail } = await import('@/lib/email/sendEmail');
+          const name = user.user_metadata?.first_name
+            ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim()
+            : user.email.split('@')[0];
+          sendTransactionalEmail({
+            to: user.email,
+            templateType: 'welcome',
+            data: { name },
+          }).catch((err) => console.warn('[WELCOME_EMAIL_ERR]', err));
+        }
+      } catch (e) {
+        console.warn('[WELCOME_CALLBACK_ERR]', e);
+      }
+    }
   } else if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {

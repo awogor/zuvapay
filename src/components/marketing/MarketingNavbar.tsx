@@ -86,8 +86,8 @@ export function MarketingNavbar() {
             onClick={() => setActiveDropdown(null)}
             className="flex items-center gap-2.5 group"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-zuva-solar to-zuva-amber text-slate-950 font-black text-lg shadow-sm shadow-orange-500/20 group-hover:scale-105 transition-transform duration-200">
-              <span className="font-display tracking-tight text-slate-950 font-black">ZP</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-zuva-solar via-zuva-amber to-zuva-gold font-black text-lg text-slate-950 shadow-md shadow-orange-500/20 group-hover:scale-105 transition-transform duration-200">
+              ZP
             </div>
             <span className="font-black text-2xl tracking-tight text-slate-950 font-display">
               Zuva<span className="text-transparent bg-clip-text bg-gradient-to-r from-zuva-solar to-zuva-amber">Pay</span>

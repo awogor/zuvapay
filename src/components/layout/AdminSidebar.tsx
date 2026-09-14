@@ -119,7 +119,7 @@ export function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
     <aside className="flex h-full w-64 flex-col border-r border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950/95 p-4 select-none transition-colors">
       {/* Brand logo */}
       <div className="flex items-center gap-3 px-2 py-4 mb-3 border-b border-slate-200 dark:border-white/10">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-orange to-amber-500 font-black text-slate-950 shadow-md">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-zuva-solar via-zuva-amber to-zuva-gold font-black text-lg text-slate-950 shadow-md shadow-orange-500/20">
           ZP
         </div>
         <div>
