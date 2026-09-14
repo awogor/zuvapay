@@ -26,6 +26,8 @@ import {
   Info,
   X,
   Package,
+  Eye,
+  ShoppingCart,
 } from 'lucide-react';
 
 const CATEGORY_TABS = [
@@ -48,8 +50,9 @@ export default function MarketplacePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Active product modal for purchase
+  // Active product modal
   const [activeProduct, setActiveProduct] = useState<AIProductItem | null>(null);
+  const [modalTab, setModalTab] = useState<'details' | 'purchase'>('details');
   const [quantity, setQuantity] = useState(1);
   const [customerEmail, setCustomerEmail] = useState('');
   const [purchasing, setPurchasing] = useState(false);
@@ -102,8 +105,16 @@ export default function MarketplacePage() {
     return list;
   }, [products, selectedCategory, searchQuery]);
 
+  const handleOpenDetails = (product: AIProductItem) => {
+    setActiveProduct(product);
+    setModalTab('details');
+    setQuantity(1);
+    setCustomerEmail('');
+  };
+
   const handleOpenPurchase = (product: AIProductItem) => {
     setActiveProduct(product);
+    setModalTab('purchase');
     setQuantity(1);
     setCustomerEmail('');
   };
@@ -399,7 +410,7 @@ export default function MarketplacePage() {
                   </div>
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
+                <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <p className="text-[11px] text-slate-400">Price</p>
                     <div className="flex items-baseline gap-1.5">
@@ -414,14 +425,25 @@ export default function MarketplacePage() {
                     </div>
                   </div>
 
-                  <button
-                    disabled={!hasStock}
-                    onClick={() => handleOpenPurchase(product)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-purple-600/20"
-                  >
-                    <span>Buy Now</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleOpenDetails(product)}
+                      className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all"
+                      title="View product specifications and instructions"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Details</span>
+                    </button>
+
+                    <button
+                      disabled={!hasStock}
+                      onClick={() => handleOpenPurchase(product)}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-purple-600/20"
+                    >
+                      <ShoppingCart className="w-3.5 h-3.5" />
+                      <span>Buy Now</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -448,111 +470,191 @@ export default function MarketplacePage() {
                 {activeProduct.name}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                {activeProduct.description}
+                {activeProduct.summary}
               </p>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/40 space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-600 dark:text-purple-200 font-medium">Warranty Guarantee:</span>
+            {/* Modal Tabs: Product Details vs Instant Checkout */}
+            <div className="flex border-b border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setModalTab('details')}
+                className={`flex-1 py-2.5 text-xs font-bold transition-all border-b-2 ${
+                  modalTab === 'details'
+                    ? 'border-purple-600 text-purple-600 dark:text-purple-400'
+                    : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                }`}
+              >
+                Features & Details
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalTab('purchase')}
+                className={`flex-1 py-2.5 text-xs font-bold transition-all border-b-2 ${
+                  modalTab === 'purchase'
+                    ? 'border-purple-600 text-purple-600 dark:text-purple-400'
+                    : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                }`}
+              >
+                Checkout & Delivery
+              </button>
+            </div>
+
+            {/* Guarantees Box */}
+            <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/40 grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <span className="text-slate-500 dark:text-purple-300 block text-[11px]">Warranty Guarantee:</span>
                 <span className="font-bold text-slate-900 dark:text-purple-100">{activeProduct.warranty}</span>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-600 dark:text-purple-200 font-medium">Delivery Mode:</span>
+              <div>
+                <span className="text-slate-500 dark:text-purple-300 block text-[11px]">Delivery Mode:</span>
                 <span className="font-bold text-slate-900 dark:text-purple-100">{activeProduct.accessType}</span>
               </div>
             </div>
 
-            <form onSubmit={handlePurchase} className="space-y-4">
-              {activeProduct.requiresCustomerEmail && (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Recipient Email Address <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={customerEmail}
-                    onChange={(e) => setCustomerEmail(e.target.value)}
-                    placeholder="Enter your email to receive invite / login link"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white"
-                  />
-                  <p className="text-[11px] text-slate-500">
-                    Required by this service for direct team invite or license dispatch.
-                  </p>
+            {/* TAB 1: Detailed Specifications & Guide */}
+            {modalTab === 'details' ? (
+              <div className="space-y-4 animate-in fade-in">
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 space-y-2.5 text-xs text-slate-700 dark:text-slate-300 max-h-72 overflow-y-auto leading-relaxed">
+                  <div className="font-semibold text-slate-900 dark:text-white uppercase tracking-wider text-[11px] pb-1 border-b border-slate-200 dark:border-slate-700">
+                    Product Overview & Access Guidelines
+                  </div>
+                  {activeProduct.description.split('\n').map((paragraph, idx) => {
+                    const cleanP = paragraph.trim();
+                    if (!cleanP) return null;
+                    if (cleanP.startsWith('•') || cleanP.startsWith('-') || cleanP.startsWith('*')) {
+                      return (
+                        <div key={idx} className="flex items-start gap-2 pl-1 text-slate-700 dark:text-slate-300">
+                          <span className="text-purple-600 dark:text-purple-400 font-bold">•</span>
+                          <span>{cleanP.replace(/^[•\-\*]\s*/, '')}</span>
+                        </div>
+                      );
+                    }
+                    if (cleanP.includes('→')) {
+                      return (
+                        <div key={idx} className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-700 dark:text-purple-300 font-medium">
+                          {cleanP}
+                        </div>
+                      );
+                    }
+                    return (
+                      <p key={idx} className="text-slate-600 dark:text-slate-300 leading-normal">
+                        {cleanP}
+                      </p>
+                    );
+                  })}
                 </div>
-              )}
 
-              {/* Quantity */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                <div>
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Quantity</p>
-                  <p className="text-[11px] text-slate-400">Up to {activeProduct.stock} units</p>
-                </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <div>
+                    <span className="text-[11px] text-slate-400 block">Unit Price</span>
+                    <span className="text-lg font-black text-slate-900 dark:text-white">
+                      {formatNaira(activeProduct.priceNgn)}
+                    </span>
+                  </div>
                   <button
                     type="button"
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-700 font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600"
+                    onClick={() => setModalTab('purchase')}
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-md shadow-purple-600/20"
                   >
-                    -
+                    <span>Proceed to Purchase</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </button>
-                  <span className="w-8 text-center text-sm font-bold text-slate-900 dark:text-white">
-                    {quantity}
+                </div>
+              </div>
+            ) : (
+              /* TAB 2: Purchase & Payment Form */
+              <form onSubmit={handlePurchase} className="space-y-4 animate-in fade-in">
+                {activeProduct.requiresCustomerEmail && (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Recipient Email Address <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      placeholder="Enter your email to receive invite / login link"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white"
+                    />
+                    <p className="text-[11px] text-slate-500">
+                      Required by this service for direct team invite or license dispatch.
+                    </p>
+                  </div>
+                )}
+
+                {/* Quantity */}
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
+                  <div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Quantity</p>
+                    <p className="text-[11px] text-slate-400">Up to {activeProduct.stock} units</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-700 font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600"
+                    >
+                      -
+                    </button>
+                    <span className="w-8 text-center text-sm font-bold text-slate-900 dark:text-white">
+                      {quantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((q) => Math.min(activeProduct.stock, q + 1))}
+                      className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-700 font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Price Breakdown */}
+                <div className="p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 space-y-2">
+                  <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                    <span>Unit Price</span>
+                    <span>{formatNaira(activeProduct.priceNgn)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                    <span>Quantity</span>
+                    <span>x {quantity}</span>
+                  </div>
+                  <div className="flex justify-between text-sm font-black text-slate-900 dark:text-white pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <span>Total Due</span>
+                    <span className="text-purple-600 dark:text-purple-400">
+                      {formatNaira(activeProduct.priceNgn * quantity)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Wallet Info */}
+                <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1">
+                  <span>Wallet Balance:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {formatBalance ? formatBalance() : formatNaira(wallet?.balance || 0)}
                   </span>
+                </div>
+
+                <div className="flex gap-3 pt-2">
                   <button
                     type="button"
-                    onClick={() => setQuantity((q) => Math.min(activeProduct.stock, q + 1))}
-                    className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-700 font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600"
+                    onClick={() => setModalTab('details')}
+                    className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
-                    +
+                    View Details
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={purchasing}
+                    className="flex-[2] py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold disabled:opacity-50 transition-all shadow-md shadow-purple-600/20"
+                  >
+                    {purchasing ? 'Processing Order...' : `Confirm & Pay ${formatNaira(activeProduct.priceNgn * quantity)}`}
                   </button>
                 </div>
-              </div>
-
-              {/* Price Breakdown */}
-              <div className="p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 space-y-2">
-                <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
-                  <span>Unit Price</span>
-                  <span>{formatNaira(activeProduct.priceNgn)}</span>
-                </div>
-                <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
-                  <span>Quantity</span>
-                  <span>x {quantity}</span>
-                </div>
-                <div className="flex justify-between text-sm font-black text-slate-900 dark:text-white pt-2 border-t border-slate-200 dark:border-slate-700">
-                  <span>Total Due</span>
-                  <span className="text-purple-600 dark:text-purple-400">
-                    {formatNaira(activeProduct.priceNgn * quantity)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Wallet Info */}
-              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1">
-                <span>Wallet Balance:</span>
-                <span className="font-bold text-slate-900 dark:text-white">
-                  {formatBalance ? formatBalance() : formatNaira(wallet?.balance || 0)}
-                </span>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveProduct(null)}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={purchasing}
-                  className="flex-[2] py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold disabled:opacity-50 transition-all shadow-md shadow-purple-600/20"
-                >
-                  {purchasing ? 'Processing Order...' : `Confirm & Pay ${formatNaira(activeProduct.priceNgn * quantity)}`}
-                </button>
-              </div>
-            </form>
+              </form>
+            )}
           </div>
         </div>
       )}
