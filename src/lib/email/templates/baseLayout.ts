@@ -97,20 +97,15 @@ export function renderBaseEmailLayout({
           <!-- QUICK SUPPORT CTA -->
           <tr>
             <td style="padding: 0 32px 28px 32px; background-color: #FFFFFF;">
-              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; padding: 16px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 18px;">
                 <tr>
-                  <td style="vertical-align: middle; padding-right: 12px; width: 32px;">
-                    <div style="width: 32px; height: 32px; line-height: 32px; background-color: #ECFDF5; border-radius: 8px; text-align: center; font-size: 16px;">
-                      💬
-                    </div>
-                  </td>
                   <td style="vertical-align: middle;">
-                    <div style="font-size: 12px; font-weight: 700; color: #0F172A;">Need immediate assistance?</div>
-                    <div style="font-size: 11px; color: #64748B;">Our Lagos customer team responds in under 3 minutes on WhatsApp.</div>
+                    <div style="font-size: 12px; font-weight: 700; color: #0F172A;">Need assistance?</div>
+                    <div style="font-size: 11px; color: #64748B;">Our customer support team is available 24/7.</div>
                   </td>
                   <td align="right" style="vertical-align: middle;">
-                    <a href="https://wa.me/2349038416331?text=Hello%20ZuvaPay%20Helpdesk" target="_blank" style="display: inline-block; padding: 8px 14px; background-color: #10B981; color: #FFFFFF; font-size: 11px; font-weight: 800; text-decoration: none; border-radius: 8px;">
-                      Chat Now
+                    <a href="mailto:hello@zuvapay.com" style="display: inline-block; padding: 7px 14px; background-color: #0F172A; color: #FFFFFF; font-size: 11px; font-weight: 700; text-decoration: none; border-radius: 8px;">
+                      Contact Support
                     </a>
                   </td>
                 </tr>
@@ -120,30 +115,17 @@ export function renderBaseEmailLayout({
 
           <!-- BRAND FOOTER -->
           <tr>
-            <td style="background-color: #F1F5F9; padding: 24px 32px; border-top: 1px solid #E2E8F0; text-align: center;">
+            <td style="background-color: #F8FAFC; padding: 24px 32px; border-top: 1px solid #E2E8F0; text-align: center;">
               <table border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
-                  <td align="center" style="padding-bottom: 12px;">
-                    <span style="display: inline-block; font-size: 11px; font-weight: 700; color: #475569; margin: 0 8px;">
-                      🔒 256-Bit SSL Encrypted
-                    </span>
-                    <span style="display: inline-block; font-size: 11px; font-weight: 700; color: #475569; margin: 0 8px;">
-                      🛡️ Data Privacy Protected
-                    </span>
-                    <span style="display: inline-block; font-size: 11px; font-weight: 700; color: #475569; margin: 0 8px;">
-                      ⚡ 5-Sec Auto Refund
-                    </span>
-                  </td>
-                </tr>
-                <tr>
                   <td align="center" style="font-size: 11px; line-height: 18px; color: #64748B;">
-                    © ${currentYear} ZuvaPay Technologies Nigeria. All rights reserved.<br />
-                    Victoria Island, Lagos, Nigeria.
+                    &copy; ${currentYear} ZuvaPay Technologies. All rights reserved.<br />
+                    Lagos, Nigeria &bull; <a href="mailto:hello@zuvapay.com" style="color: #64748B; text-decoration: underline;">hello@zuvapay.com</a>
                   </td>
                 </tr>
                 <tr>
-                  <td align="center" style="font-size: 10px; line-height: 16px; color: #94A3B8; padding-top: 10px;">
-                    This is an automated transactional security alert regarding your ZuvaPay account. If you did not perform this activity, please lock your account or message our support team immediately.
+                  <td align="center" style="font-size: 10px; line-height: 16px; color: #94A3B8; padding-top: 8px;">
+                    This is an automated transactional notification sent to your registered ZuvaPay account.
                   </td>
                 </tr>
               </table>

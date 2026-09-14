@@ -18,72 +18,54 @@ export type EmailTemplateType =
 export function renderWelcomeEmail({
   name,
   email,
-  virtualAccount,
 }: {
   name: string;
   email: string;
   virtualAccount?: { bankName: string; accountNumber: string; accountName: string };
 }): { subject: string; html: string } {
   const contentHtml = `
-    <h1 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 900; color: #0F172A; letter-spacing: -0.5px;">
-      Welcome to the ZuvaPay family, ${name}! 👋
+    <h1 style="margin: 0 0 12px 0; font-size: 22px; font-weight: 800; color: #0F172A; letter-spacing: -0.5px;">
+      Welcome to ZuvaPay, ${name}!
     </h1>
-    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 22px; color: #475569;">
-      Your account is fully activated. Say goodbye to hanging airtime, failed electricity tokens, and declining cards for foreign SMS codes.
+    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 24px; color: #475569;">
+      Your account is active and ready to use. ZuvaPay makes it easy to purchase cheap SME data bundles, generate instant 20-digit electricity tokens, pay cable TV bills, and manage digital subscriptions all in one place.
     </p>
 
-    <!-- Dedicated Account Box -->
-    <div style="background-color: #FFFBEB; border: 1px solid #FDE68A; border-radius: 14px; padding: 20px; margin-bottom: 24px;">
-      <div style="font-size: 11px; font-weight: 800; color: #B45309; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
-        💳 Your Dedicated Automated Funding Account
-      </div>
-      <div style="font-size: 18px; font-weight: 900; color: #0F172A; font-family: monospace; letter-spacing: 1px;">
-        ${virtualAccount?.accountNumber || 'Assigned automatically on dashboard'}
-      </div>
-      <div style="font-size: 12px; color: #78350F; margin-top: 4px;">
-        Bank: <strong>${virtualAccount?.bankName || 'Moniepoint / Wema Bank'}</strong> &bull; Name: <strong>${virtualAccount?.accountName || name}</strong>
-      </div>
-      <div style="font-size: 11px; color: #92400E; margin-top: 8px;">
-        Any bank transfer sent to this account credits your wallet immediately — 24 hours a day.
-      </div>
-    </div>
-
-    <!-- Quick Checklist -->
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
+    <!-- Services Overview Card -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 24px; padding: 14px;">
       <tr>
-        <td style="padding-bottom: 12px;">
-          <strong style="font-size: 13px; color: #0F172A;">Three quick tips to get started:</strong>
+        <td style="padding: 8px 12px; font-size: 13px; color: #334155; line-height: 20px;">
+          <strong>Internet Data &amp; Airtime:</strong> Instant wholesale SME &amp; gifting bundles for MTN, Airtel, Glo, and 9mobile.
         </td>
       </tr>
       <tr>
-        <td style="font-size: 12px; color: #475569; line-height: 20px; padding-bottom: 8px;">
-          🔒 <strong>Set a 4-Digit Security PIN:</strong> Protect all bill purchases and transfers from unauthorized access.
+        <td style="padding: 8px 12px; font-size: 13px; color: #334155; line-height: 20px;">
+          <strong>Electricity Tokens:</strong> Instant 20-digit prepaid tokens and postpaid bill payment for all Discos.
         </td>
       </tr>
       <tr>
-        <td style="font-size: 12px; color: #475569; line-height: 20px; padding-bottom: 8px;">
-          ⚡ <strong>Enjoy 100% Auto-Refunds:</strong> If a telecom gateway times out, your money returns instantly.
-        </td>
-      </tr>
-      <tr>
-        <td style="font-size: 12px; color: #475569; line-height: 20px;">
-          🌐 <strong>Dual NGN & USD Wallets:</strong> Convert to Dollars anytime to pay for foreign SMS verification numbers.
+        <td style="padding: 8px 12px; font-size: 13px; color: #334155; line-height: 20px;">
+          <strong>Cable TV &amp; Subscriptions:</strong> Fast renewals for DStv, GOtv, StarTimes, and verified digital software.
         </td>
       </tr>
     </table>
 
     <!-- Action Button -->
     <div style="text-align: center; margin: 28px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard" style="display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #FF6B00 0%, #EA580C 100%); color: #FFFFFF; font-size: 13px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);">
-        Go To Your Dashboard &rarr;
+      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://zuvapay.com'}/dashboard" style="display: inline-block; padding: 12px 28px; background-color: #FF6B00; color: #FFFFFF; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 10px;">
+        Go to Your Dashboard &rarr;
       </a>
     </div>
+
+    <p style="margin: 0; font-size: 12px; line-height: 20px; color: #64748B;">
+      If you have questions or need help, you can reply directly to this email or reach us anytime at <a href="mailto:hello@zuvapay.com" style="color: #FF6B00; text-decoration: none; font-weight: 600;">hello@zuvapay.com</a>.
+    </p>
   `;
 
   return {
-    subject: `Welcome to ZuvaPay, ${name}! Your Account is Ready 🚀`,
+    subject: `Welcome to ZuvaPay, ${name}`,
     html: renderBaseEmailLayout({
-      previewText: `Welcome to ZuvaPay! Your account is active. Instant airtime, cheap SME data, and power tokens at wholesale rates.`,
+      previewText: `Welcome to ZuvaPay! Your account is active and ready to use.`,
       headerBadge: 'Account Ready',
       badgeColor: '#10B981',
       contentHtml,
