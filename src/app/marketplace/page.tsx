@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { PublicMarketplaceView } from '@/components/marketplace/PublicMarketplaceView';
 
 export const metadata: Metadata = {
@@ -32,6 +32,10 @@ export const metadata: Metadata = {
     title: 'AI Tools & Software Subscriptions Marketplace (Gemini, CapCut, Grok) — ZuvaPay',
     description:
       'Buy verified Gemini Pro, CapCut Pro, Grok, and 50+ software subscriptions with replacement warranty and instant delivery in Nigeria.',
+  },
+  robots: {
+    index: false,
+    follow: false,
   },
 };
 
