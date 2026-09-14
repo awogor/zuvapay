@@ -15,6 +15,7 @@ import {
 import { faddedFetch } from '@/lib/vendors/fadded';
 import { GRIZZLY_SERVICES, SMSPOOL_SERVICES } from '@/lib/data/smsCatalog';
 import { AI_MARKETPLACE_CATALOG } from '@/lib/data/aiMarketplaceCatalog';
+import { getAIPlugCatalog, categorizeAIProduct } from '@/lib/vendors/aiplug';
 
 export async function GET(request: NextRequest) {
   try {
@@ -297,31 +298,74 @@ export async function GET(request: NextRequest) {
       const marketplaceRule = config.marketplace?.globalRule || { type: 'percentage', value: 20 };
       const marketplaceOverrides = config.marketplace?.overrides || {};
 
-      const productsWithPricing = AI_MARKETPLACE_CATALOG.map((p) => {
-        const wholesaleCost = p.resellerPriceNgn;
-        const override = marketplaceOverrides[p.id];
-        const { retailPrice, marginAmount, marginPercent, isOverridden } = computeRetailPrice(
-          wholesaleCost,
-          marketplaceRule,
-          override
-        );
+      let productsWithPricing: any[] = [];
 
-        return {
-          id: p.id,
-          name: p.name,
-          category: p.category,
-          summary: p.summary,
-          description: p.description,
-          wholesaleCost,
-          retailPrice,
-          marginAmount,
-          marginPercent,
-          isOverridden,
-          stock: p.stock,
-          accessType: p.accessType,
-          warranty: p.warranty,
-        };
-      });
+      try {
+        const liveRes = await getAIPlugCatalog();
+        if (!liveRes.isMock && liveRes.ok && Array.isArray(liveRes.data?.catalog || liveRes.data?.products || liveRes.data)) {
+          const rawCatalog = liveRes.data?.catalog || liveRes.data?.products || liveRes.data;
+
+          productsWithPricing = rawCatalog.map((item: any) => {
+            const id = String(item.id || item.productId);
+            const resellerKobo = Number(item.resellerPriceKobo || item.priceKobo || item.price || 0);
+            const wholesaleCost = Math.ceil(resellerKobo / 100);
+            const override = marketplaceOverrides[id];
+            const { retailPrice, marginAmount, marginPercent, isOverridden } = computeRetailPrice(
+              wholesaleCost,
+              marketplaceRule,
+              override
+            );
+            const detectedCategory = categorizeAIProduct(item.name || '', item.category || '');
+
+            return {
+              id,
+              name: item.name || 'AI Software Product',
+              category: detectedCategory,
+              summary: item.summary || item.shortDescription || item.description?.slice(0, 120) || 'Instant premium AI access',
+              description: item.description || item.summary || 'Instant digital software delivery with warranty.',
+              wholesaleCost,
+              retailPrice,
+              marginAmount,
+              marginPercent,
+              isOverridden,
+              stock: typeof item.stock === 'number' ? item.stock : 0,
+              accessType: item.accessType || (item.autoFulfill ? 'Instant Delivery' : 'Fast Fulfillment'),
+              warranty: item.warranty || 'Active Warranty',
+            };
+          });
+        }
+      } catch (err) {
+        console.warn('[Admin Pricing] Failed to load live AIPlug catalog:', err);
+      }
+
+      // Fallback to static catalog if supplier API is offline or returns empty
+      if (productsWithPricing.length === 0) {
+        productsWithPricing = AI_MARKETPLACE_CATALOG.map((p) => {
+          const wholesaleCost = p.resellerPriceNgn;
+          const override = marketplaceOverrides[p.id];
+          const { retailPrice, marginAmount, marginPercent, isOverridden } = computeRetailPrice(
+            wholesaleCost,
+            marketplaceRule,
+            override
+          );
+
+          return {
+            id: p.id,
+            name: p.name,
+            category: p.category,
+            summary: p.summary,
+            description: p.description,
+            wholesaleCost,
+            retailPrice,
+            marginAmount,
+            marginPercent,
+            isOverridden,
+            stock: p.stock,
+            accessType: p.accessType,
+            warranty: p.warranty,
+          };
+        });
+      }
 
       result.marketplace = {
         products: productsWithPricing,

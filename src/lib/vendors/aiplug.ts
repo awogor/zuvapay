@@ -112,3 +112,91 @@ export async function getAIPlugOrder(orderId: string) {
     method: 'GET',
   });
 }
+
+// Intelligent AI categorization for filtering
+export function categorizeAIProduct(name: string, category: string): string {
+  const n = (name + ' ' + (category || '')).toLowerCase();
+
+  if (
+    n.includes('chatgpt') ||
+    n.includes('openai') ||
+    n.includes('gemini') ||
+    n.includes('claude') ||
+    n.includes('grok') ||
+    n.includes('perplexity') ||
+    n.includes('llm') ||
+    n.includes('poe')
+  ) {
+    return 'AI Assistants & LLMs';
+  }
+
+  if (
+    n.includes('capcut') ||
+    n.includes('elevenlabs') ||
+    n.includes('midjourney') ||
+    n.includes('runway') ||
+    n.includes('pika') ||
+    n.includes('suno') ||
+    n.includes('udio') ||
+    n.includes('fliki') ||
+    n.includes('heygen') ||
+    n.includes('video') ||
+    n.includes('audio') ||
+    n.includes('voice')
+  ) {
+    return 'Video, Audio & Creative';
+  }
+
+  if (
+    n.includes('canva') ||
+    n.includes('figma') ||
+    n.includes('adobe') ||
+    n.includes('freepik') ||
+    n.includes('envato') ||
+    n.includes('vecteezy') ||
+    n.includes('design') ||
+    n.includes('photo')
+  ) {
+    return 'Design & Graphics';
+  }
+
+  if (
+    n.includes('cursor') ||
+    n.includes('copilot') ||
+    n.includes('github') ||
+    n.includes('supabase') ||
+    n.includes('v0') ||
+    n.includes('replit') ||
+    n.includes('codeium') ||
+    n.includes('developer') ||
+    n.includes('api') ||
+    n.includes('flow')
+  ) {
+    return 'Developer & Coding Tools';
+  }
+
+  if (
+    n.includes('quillbot') ||
+    n.includes('grammarly') ||
+    n.includes('turnitin') ||
+    n.includes('notion') ||
+    n.includes('word') ||
+    n.includes('office') ||
+    n.includes('writing') ||
+    n.includes('education')
+  ) {
+    return 'Productivity & Writing';
+  }
+
+  if (
+    n.includes('vpn') ||
+    n.includes('nord') ||
+    n.includes('express') ||
+    n.includes('surfshark') ||
+    n.includes('security')
+  ) {
+    return 'VPN & Privacy';
+  }
+
+  return 'Software & Utilities';
+}

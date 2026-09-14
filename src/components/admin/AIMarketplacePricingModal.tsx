@@ -208,7 +208,7 @@ export function AIMarketplacePricingModal({ isOpen, onClose }: AIMarketplacePric
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Configure global margin rule (% or fixed ₦) and set custom retail price overrides per digital product.
+                Real-time supplier catalog from AIPlug. Configure global margin (% or fixed ₦) and set custom retail price overrides per digital product.
               </p>
             </div>
           </div>
@@ -287,32 +287,45 @@ export function AIMarketplacePricingModal({ isOpen, onClose }: AIMarketplacePric
         </div>
 
         {/* Filters & Search Header */}
-        <div className="px-6 py-2 flex flex-wrap items-center justify-between gap-3">
-          <div className="relative flex-1 min-w-[240px]">
+        <div className="px-6 py-2 space-y-2.5">
+          <div className="relative w-full">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search product title, category, or ID..."
+              placeholder="Search product title, category, or ID (e.g. Gemini, CapCut, Adobe, VPN)..."
               className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:border-purple-500"
             />
           </div>
 
-          <div className="flex items-center gap-1 overflow-x-auto pb-1 max-w-[50%]">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                  selectedCategory === cat
-                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+            {categories.map((cat) => {
+              const count = cat === 'ALL'
+                ? products.length
+                : products.filter((p) => (p.category || 'General') === cat).length;
+
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                    selectedCategory === cat
+                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-sm'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  <span>{cat}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                    selectedCategory === cat
+                      ? 'bg-white/20 dark:bg-black/20 text-white dark:text-slate-950'
+                      : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                  }`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -321,7 +334,7 @@ export function AIMarketplacePricingModal({ isOpen, onClose }: AIMarketplacePric
           {loading ? (
             <div className="py-20 text-center space-y-3">
               <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-xs text-slate-500 font-medium">Loading AI Marketplace products & active pricing...</p>
+              <p className="text-xs text-slate-500 font-medium">Loading live AI Marketplace products & active pricing...</p>
             </div>
           ) : (
             <div className="border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden bg-white dark:bg-slate-950/40">
@@ -332,7 +345,7 @@ export function AIMarketplacePricingModal({ isOpen, onClose }: AIMarketplacePric
                     <th className="py-3 px-4">AI Marketplace Wholesale</th>
                     <th className="py-3 px-4">Our Retail Price</th>
                     <th className="py-3 px-4">Profit Spread</th>
-                    <th className="py-3 px-4">Stock</th>
+                    <th className="py-3 px-4">Supplier Stock</th>
                     <th className="py-3 px-4">Status</th>
                     <th className="py-3 px-4 text-right">Individual Override</th>
                   </tr>
