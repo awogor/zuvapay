@@ -22,12 +22,24 @@ export const metadata: Metadata = {
       'Engineered from the ground up to solve Nigerian payment bottlenecks with automated fulfillment and direct telecom routing.',
     url: '/about',
     type: 'website',
+    siteName: 'ZuvaPay',
+    locale: 'en_NG',
+    images: [
+      {
+        url: '/og/main.png',
+        width: 1200,
+        height: 630,
+        alt: 'About ZuvaPay — Mission & Infrastructure',
+        type: 'image/png',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Our Story, Mission & Infrastructure — ZuvaPay',
     description:
       'Why thousands of Nigerians trust ZuvaPay for instant bill payments and digital subscriptions.',
+    images: ['/og/main.png'],
   },
 };
 

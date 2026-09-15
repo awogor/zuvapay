@@ -26,16 +26,28 @@ export const metadata: Metadata = {
       'Save up to 70% on premium AI assistants, creative tools, and developer subscriptions. Instant activation, guaranteed warranties, and fast 1-click checkout in Naira.',
     url: '/marketplace',
     type: 'website',
+    siteName: 'ZuvaPay',
+    locale: 'en_NG',
+    images: [
+      {
+        url: '/og/marketplace.png',
+        width: 1200,
+        height: 630,
+        alt: 'ZuvaPay AI Marketplace — Gemini Pro, CapCut, Grok at Wholesale Rates',
+        type: 'image/png',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'AI Tools & Software Subscriptions Marketplace (Gemini, CapCut, Grok) — ZuvaPay',
     description:
       'Buy verified Gemini Pro, CapCut Pro, Grok, and 50+ software subscriptions with replacement warranty and instant delivery in Nigeria.',
+    images: ['/og/marketplace.png'],
   },
   robots: {
-    index: false,
-    follow: false,
+    index: true,
+    follow: true,
   },
 };
 

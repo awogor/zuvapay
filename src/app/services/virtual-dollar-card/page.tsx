@@ -27,12 +27,24 @@ export const metadata: Metadata = {
       'Create dedicated USD virtual cards with official US Delaware billing addresses. Zero declines on Apple, Netflix, AWS, Spotify & OpenAI.',
     url: '/services/virtual-dollar-card',
     type: 'website',
+    siteName: 'ZuvaPay',
+    locale: 'en_NG',
+    images: [
+      {
+        url: '/og/virtual-dollar-card.png',
+        width: 1200,
+        height: 630,
+        alt: 'Virtual Dollar Card for International Payments — ZuvaPay',
+        type: 'image/png',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Virtual Dollar Card for International Payments — ZuvaPay',
     description:
       'Create dedicated USD virtual cards with official Delaware billing address. Zero declines on Apple, Netflix, AWS & OpenAI.',
+    images: ['/og/virtual-dollar-card.png'],
   },
 };
 

@@ -27,12 +27,24 @@ export const metadata: Metadata = {
       'Rent real non-VoIP temporary foreign phone numbers from the US, UK, Canada, and 150+ countries with 100% automated refund guarantee.',
     url: '/services/virtual-number',
     type: 'website',
+    siteName: 'ZuvaPay',
+    locale: 'en_NG',
+    images: [
+      {
+        url: '/og/virtual-number.png',
+        width: 1200,
+        height: 630,
+        alt: 'Virtual Phone Numbers for 150+ Countries — ZuvaPay',
+        type: 'image/png',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Virtual Phone Numbers for 150+ Countries (Non-VoIP) — ZuvaPay',
     description:
       'Rent real non-VoIP temporary foreign phone numbers from 150+ countries with automated refunds if no verification code arrives.',
+    images: ['/og/virtual-number.png'],
   },
 };
 

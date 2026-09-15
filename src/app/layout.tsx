@@ -7,7 +7,7 @@ import { ToastProvider } from '@/components/common/Toast';
 import { ReceiptModal } from '@/components/modals/ReceiptModal';
 import { SupportProvider } from '@/components/modals/SupportModal';
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://zuvapay.web.app';
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://zuvapay.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -49,10 +49,18 @@ export const metadata: Metadata = {
       'Power your everyday digital payments with zero delay. Instant wholesale SME data, prepaid electricity tokens, virtual dollar cards, and foreign carrier virtual phone numbers.',
     images: [
       {
+        url: '/og/main.png',
+        width: 1200,
+        height: 630,
+        alt: 'ZuvaPay — Instant Bill Payments, SME Data & Digital Services',
+        type: 'image/png',
+      },
+      {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'ZuvaPay — Instant Bill Payments, SME Data & Virtual Dollar Cards',
+        alt: 'ZuvaPay — Instant Bill Payments, SME Data & Digital Services',
+        type: 'image/png',
       },
     ],
   },
@@ -61,7 +69,7 @@ export const metadata: Metadata = {
     title: 'ZuvaPay — Fast SME Data, Electricity Tokens & Digital Subscriptions',
     description:
       'Power your everyday digital payments in Nigeria with instant wholesale SME data, 20-digit electricity tokens, foreign SMS OTPs, and verified AI tools.',
-    images: ['/og-image.png'],
+    images: ['/og/main.png'],
     creator: '@zuvapay',
   },
   robots: {

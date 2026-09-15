@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { AgentPageView } from '@/components/marketing-pages/AgentPageView';
 
 export const metadata: Metadata = {
@@ -23,12 +23,24 @@ export const metadata: Metadata = {
       'Submit an agent onboarding request. No forced sign-up, zero franchise fee, wholesale margin discounts, and 24/7 dedicated support.',
     url: '/agent',
     type: 'website',
+    siteName: 'ZuvaPay',
+    locale: 'en_NG',
+    images: [
+      {
+        url: '/og/agent.png',
+        width: 1200,
+        height: 630,
+        alt: 'Become a ZuvaPay Agent & Reseller',
+        type: 'image/png',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Become a ZuvaPay POS & Digital Agent (Request Access) — ZuvaPay',
     description:
       'Join thousands of merchants earning daily commissions across Nigeria with ZuvaPay.',
+    images: ['/og/agent.png'],
   },
 };
 

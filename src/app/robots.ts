@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://zuvapay.web.app';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://zuvapay.com';
 
   return {
     rules: [
@@ -21,7 +21,7 @@ export default function robots(): MetadataRoute.Robots {
           'Applebot-Extended',
           'CCBot',
         ],
-        allow: ['/', '/services', '/pricing', '/about'],
+        allow: ['/', '/services', '/marketplace', '/pricing', '/agent', '/about'],
         disallow: ['/api/', '/dashboard/'],
       },
     ],

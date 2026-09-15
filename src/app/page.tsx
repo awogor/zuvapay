@@ -24,12 +24,24 @@ export const metadata: Metadata = {
       'Power your everyday digital payments with instant fulfillment. Fast SME data, instant prepaid meter tokens, and foreign OTP numbers with zero downtime.',
     url: '/',
     type: 'website',
+    siteName: 'ZuvaPay',
+    locale: 'en_NG',
+    images: [
+      {
+        url: '/og/main.png',
+        width: 1200,
+        height: 630,
+        alt: 'ZuvaPay — Fast SME Data, Electricity Tokens & Digital Services',
+        type: 'image/png',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Cheap SME Data, Bill Payments & Communication Tools — ZuvaPay',
     description:
       'Buy cheap SME data from ₦240/GB, instant electricity tokens, and foreign OTP phone numbers in Nigeria.',
+    images: ['/og/main.png'],
   },
 };
 

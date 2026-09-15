@@ -26,12 +26,24 @@ export const metadata: Metadata = {
       'Instant cable TV bouquet renewals with 60-second decoder reconnection and real-time smartcard pre-validation across Nigeria.',
     url: '/services/cable-tv',
     type: 'website',
+    siteName: 'ZuvaPay',
+    locale: 'en_NG',
+    images: [
+      {
+        url: '/og/cable-tv.png',
+        width: 1200,
+        height: 630,
+        alt: 'Renew DStv, GOtv & StarTimes Online — ZuvaPay',
+        type: 'image/png',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Renew DStv, GOtv & StarTimes Subscriptions Online — ZuvaPay',
     description:
       'Instant cable TV bouquet renewals with 60-second decoder reconnection and real-time smartcard pre-validation.',
+    images: ['/og/cable-tv.png'],
   },
 };
 

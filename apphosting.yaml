@@ -10,7 +10,7 @@ runConfig:
 # In production on Firebase App Hosting, sensitive secrets can also be managed via Google Secret Manager
 env:
   - variable: NEXT_PUBLIC_APP_URL
-    value: https://zuvapay.web.app
+    value: https://zuvapay.com
     availability:
       - BUILD
       - RUNTIME

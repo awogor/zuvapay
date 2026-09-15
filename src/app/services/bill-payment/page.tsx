@@ -27,12 +27,24 @@ export const metadata: Metadata = {
       'Instant airtime recharge with 2% cashback and automated utility bill settlements across Nigeria with 100% automated refund guarantee.',
     url: '/services/bill-payment',
     type: 'website',
+    siteName: 'ZuvaPay',
+    locale: 'en_NG',
+    images: [
+      {
+        url: '/og/main.png',
+        width: 1200,
+        height: 630,
+        alt: 'Airtime Top-Up & Utility Bill Payments — ZuvaPay',
+        type: 'image/png',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Airtime Top-Up & Utility Bill Payments in Nigeria — ZuvaPay',
     description:
       'Instant airtime recharge with 2% cashback and automated utility bill payments across Nigeria.',
+    images: ['/og/main.png'],
   },
 };
 

@@ -26,12 +26,24 @@ export const metadata: Metadata = {
       'Explore live wholesale rates for SME data bundles, prepaid meter tokens, cable TV renewals, virtual dollar cards, and virtual phone numbers.',
     url: '/services',
     type: 'website',
+    siteName: 'ZuvaPay',
+    locale: 'en_NG',
+    images: [
+      {
+        url: '/og/main.png',
+        width: 1200,
+        height: 630,
+        alt: 'All Digital Utilities & Services Catalog — ZuvaPay',
+        type: 'image/png',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'All Digital Utilities & Services Catalog — ZuvaPay',
     description:
       'Live wholesale rates on SME data, prepaid power tokens, virtual dollar cards, and digital utilities with automated instant refunds.',
+    images: ['/og/main.png'],
   },
 };
 

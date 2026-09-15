@@ -27,12 +27,24 @@ export const metadata: Metadata = {
       'Generate 20-digit prepaid meter tokens in 1.5 seconds across all Nigerian Discos with ₦0 convenience fee and instant owner name validation.',
     url: '/services/electricity',
     type: 'website',
+    siteName: 'ZuvaPay',
+    locale: 'en_NG',
+    images: [
+      {
+        url: '/og/electricity.png',
+        width: 1200,
+        height: 630,
+        alt: 'Prepaid Electricity Tokens (0% Convenience Fee) — ZuvaPay',
+        type: 'image/png',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Prepaid Electricity Tokens (0% Convenience Fee) — ZuvaPay',
     description:
       'Instant 20-digit NEPA tokens with real-time meter pre-validation and ₦0 extra charges across all Nigerian Discos.',
+    images: ['/og/electricity.png'],
   },
 };
 
