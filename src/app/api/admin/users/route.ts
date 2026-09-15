@@ -78,17 +78,37 @@ export async function GET() {
       return NextResponse.json({ success: true, users: [] });
     }
 
-    const emailMap = new Map<string, string>();
+    const authMap = new Map<string, {
+      email: string | null;
+      email_confirmed_at: string | null;
+      is_email_verified: boolean;
+      last_sign_in_at: string | null;
+    }>();
+
     authUsersRes?.users?.forEach((u: any) => {
-      if (u.id && u.email) emailMap.set(u.id, u.email);
+      if (u.id) {
+        const confirmedAt = u.email_confirmed_at || u.confirmed_at || null;
+        authMap.set(u.id, {
+          email: u.email || null,
+          email_confirmed_at: confirmedAt,
+          is_email_verified: Boolean(confirmedAt),
+          last_sign_in_at: u.last_sign_in_at || null,
+        });
+      }
     });
 
-    const enrichedProfiles = profilesData.map((p: any) => ({
-      ...p,
-      status: p.status || 'active',
-      is_pin_set: Boolean(p.is_pin_set),
-      email: emailMap.get(p.id) || (p as any).email || null,
-    }));
+    const enrichedProfiles = profilesData.map((p: any) => {
+      const authInfo = authMap.get(p.id);
+      return {
+        ...p,
+        status: p.status || 'active',
+        is_pin_set: Boolean(p.is_pin_set),
+        email: authInfo?.email || (p as any).email || null,
+        email_confirmed_at: authInfo?.email_confirmed_at || null,
+        is_email_verified: authInfo?.is_email_verified ?? false,
+        last_sign_in_at: authInfo?.last_sign_in_at || null,
+      };
+    });
 
     return NextResponse.json({ success: true, users: enrichedProfiles });
   } catch (err: any) {
@@ -190,6 +210,22 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: 'Transaction PIN reset successfully. User will be required to create a new 4-digit PIN upon next sign-in.',
+      });
+    }
+
+    // 4. Manually mark email as verified via Supabase Auth Admin
+    if (action === 'verify_email') {
+      const { error: verifyError } = await adminSupabase.auth.admin.updateUserById(targetUserId, {
+        email_confirm: true,
+      });
+
+      if (verifyError) {
+        return NextResponse.json({ success: false, error: verifyError.message }, { status: 500 });
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: 'User email address successfully marked as verified.',
       });
     }
 

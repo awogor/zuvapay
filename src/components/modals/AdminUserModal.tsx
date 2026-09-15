@@ -18,6 +18,11 @@ import {
   Calendar,
   Phone,
   Mail,
+  Send,
+  Loader2,
+  Sparkles,
+  ExternalLink,
+  Check,
   Activity,
   AlertTriangle,
   CheckCircle2,
@@ -43,12 +48,19 @@ export function AdminUserModal({
   onUserUpdated,
 }: AdminUserModalProps) {
   const { success, error, info } = useToast();
-  const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'logins'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'logins' | 'email'>('overview');
   const [transactions, setTransactions] = useState<any[]>([]);
   const [logins, setLogins] = useState<any[]>([]);
   const [loadingTx, setLoadingTx] = useState(false);
   const [loadingLogins, setLoadingLogins] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Direct email composer state
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailMessage, setEmailMessage] = useState('');
+  const [emailCtaText, setEmailCtaText] = useState('');
+  const [emailCtaUrl, setEmailCtaUrl] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   // Local user state reflecting optimistic or fetched updates
   const [currentUser, setCurrentUser] = useState<any | null>(user);
@@ -200,6 +212,129 @@ export function AdminUserModal({
     }
   };
 
+  const handleManualVerifyEmail = async () => {
+    if (!currentUser?.id) return;
+    if (
+      !window.confirm(
+        `Mark email address as VERIFIED for ${currentUser.email || 'this user'}? This will officially confirm their email in Supabase Auth.`
+      )
+    )
+      return;
+
+    setActionLoading(true);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetUserId: currentUser.id,
+          action: 'verify_email',
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        success('Email Verified', data.message);
+        setCurrentUser((prev: any) => ({
+          ...prev,
+          is_email_verified: true,
+          email_confirmed_at: new Date().toISOString(),
+        }));
+        if (onUserUpdated) onUserUpdated();
+      } else {
+        error('Verification Failed', data.error);
+      }
+    } catch (err: any) {
+      error('Error', err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const EMAIL_PRESETS = [
+    {
+      label: 'General Notice',
+      subject: 'Important update regarding your ZuvaPay account',
+      message: `Hello ${currentUser?.first_name || 'Valued Customer'},\n\nWe are reaching out with an important update regarding your ZuvaPay account. Please review the details or reach out to our team if you have any questions.\n\nThank you for choosing ZuvaPay.`,
+      ctaText: 'Open ZuvaPay Dashboard',
+      ctaUrl: 'https://zuvapay.com/dashboard',
+    },
+    {
+      label: 'Email Verification',
+      subject: 'Please verify your email address on ZuvaPay',
+      message: `Hello ${currentUser?.first_name || 'Valued Customer'},\n\nWe noticed that your email address has not been verified yet. Verifying your email address ensures you never miss automated transaction receipts, electricity tokens, and security notices.\n\nPlease log in to your dashboard to complete your email verification.`,
+      ctaText: 'Log In & Verify',
+      ctaUrl: 'https://zuvapay.com/login',
+    },
+    {
+      label: 'Support & Resolution',
+      subject: 'Update regarding your support inquiry on ZuvaPay',
+      message: `Hello ${currentUser?.first_name || 'Valued Customer'},\n\nOur administration team has reviewed your transaction activity or recent support inquiry. All adjustments or service verifications have been processed.\n\nPlease check your transaction history or wallet balance. We appreciate your patience!`,
+      ctaText: 'View Transaction History',
+      ctaUrl: 'https://zuvapay.com/transactions',
+    },
+    {
+      label: 'Security & PIN Alert',
+      subject: 'Security Notice regarding your ZuvaPay credentials',
+      message: `Hello ${currentUser?.first_name || 'Valued Customer'},\n\nThis is an official security advisory from the ZuvaPay administration team. To maintain the integrity of your account and protect your funds, please ensure your 4-digit transaction PIN is never shared with anyone.\n\nIf you ever suspect unauthorized access, contact us immediately.`,
+      ctaText: 'Security Settings',
+      ctaUrl: 'https://zuvapay.com/settings',
+    },
+  ];
+
+  const applyEmailPreset = (preset: typeof EMAIL_PRESETS[0]) => {
+    setEmailSubject(preset.subject);
+    setEmailMessage(preset.message);
+    setEmailCtaText(preset.ctaText);
+    setEmailCtaUrl(preset.ctaUrl);
+  };
+
+  const handleSendDirectEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser.email) {
+      error('No Recipient Email', 'This user does not have an email address associated with their account.');
+      return;
+    }
+    if (!emailSubject.trim()) {
+      error('Subject Missing', 'Please enter an email subject.');
+      return;
+    }
+    if (!emailMessage.trim()) {
+      error('Message Missing', 'Please enter the email body message.');
+      return;
+    }
+
+    setSendingEmail(true);
+    try {
+      const res = await fetch(`/api/admin/users/${currentUser.id}/email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: emailSubject.trim(),
+          message: emailMessage.trim(),
+          ctaText: emailCtaText.trim() || undefined,
+          ctaUrl: emailCtaUrl.trim() || undefined,
+          customEmail: currentUser.email,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        success('Email Sent', data.message || `Email delivered to ${currentUser.email}`);
+        setEmailSubject('');
+        setEmailMessage('');
+        setEmailCtaText('');
+        setEmailCtaUrl('');
+      } else {
+        error('Delivery Failed', data.error || 'Failed to dispatch email via SMTP server');
+      }
+    } catch (err: any) {
+      error('Error', err.message || 'Error communicating with email dispatch service');
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   const ngnWallet = currentUser.wallets?.find((w: any) => w.currency === 'NGN');
   const usdWallet = currentUser.wallets?.find((w: any) => w.currency === 'USD');
   const va = currentUser.virtual_accounts?.[0];
@@ -268,6 +403,27 @@ export function AdminUserModal({
                 >
                   <KeyRound className="w-2.5 h-2.5" />
                   {currentUser.is_pin_set ? 'PIN Configured' : 'No PIN Set'}
+                </span>
+
+                {/* Email Verification Status Badge */}
+                <span
+                  className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                    currentUser.is_email_verified
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25'
+                      : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25'
+                  }`}
+                  title={
+                    currentUser.is_email_verified
+                      ? `Email address verified${currentUser.email_confirmed_at ? ` on ${formatDate(currentUser.email_confirmed_at)}` : ''}`
+                      : 'User has not verified their email address'
+                  }
+                >
+                  {currentUser.is_email_verified ? (
+                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                  ) : (
+                    <AlertTriangle className="w-3 h-3 text-amber-500" />
+                  )}
+                  {currentUser.is_email_verified ? 'Email Verified' : 'Email Unverified'}
                 </span>
               </div>
 
@@ -347,8 +503,35 @@ export function AdminUserModal({
               title="Wipes transaction PIN so user is forced to create a new PIN"
             >
               <KeyRound className="w-3.5 h-3.5 text-brand-orange" />
-              Reset Transaction PIN
+              Reset PIN
             </button>
+
+            {/* Send Direct Email Button */}
+            <button
+              onClick={() => setActiveTab('email')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
+                activeTab === 'email'
+                  ? 'bg-brand-orange text-white border-brand-orange shadow-sm shadow-brand-orange/30'
+                  : 'bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange border-brand-orange/25'
+              }`}
+              title="Compose and send an official branded email to this user"
+            >
+              <Mail className="w-3.5 h-3.5" />
+              Send Direct Email
+            </button>
+
+            {/* Manual Mark Email Verified Button (if not yet verified) */}
+            {!currentUser.is_email_verified && (
+              <button
+                onClick={handleManualVerifyEmail}
+                disabled={actionLoading}
+                className="px-3 py-1.5 rounded-xl bg-teal-500/10 hover:bg-teal-500/20 text-teal-600 dark:text-teal-400 border border-teal-500/25 text-xs font-bold transition-all flex items-center gap-1.5 disabled:opacity-40"
+                title="Mark this user's email address as verified in Supabase Auth"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-teal-500" />
+                Mark Email Verified
+              </button>
+            )}
           </div>
 
           <div>
@@ -368,10 +551,10 @@ export function AdminUserModal({
         </div>
 
         {/* Modal Tabs Navigation */}
-        <div className="flex border-b border-slate-100 dark:border-white/5 px-6 pt-2 bg-white dark:bg-slate-900">
+        <div className="flex border-b border-slate-100 dark:border-white/5 px-6 pt-2 bg-white dark:bg-slate-900 overflow-x-auto">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 ${
+            className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${
               activeTab === 'overview'
                 ? 'border-brand-orange text-brand-orange'
                 : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -381,7 +564,7 @@ export function AdminUserModal({
           </button>
           <button
             onClick={() => setActiveTab('transactions')}
-            className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
+            className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'transactions'
                 ? 'border-brand-orange text-brand-orange'
                 : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -394,17 +577,27 @@ export function AdminUserModal({
           </button>
           <button
             onClick={() => setActiveTab('logins')}
-            className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
+            className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'logins'
                 ? 'border-brand-orange text-brand-orange'
                 : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <History className="w-3.5 h-3.5" />
             Login History
             <span className="px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-400">
               {logins.length}
             </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('email')}
+            className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'email'
+                ? 'border-brand-orange text-brand-orange'
+                : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Mail className="w-3.5 h-3.5" />
+            Direct Email (SMTP)
           </button>
         </div>
 
@@ -501,6 +694,39 @@ export function AdminUserModal({
                     <span className="text-slate-400 block text-[11px]">Account Status:</span>
                     <span className="font-bold uppercase tracking-wider text-slate-900 dark:text-white mt-0.5 block">
                       {userStatus}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Email Verification Status:</span>
+                    <div className="font-medium text-slate-900 dark:text-white flex items-center gap-1.5 mt-0.5">
+                      {currentUser.is_email_verified ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+                            Verified {currentUser.email_confirmed_at ? `(${formatDate(currentUser.email_confirmed_at)})` : ''}
+                          </span>
+                        </>
+                      ) : (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                          <span className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
+                            Unverified (Pending confirmation)
+                          </span>
+                          <button
+                            onClick={handleManualVerifyEmail}
+                            disabled={actionLoading}
+                            className="text-[10px] font-bold text-teal-600 dark:text-teal-400 hover:underline bg-teal-500/10 px-2 py-0.5 rounded border border-teal-500/20"
+                          >
+                            Mark Verified
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[11px]">Last Sign-In Activity:</span>
+                    <span className="font-mono text-slate-900 dark:text-white text-xs mt-0.5 block">
+                      {currentUser.last_sign_in_at ? formatDate(currentUser.last_sign_in_at) : 'Never logged in'}
                     </span>
                   </div>
                 </div>
@@ -687,6 +913,203 @@ export function AdminUserModal({
                   </table>
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'email' && (
+            <div className="space-y-5">
+              {/* Recipient & Channel Status Header */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-brand-orange/10 flex items-center justify-center text-brand-orange border border-brand-orange/20">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">
+                        Dispatching to: {currentUser.email || 'No email set'}
+                      </span>
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${
+                          currentUser.is_email_verified
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                        }`}
+                      >
+                        {currentUser.is_email_verified ? 'Verified Email' : 'Unverified Email'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      Sent from <strong className="text-slate-700 dark:text-slate-300">ZuvaPay Official SMTP Gateway</strong> (<code className="font-mono text-[10px]">support@zuvapay.com</code>)
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold border border-emerald-500/20">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    SMTP Connected
+                  </span>
+                </div>
+              </div>
+
+              {/* Quick Template Presets */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-brand-orange" />
+                    Quick Message Presets (Click to autofill)
+                  </span>
+                  {(emailSubject || emailMessage) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEmailSubject('');
+                        setEmailMessage('');
+                        setEmailCtaText('');
+                        setEmailCtaUrl('');
+                      }}
+                      className="text-[11px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                      Clear Form
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {EMAIL_PRESETS.map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => applyEmailPreset(preset)}
+                      className={`p-2.5 rounded-xl border text-left transition-all group ${
+                        emailSubject === preset.subject
+                          ? 'border-brand-orange bg-brand-orange/5 dark:bg-brand-orange/10 shadow-sm'
+                          : 'border-slate-200 dark:border-white/5 hover:border-brand-orange/40 bg-white dark:bg-slate-900/60'
+                      }`}
+                    >
+                      <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-brand-orange transition-colors">
+                        {preset.label}
+                      </p>
+                      <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                        {preset.subject}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Composer Form */}
+              <form onSubmit={handleSendDirectEmail} className="space-y-4">
+                {/* Subject */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Email Subject Line <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={emailSubject}
+                    onChange={(e) => setEmailSubject(e.target.value)}
+                    placeholder="e.g. Important update regarding your ZuvaPay account"
+                    required
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950/60 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition-all placeholder:text-slate-400"
+                  />
+                </div>
+
+                {/* Message Body */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Message Body <span className="text-rose-500">*</span>
+                    </label>
+                    <span className="text-[10px] text-slate-400">
+                      Paragraphs are automatically formatted in the branded email template
+                    </span>
+                  </div>
+                  <textarea
+                    rows={6}
+                    value={emailMessage}
+                    onChange={(e) => setEmailMessage(e.target.value)}
+                    placeholder={`Hello ${currentUser.first_name || 'there'},\n\nWrite your message here...`}
+                    required
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950/60 text-slate-900 dark:text-white text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition-all placeholder:text-slate-400 font-sans"
+                  />
+                </div>
+
+                {/* Optional Call-to-Action (CTA) */}
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Optional Action Button (Call to Action)
+                    </span>
+                    <span className="text-[10px] text-slate-400">
+                      Adds a clickable button inside the email body
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] text-slate-500 mb-1">
+                        Button Label
+                      </label>
+                      <input
+                        type="text"
+                        value={emailCtaText}
+                        onChange={(e) => setEmailCtaText(e.target.value)}
+                        placeholder="e.g. View Dashboard, Verify Account"
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-brand-orange/30"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-slate-500 mb-1">
+                        Target Destination URL
+                      </label>
+                      <input
+                        type="text"
+                        value={emailCtaUrl}
+                        onChange={(e) => setEmailCtaUrl(e.target.value)}
+                        placeholder="e.g. https://zuvapay.com/login"
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-brand-orange/30"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-between pt-2">
+                  <p className="text-[11px] text-slate-400 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                    Recipient will receive a secure HTML email with ZuvaPay header & footer.
+                  </p>
+
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('overview')}
+                      className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={sendingEmail || !currentUser.email}
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-orange to-orange-600 hover:opacity-90 text-white text-xs font-bold shadow-md shadow-brand-orange/25 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      {sendingEmail ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Dispatching via SMTP...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Send Email via SMTP</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
           )}
         </div>
