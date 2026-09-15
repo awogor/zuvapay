@@ -379,7 +379,7 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
         {/* Total Sales */}
         <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Gross Sales</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">Actual Net Revenue</span>
             <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
             </div>
@@ -389,9 +389,10 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
           </p>
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-slate-500 dark:text-slate-400">
-              {data?.summary.totalCompletedOrders || 0} Successful Orders
+              {data?.summary.totalCompletedOrders || 0} Successful {data?.summary.totalCompletedOrders === 1 ? 'Order' : 'Orders'}
+              {data?.summary.totalRefundOrders ? ` · ${data.summary.totalRefundOrders} Refunded` : ''}
             </span>
-            <span className="text-sky-600 dark:text-sky-400 font-bold">Revenue Inflow</span>
+            <span className="text-sky-600 dark:text-sky-400 font-bold">Delivered Sales</span>
           </div>
         </div>
 
@@ -448,6 +449,28 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
           </div>
         </div>
       </div>
+
+      {/* Reversals & Failed Orders Audit Alert */}
+      {data?.summary && data.summary.totalRefundOrders > 0 && (
+        <div className="p-4 rounded-3xl bg-rose-500/10 border border-rose-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-2xl bg-rose-500/20 text-rose-500 flex items-center justify-center shrink-0">
+              <RotateCcw className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="font-bold text-rose-600 dark:text-rose-400 text-xs sm:text-sm">
+                {data.summary.totalRefundOrders} Failed & Reversed {data.summary.totalRefundOrders === 1 ? 'Order' : 'Orders'} ({formatNaira(data.summary.totalRefundAmount)})
+              </p>
+              <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">
+                Funds were automatically refunded back to customer wallets. These are strictly excluded from actual revenue and wholesale provider costs.
+              </p>
+            </div>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-rose-500/20 text-rose-600 dark:text-rose-400 font-mono font-bold text-[11px] self-start sm:self-center shrink-0">
+            100% Refunded
+          </span>
+        </div>
+      )}
 
       {/* Visual Periodic Performance Trend */}
       <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
@@ -584,7 +607,7 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
                 <tr>
                   <th className="py-3.5 px-4 font-bold">Provider / Gateway</th>
                   <th className="py-3.5 px-4 font-bold text-center">Orders</th>
-                  <th className="py-3.5 px-4 font-bold text-right">Gross Sales</th>
+                  <th className="py-3.5 px-4 font-bold text-right">Delivered Sales</th>
                   <th className="py-3.5 px-4 font-bold text-right">Wholesale Cost</th>
                   <th className="py-3.5 px-4 font-bold text-right">Net Profit</th>
                   <th className="py-3.5 px-4 font-bold text-center">Margin %</th>
@@ -675,7 +698,7 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
                 <tr>
                   <th className="py-3.5 px-4 font-bold">Category</th>
                   <th className="py-3.5 px-4 font-bold text-center">Volume</th>
-                  <th className="py-3.5 px-4 font-bold text-right">Gross Sales</th>
+                  <th className="py-3.5 px-4 font-bold text-right">Delivered Sales</th>
                   <th className="py-3.5 px-4 font-bold text-right">Wholesale Cost</th>
                   <th className="py-3.5 px-4 font-bold text-right">Net Profit</th>
                   <th className="py-3.5 px-4 font-bold text-center">Net Margin</th>
@@ -803,19 +826,39 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
                           {row.providerName}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 text-right font-bold text-slate-900 dark:text-white">
-                        {formatNaira(row.retailPrice)}
+                      <td className="py-3.5 px-4 text-right font-bold">
+                        {row.type === 'reversal' || row.status === 'refunded' ? (
+                          <span className="text-rose-500 font-semibold line-through">
+                            {formatNaira(row.retailPrice)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-900 dark:text-white">
+                            {formatNaira(row.retailPrice)}
+                          </span>
+                        )}
                       </td>
                       <td className="py-3.5 px-4 text-right text-amber-600 dark:text-amber-400">
                         {formatNaira(row.wholesaleCost)}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-bold text-emerald-600 dark:text-emerald-400">
-                        +{formatNaira(row.netProfit)}
+                      <td className="py-3.5 px-4 text-right font-bold">
+                        {row.type === 'reversal' || row.status === 'refunded' ? (
+                          <span className="text-slate-400 font-normal">₦0.00</span>
+                        ) : (
+                          <span className="text-emerald-600 dark:text-emerald-400">
+                            +{formatNaira(row.netProfit)}
+                          </span>
+                        )}
                       </td>
                       <td className="py-3.5 px-4 text-center">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                          {row.marginPercent}%
-                        </span>
+                        {row.type === 'reversal' || row.status === 'refunded' ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                            Reversed
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                            {row.marginPercent}%
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))

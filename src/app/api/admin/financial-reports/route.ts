@@ -230,6 +230,27 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Build set of all refunded/reversed references to prevent counting failed orders as sales
+    const refundedReferences = new Set<string>();
+    mergedTxs.forEach((tx: any) => {
+      const isRefundTx =
+        tx.category === 'refund' ||
+        tx.reference?.startsWith('KP-REF') ||
+        (tx.description || '').toLowerCase().startsWith('refund') ||
+        tx.metadata?.is_refund === true;
+
+      if (isRefundTx) {
+        const orig =
+          tx.metadata?.original_reference ||
+          tx.metadata?.originalReference ||
+          tx.metadata?.originalRef;
+        if (orig) refundedReferences.add(orig);
+
+        const m = (tx.description || '').match(/\[Ref:\s*([^\]]+)\]/i);
+        if (m && m[1]) refundedReferences.add(m[1].trim());
+      }
+    });
+
     filteredTxs.forEach((tx: any) => {
       const amount = parseFloat(tx.amount || 0);
       const isRefund =
@@ -237,7 +258,16 @@ export async function GET(request: NextRequest) {
         tx.reference?.startsWith('KP-REF') ||
         (tx.description || '').toLowerCase().startsWith('refund') ||
         tx.metadata?.is_refund === true;
-      const isDebitPurchase = tx.type === 'debit' && !isRefund;
+
+      const isFailedOrRefundedDebit =
+        tx.type === 'debit' &&
+        (tx.status === 'failed' ||
+          tx.status === 'reversed' ||
+          tx.status === 'refunded' ||
+          tx.metadata?.refunded === true ||
+          refundedReferences.has(tx.reference));
+
+      const isDeliveredSale = tx.type === 'debit' && !isRefund && !isFailedOrRefundedDebit;
 
       const provider = resolveProvider(tx);
       const cat = (tx.category || 'other').toLowerCase();
@@ -271,7 +301,7 @@ export async function GET(request: NextRequest) {
       }
       const cSummary = categoryMap.get(cat)!;
 
-      const { cost, profit } = calculateTxCost(tx);
+      const { cost, profit } = isDeliveredSale ? calculateTxCost(tx) : { cost: 0, profit: 0 };
 
       const txDate = new Date(tx.created_at);
       let timeKey = txDate.toISOString().split('T')[0];
@@ -291,7 +321,8 @@ export async function GET(request: NextRequest) {
       }
       const tsPoint = timeSeriesMap.get(timeKey)!;
 
-      if (isDebitPurchase) {
+      if (isDeliveredSale) {
+        // Actual Delivered Revenue
         totalGrossSales += amount;
         totalWholesaleCost += cost;
         totalCompletedOrders += 1;
@@ -323,14 +354,42 @@ export async function GET(request: NextRequest) {
           wholesaleCost: cost,
           netProfit: profit,
           marginPercent: amount > 0 ? Math.round((profit / amount) * 100) : 0,
-          status: tx.status || 'completed',
+          status: 'completed',
           type: 'sale',
         });
-      } else if (isRefund) {
+      } else if (isFailedOrRefundedDebit) {
+        // Failed / Refunded purchase: Do NOT count as gross sales or provider wholesale cost!
         totalRefundOrders += 1;
         totalRefundAmount += amount;
         pSummary.refundedCount += 1;
         pSummary.refundedAmount += amount;
+
+        itemizedList.push({
+          id: tx.id,
+          reference: tx.reference,
+          date: tx.created_at,
+          category: cat,
+          description: `${tx.description || 'Order'} (Failed & Refunded)`,
+          providerId: provider.id,
+          providerName: provider.name,
+          retailPrice: amount,
+          wholesaleCost: 0,
+          netProfit: 0,
+          marginPercent: 0,
+          status: 'refunded',
+          type: 'reversal',
+        });
+      } else if (isRefund) {
+        // Refund credit log: only count toward totals if the original debit was not already accounted for
+        const origRef = tx.metadata?.original_reference;
+        const alreadyCountedInDebit = origRef && filteredTxs.some((t: any) => t.reference === origRef);
+
+        if (!alreadyCountedInDebit) {
+          totalRefundOrders += 1;
+          totalRefundAmount += amount;
+          pSummary.refundedCount += 1;
+          pSummary.refundedAmount += amount;
+        }
 
         itemizedList.push({
           id: tx.id,

@@ -609,6 +609,25 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         return { success: true };
       }
 
+      // Mark the original debit transaction as failed/reversed in Supabase and state
+      if (originalReference) {
+        try {
+          await supabase
+            .from('transactions')
+            .update({
+              status: 'failed',
+              metadata: {
+                refunded: true,
+                refund_reason: cleanReason,
+                refund_reference: refundReference,
+              },
+            })
+            .eq('reference', originalReference);
+        } catch (updateErr: any) {
+          console.warn('[refundBill] Could not update original tx status:', updateErr?.message);
+        }
+      }
+
       setWallet((prev) => (prev ? { ...prev, balance: data.new_balance } : null));
       await refreshWallet();
       return { success: true };
