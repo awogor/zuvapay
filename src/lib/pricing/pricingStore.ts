@@ -100,9 +100,54 @@ const DEFAULT_CONFIG: ProviderPricingConfig = {
 };
 
 const CONFIG_FILE_PATH = path.join(process.cwd(), 'src', 'lib', 'data', 'pricingRules.json');
+const BUCKET_NAME = 'system-config';
+const PRICING_FILE_NAME = 'pricingRules.json';
 
 // In-memory cache for ultra-fast access
 let inMemoryConfig: ProviderPricingConfig | null = null;
+
+function normalizeConfig(parsed: any): ProviderPricingConfig {
+  return {
+    gongoz: {
+      data: {
+        globalRule: parsed?.gongoz?.data?.globalRule || DEFAULT_CONFIG.gongoz.data.globalRule,
+        overrides: parsed?.gongoz?.data?.overrides || {},
+      },
+      cable: {
+        globalRule: parsed?.gongoz?.cable?.globalRule || DEFAULT_CONFIG.gongoz.cable.globalRule,
+        overrides: parsed?.gongoz?.cable?.overrides || {},
+      },
+      power: {
+        globalRule: parsed?.gongoz?.power?.globalRule || DEFAULT_CONFIG.gongoz.power.globalRule,
+        overrides: parsed?.gongoz?.power?.overrides || {},
+      },
+    },
+    fadded: {
+      globalRule: parsed?.fadded?.globalRule || DEFAULT_CONFIG.fadded.globalRule,
+      overrides: parsed?.fadded?.overrides || {},
+    },
+    momo: {
+      usdToNgnRate: Number(parsed?.momo?.usdToNgnRate) || DEFAULT_CONFIG.momo.usdToNgnRate,
+      globalRule: parsed?.momo?.globalRule || DEFAULT_CONFIG.momo.globalRule,
+      overrides: parsed?.momo?.overrides || {},
+    },
+    grizzly: {
+      usdToNgnRate: Number(parsed?.grizzly?.usdToNgnRate) || DEFAULT_CONFIG.grizzly.usdToNgnRate,
+      globalRule: parsed?.grizzly?.globalRule || DEFAULT_CONFIG.grizzly.globalRule,
+      overrides: parsed?.grizzly?.overrides || {},
+    },
+    smspool: {
+      usdToNgnRate: Number(parsed?.smspool?.usdToNgnRate) || DEFAULT_CONFIG.smspool.usdToNgnRate,
+      globalRule: parsed?.smspool?.globalRule || DEFAULT_CONFIG.smspool.globalRule,
+      overrides: parsed?.smspool?.overrides || {},
+    },
+    marketplace: {
+      globalRule: parsed?.marketplace?.globalRule || DEFAULT_CONFIG.marketplace.globalRule,
+      overrides: parsed?.marketplace?.overrides || {},
+    },
+    updatedAt: parsed?.updatedAt || new Date().toISOString(),
+  };
+}
 
 export function getPricingConfigSync(): ProviderPricingConfig {
   if (inMemoryConfig) return inMemoryConfig;
@@ -111,57 +156,43 @@ export function getPricingConfigSync(): ProviderPricingConfig {
     if (fs.existsSync(CONFIG_FILE_PATH)) {
       const content = fs.readFileSync(CONFIG_FILE_PATH, 'utf-8');
       const parsed = JSON.parse(content);
-      inMemoryConfig = {
-        gongoz: {
-          data: {
-            globalRule: parsed?.gongoz?.data?.globalRule || DEFAULT_CONFIG.gongoz.data.globalRule,
-            overrides: parsed?.gongoz?.data?.overrides || {},
-          },
-          cable: {
-            globalRule: parsed?.gongoz?.cable?.globalRule || DEFAULT_CONFIG.gongoz.cable.globalRule,
-            overrides: parsed?.gongoz?.cable?.overrides || {},
-          },
-          power: {
-            globalRule: parsed?.gongoz?.power?.globalRule || DEFAULT_CONFIG.gongoz.power.globalRule,
-            overrides: parsed?.gongoz?.power?.overrides || {},
-          },
-        },
-        fadded: {
-          globalRule: parsed?.fadded?.globalRule || DEFAULT_CONFIG.fadded.globalRule,
-          overrides: parsed?.fadded?.overrides || {},
-        },
-        momo: {
-          usdToNgnRate: Number(parsed?.momo?.usdToNgnRate) || DEFAULT_CONFIG.momo.usdToNgnRate,
-          globalRule: parsed?.momo?.globalRule || DEFAULT_CONFIG.momo.globalRule,
-          overrides: parsed?.momo?.overrides || {},
-        },
-        grizzly: {
-          usdToNgnRate: Number(parsed?.grizzly?.usdToNgnRate) || DEFAULT_CONFIG.grizzly.usdToNgnRate,
-          globalRule: parsed?.grizzly?.globalRule || DEFAULT_CONFIG.grizzly.globalRule,
-          overrides: parsed?.grizzly?.overrides || {},
-        },
-        smspool: {
-          usdToNgnRate: Number(parsed?.smspool?.usdToNgnRate) || DEFAULT_CONFIG.smspool.usdToNgnRate,
-          globalRule: parsed?.smspool?.globalRule || DEFAULT_CONFIG.smspool.globalRule,
-          overrides: parsed?.smspool?.overrides || {},
-        },
-        marketplace: {
-          globalRule: parsed?.marketplace?.globalRule || DEFAULT_CONFIG.marketplace.globalRule,
-          overrides: parsed?.marketplace?.overrides || {},
-        },
-        updatedAt: parsed?.updatedAt,
-      };
-      return inMemoryConfig!;
+      inMemoryConfig = normalizeConfig(parsed);
+      return inMemoryConfig;
     }
   } catch (err) {
-    console.warn('Failed to read pricing config file, using defaults', err);
+    console.warn('[pricingStore] Failed to read local pricing config file, using defaults', err);
   }
 
-  inMemoryConfig = DEFAULT_CONFIG;
+  inMemoryConfig = { ...DEFAULT_CONFIG };
   return inMemoryConfig;
 }
 
 export async function getPricingConfig(): Promise<ProviderPricingConfig> {
+  if (inMemoryConfig) return inMemoryConfig;
+
+  // 1. Try fetching persistent configuration from Supabase Storage
+  try {
+    const { createAdminClient } = await import('@/lib/supabase/server');
+    const supabase = createAdminClient();
+    const { data, error } = await supabase.storage.from(BUCKET_NAME).download(PRICING_FILE_NAME);
+
+    if (data && !error) {
+      const text = await data.text();
+      const parsed = JSON.parse(text);
+      if (parsed && typeof parsed === 'object') {
+        inMemoryConfig = normalizeConfig(parsed);
+        // Sync local disk copy if writable
+        try {
+          fs.writeFileSync(CONFIG_FILE_PATH, JSON.stringify(inMemoryConfig, null, 2), 'utf-8');
+        } catch {}
+        return inMemoryConfig;
+      }
+    }
+  } catch (err) {
+    console.warn('[pricingStore] Supabase Storage fetch failed, falling back to local file:', err);
+  }
+
+  // 2. Fallback to local file or defaults
   return getPricingConfigSync();
 }
 
@@ -171,6 +202,30 @@ export async function savePricingConfig(newConfig: ProviderPricingConfig): Promi
     updatedAt: new Date().toISOString(),
   };
 
+  // 1. Persist to Supabase Storage bucket 'system-config' (survives all redeployments and container rebuilds)
+  try {
+    const { createAdminClient } = await import('@/lib/supabase/server');
+    const supabase = createAdminClient();
+    const jsonString = JSON.stringify(inMemoryConfig, null, 2);
+    const { error: uploadError } = await supabase.storage.from(BUCKET_NAME).upload(
+      PRICING_FILE_NAME,
+      Buffer.from(jsonString),
+      {
+        contentType: 'application/json',
+        upsert: true,
+      }
+    );
+
+    if (uploadError) {
+      console.error('[pricingStore] Failed to upload pricing to Supabase Storage:', uploadError);
+    } else {
+      console.log('[pricingStore] Successfully persisted pricing to Supabase Storage');
+    }
+  } catch (storageErr) {
+    console.error('[pricingStore] Error saving to Supabase Storage:', storageErr);
+  }
+
+  // 2. Also write to local disk as fallback
   try {
     const dir = path.dirname(CONFIG_FILE_PATH);
     if (!fs.existsSync(dir)) {
@@ -178,7 +233,7 @@ export async function savePricingConfig(newConfig: ProviderPricingConfig): Promi
     }
     fs.writeFileSync(CONFIG_FILE_PATH, JSON.stringify(inMemoryConfig, null, 2), 'utf-8');
   } catch (err) {
-    console.error('Failed to write pricing rules to file', err);
+    console.error('[pricingStore] Failed to write pricing rules to file:', err);
   }
 }
 

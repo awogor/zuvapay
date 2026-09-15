@@ -1,0 +1,53 @@
+{
+  "services": {
+    "airtime": {
+      "key": "airtime",
+      "name": "Airtime VTU",
+      "category": "Bills & Utilities",
+      "enabled": true
+    },
+    "data": {
+      "key": "data",
+      "name": "Internet Data (SME & Direct)",
+      "category": "Bills & Utilities",
+      "enabled": true
+    },
+    "power": {
+      "key": "power",
+      "name": "Electricity Bills (DISCOs)",
+      "category": "Bills & Utilities",
+      "enabled": true
+    },
+    "tv": {
+      "key": "tv",
+      "name": "Cable TV (DStv, GOtv, StarTimes)",
+      "category": "Bills & Utilities",
+      "enabled": true
+    },
+    "sms": {
+      "key": "sms",
+      "name": "Virtual SMS / OTP Verification",
+      "category": "Digital & Growth",
+      "enabled": true
+    },
+    "social": {
+      "key": "social",
+      "name": "Social Media Boost (SMM)",
+      "category": "Digital & Growth",
+      "enabled": true
+    },
+    "logs": {
+      "key": "logs",
+      "name": "Digital Account Logs",
+      "category": "Digital & Growth",
+      "enabled": true
+    },
+    "marketplace": {
+      "key": "marketplace",
+      "name": "AI Marketplace & Software",
+      "category": "Digital & Growth",
+      "enabled": true
+    }
+  },
+  "updatedAt": "2026-09-15T07:32:45.439Z"
+}
