@@ -3,7 +3,7 @@ import { HomePageView } from '@/components/marketing-pages/HomePageView';
 
 export const metadata: Metadata = {
   title: {
-    absolute: 'Cheap SME Data, Bill Payments & Communication Tools — ZuvaPay',
+    absolute: 'Cheap SME Data, Bill Payments & Digital Services — ZuvaPay',
   },
   description:
     'ZuvaPay is the all-in-one digital platform for cheap SME data, 20-digit electricity tokens, foreign virtual SMS OTP numbers, and automated utility bill payments in Nigeria.',
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     'ZuvaPay bill payments',
   ],
   openGraph: {
-    title: 'Cheap SME Data, Bill Payments & Communication Tools — ZuvaPay',
+    title: 'Cheap SME Data, Bill Payments & Digital Services — ZuvaPay',
     description:
       'Power your everyday digital payments with instant fulfillment. Fast SME data, instant prepaid meter tokens, and foreign OTP numbers with zero downtime.',
     url: '/',
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Cheap SME Data, Bill Payments & Communication Tools — ZuvaPay',
+    title: 'Cheap SME Data, Bill Payments & Digital Services — ZuvaPay',
     description:
       'Buy cheap SME data from ₦240/GB, instant electricity tokens, and foreign OTP phone numbers in Nigeria.',
     images: ['/og/main.png'],
