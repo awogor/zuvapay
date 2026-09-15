@@ -230,6 +230,13 @@ export default function ElectricityPage() {
 
       success('Electricity Paid!', `Token generated for meter ${meterNumber}. Email alert dispatched.`);
 
+      // Reset input form fields so a new recharge can be initiated cleanly
+      setMeterNumber('');
+      setAmount('');
+      setCustomerName(null);
+      setCustomerAddress(null);
+      setIsValidated(false);
+
       if (debitResult.transaction) {
         openReceipt({
           ...debitResult.transaction,

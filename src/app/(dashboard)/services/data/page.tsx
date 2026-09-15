@@ -197,6 +197,11 @@ export default function DataBundlePage() {
 
       // 5. SUCCESS
       success('Data Activated!', `${selectedPlan.name} has been sent to ${phone}.`);
+
+      // Reset form so the page is immediately fresh for the next transaction
+      setPhone('');
+      setSelectedPlanId('');
+
       if (debitResult.transaction) {
         openReceipt({
           ...debitResult.transaction,

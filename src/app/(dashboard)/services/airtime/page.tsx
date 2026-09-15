@@ -128,6 +128,10 @@ export default function AirtimePage() {
         `${formatNaira(numAmount)} ${network} airtime sent to ${phoneNumber}.`
       );
 
+      // Reset form so the page is immediately fresh for the next transaction
+      setPhoneNumber('');
+      setAmount('');
+
       if (debitResult.transaction) {
         openReceipt({
           ...debitResult.transaction,

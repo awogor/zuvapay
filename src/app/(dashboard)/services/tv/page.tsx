@@ -190,6 +190,12 @@ export default function CableTvPage() {
       // 4. Success
       success('TV Subscription Active!', `${selectedBouquet.name} activated on smartcard ${iucNumber}.`);
 
+      // Reset form so the page is immediately fresh for the next transaction
+      setIucNumber('');
+      setSelectedBouquetId('');
+      setCustomerName(null);
+      setValidationError(null);
+
       if (debitResult.transaction) {
         openReceipt({
           ...debitResult.transaction,
