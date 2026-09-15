@@ -1,9 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { AccountLogItem } from '@/types';
 import { faddedFetch } from '@/lib/vendors/fadded';
 import { getPricingConfig, computeRetailPrice } from '@/lib/pricing/pricingStore';
 import { checkServiceAvailability } from '@/lib/services/serviceStatusStore';
+import { sendTransactionalEmail } from '@/lib/email/sendEmail';
 
 const FALLBACK_LOGS_CATALOG: AccountLogItem[] = [
   {
@@ -300,17 +301,75 @@ export async function POST(request: NextRequest) {
       // items is an array of { product_detail_id, details }
       const deliveredItems = data?.data?.items || [];
       const credentialsText = deliveredItems.map((item: any) => item.details).join('\n---\n');
+      const productTitle = data?.data?.name || itemId;
+      const supplierOrderId = data?.data?.product_key || reference;
+
+      const parsedDelivery = {
+        activationLink: null,
+        code: null,
+        credentials: credentialsText || deliveredItems[0]?.details || null,
+        instructions: 'Use the login credentials or session details above to access your purchased account. Please secure and update your recovery information immediately.',
+        rawText: credentialsText,
+      };
+
+      // Save delivery to Supabase transaction metadata
+      try {
+        const adminSupabase = createAdminClient();
+        const { data: existingTx } = await adminSupabase
+          .from('transactions')
+          .select('id, metadata')
+          .eq('reference', reference)
+          .maybeSingle();
+
+        const mergedMetadata = {
+          ...(existingTx?.metadata || {}),
+          supplierOrderId,
+          delivery: parsedDelivery,
+        };
+
+        await adminSupabase
+          .from('transactions')
+          .update({
+            metadata: mergedMetadata,
+            status: 'completed',
+          })
+          .eq('reference', reference);
+      } catch (dbErr: any) {
+        console.warn('[LOGS_METADATA_PERSIST_ERROR]', dbErr.message);
+      }
+
+      // Dispatch delivery transactional email to customer
+      const recipientEmail = customerEmail?.trim() || user.email;
+      if (recipientEmail) {
+        const displayName = user.user_metadata?.first_name || user.email?.split('@')[0] || 'Valued Customer';
+        sendTransactionalEmail({
+          to: recipientEmail,
+          templateType: 'marketplace_delivery',
+          data: {
+            recipientName: displayName,
+            productName: productTitle,
+            reference,
+            credentials: parsedDelivery.credentials || undefined,
+            instructions: parsedDelivery.instructions,
+            quantity: parseInt(quantity) || 1,
+            warranty: 'Instant Verified Access Guarantee',
+          },
+        }).catch((emailErr) => {
+          console.warn('[LOGS_DELIVERY_EMAIL_FAILED]', emailErr.message);
+        });
+      }
 
       return NextResponse.json({
         success: true,
-        orderId: data?.data?.product_key || reference,
+        orderId: supplierOrderId,
         credentials: {
           username: deliveredItems[0]?.details || credentialsText,
           password: 'See complete credentials details string above',
           fullDetails: credentialsText,
         },
+        delivery: parsedDelivery,
         item: {
-          title: data?.data?.name || itemId,
+          title: productTitle,
           price: data?.data?.total_amount,
         },
       });
@@ -333,10 +392,45 @@ export async function POST(request: NextRequest) {
       cookies: 'datr=v9X3qh...; sessionid=zuva_session; c_user=10004928192;',
     };
 
+    const mockCredentialsText = `Username: ${mockDelivered.username}\nPassword: ${mockDelivered.password}\n2FA: ${mockDelivered.twoFactor}\nCookies: ${mockDelivered.cookies}`;
+    const mockDelivery = {
+      activationLink: null,
+      code: null,
+      credentials: mockCredentialsText,
+      instructions: 'Use the login credentials or session details above to access your purchased account.',
+      rawText: mockCredentialsText,
+    };
+
+    try {
+      const adminSupabase = createAdminClient();
+      const { data: existingTx } = await adminSupabase
+        .from('transactions')
+        .select('id, metadata')
+        .eq('reference', reference)
+        .maybeSingle();
+
+      const mergedMetadata = {
+        ...(existingTx?.metadata || {}),
+        supplierOrderId: `FAD-${Date.now()}`,
+        delivery: mockDelivery,
+      };
+
+      await adminSupabase
+        .from('transactions')
+        .update({
+          metadata: mergedMetadata,
+          status: 'completed',
+        })
+        .eq('reference', reference);
+    } catch (dbErr: any) {
+      console.warn('[LOGS_MOCK_METADATA_PERSIST_ERROR]', dbErr.message);
+    }
+
     return NextResponse.json({
       success: true,
       orderId: `FAD-${Date.now()}`,
       credentials: mockDelivered,
+      delivery: mockDelivery,
       item: {
         title: `Product ${itemId}`,
         price: 5200,

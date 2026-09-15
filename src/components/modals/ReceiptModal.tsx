@@ -13,6 +13,9 @@ import {
   AlertCircle,
   ShieldCheck,
   Zap,
+  ExternalLink,
+  Sparkles,
+  FileText,
 } from 'lucide-react';
 
 function formatMetaKey(key: string): string {
@@ -28,6 +31,9 @@ export function ReceiptModal() {
   const { profile } = useAuth();
   const [copied, setCopied] = useState(false);
   const [tokenCopied, setTokenCopied] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [credsCopied, setCredsCopied] = useState(false);
 
   if (!activeReceipt) return null;
 
@@ -43,9 +49,44 @@ export function ReceiptModal() {
     setTimeout(() => setTokenCopied(false), 2000);
   };
 
+  const copyCode = (c: string) => {
+    navigator.clipboard.writeText(c);
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 2000);
+  };
+
+  const copyLink = (url: string) => {
+    navigator.clipboard.writeText(url);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
+
+  const copyCreds = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCredsCopied(true);
+    setTimeout(() => setCredsCopied(false), 2000);
+  };
+
   const isCredit = activeReceipt.type === 'credit';
   const metadata = activeReceipt.metadata || {};
   const token = metadata.token || metadata.Token || metadata.meter_token || metadata.electricity_token;
+
+  const rawDelivery = metadata.delivery || (metadata.credentials ? {
+    credentials: metadata.credentials,
+    instructions: metadata.instructions,
+    activationLink: metadata.activationLink,
+    code: metadata.code,
+  } : null);
+
+  const delivery = rawDelivery ? {
+    activationLink: rawDelivery.activationLink || null,
+    code: rawDelivery.code || null,
+    credentials: typeof rawDelivery.credentials === 'string'
+      ? rawDelivery.credentials
+      : (rawDelivery.credentials?.username ? `Username: ${rawDelivery.credentials.username}\nPassword: ${rawDelivery.credentials.password || ''}` : (rawDelivery.credentials ? JSON.stringify(rawDelivery.credentials) : null)),
+    instructions: rawDelivery.instructions || null,
+    rawText: rawDelivery.rawText || null,
+  } : null;
 
   return (
     <div
@@ -144,6 +185,99 @@ export function ReceiptModal() {
             </div>
           )}
 
+          {/* Digital Delivery & License Access (Marketplace, Software & Digital Accounts) */}
+          {delivery && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-purple-950/70 via-slate-900 to-indigo-950/70 border border-purple-500/30 text-left space-y-3.5 shadow-lg shadow-purple-950/40">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-bold text-purple-300 uppercase tracking-wider">
+                  <Sparkles className="w-4 h-4 text-purple-400" />
+                  Digital License & Delivery Details
+                </div>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  Ready for Use
+                </span>
+              </div>
+
+              {/* Direct 1-Click Activation Link */}
+              {delivery.activationLink && (
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-slate-300">Direct Activation Link</label>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={delivery.activationLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-purple-600/30 transition-all text-center truncate"
+                    >
+                      <span>Activate / Access Product Now</span>
+                      <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => copyLink(delivery.activationLink!)}
+                      className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors flex-shrink-0"
+                      title="Copy Link"
+                    >
+                      {linkCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Activation Code / Key */}
+              {delivery.code && delivery.code !== delivery.activationLink && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-semibold text-slate-300">Activation Code / Token</label>
+                    <button
+                      type="button"
+                      onClick={() => copyCode(delivery.code!)}
+                      className="text-[11px] text-purple-400 hover:text-purple-300 flex items-center gap-1 font-semibold"
+                    >
+                      {codeCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      {codeCopied ? 'Copied' : 'Copy Code'}
+                    </button>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-950/80 border border-purple-500/20 font-mono text-xs text-purple-200 break-all select-all">
+                    {delivery.code}
+                  </div>
+                </div>
+              )}
+
+              {/* Login Credentials / Account Details */}
+              {delivery.credentials && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-semibold text-slate-300">Login Credentials & Details</label>
+                    <button
+                      type="button"
+                      onClick={() => copyCreds(delivery.credentials!)}
+                      className="text-[11px] text-purple-400 hover:text-purple-300 flex items-center gap-1 font-semibold"
+                    >
+                      {credsCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      {credsCopied ? 'Copied' : 'Copy Details'}
+                    </button>
+                  </div>
+                  <pre className="p-3 rounded-xl bg-slate-950/80 border border-purple-500/20 font-mono text-xs text-emerald-300/90 whitespace-pre-wrap break-all select-all leading-relaxed max-h-48 overflow-y-auto">
+                    {delivery.credentials}
+                  </pre>
+                </div>
+              )}
+
+              {/* Instructions */}
+              {delivery.instructions && (
+                <div className="p-3 rounded-xl bg-slate-900/90 border border-white/5 space-y-1 text-xs">
+                  <span className="font-bold text-amber-300 text-[11px] uppercase tracking-wide flex items-center gap-1">
+                    <FileText className="w-3.5 h-3.5" /> How To Redeem & Instructions
+                  </span>
+                  <p className="text-slate-300 text-[11px] whitespace-pre-wrap leading-relaxed">
+                    {delivery.instructions}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Transaction Metadata Breakdown */}
           <div className="rounded-2xl bg-slate-950/40 p-4 border border-white/5 space-y-3 text-sm">
             <div className="flex justify-between items-center py-1.5 border-b border-white/5">
@@ -204,6 +338,8 @@ export function ReceiptModal() {
                     const lower = k.toLowerCase();
                     // Exclude raw token (already rendered in hero token box)
                     if (['token', 'meter_token', 'electricity_token'].includes(lower)) return false;
+                    // Exclude digital delivery & credentials (rendered in digital license card)
+                    if (['delivery', 'credentials', 'activationlink', 'activation_link', 'instructions', 'supplierorderid', 'supplier_order_id', 'faddedorderid'].includes(lower)) return false;
                     // Strict security requirement: hide vendor/operator references from customer view
                     if (['operatorreference', 'operator_reference', 'operator_ref', 'provider_ref', 'provider_reference', 'external_reference'].includes(lower)) return false;
                     return true;

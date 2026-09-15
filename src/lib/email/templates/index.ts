@@ -23,7 +23,8 @@ export type EmailTemplateType =
   | 'security_pin'
   | 'electricity_token'
   | 'admin_broadcast'
-  | 'admin_low_balance';
+  | 'admin_low_balance'
+  | 'marketplace_delivery';
 
 /**
  * 1. Welcome Email Template
@@ -863,6 +864,146 @@ export function renderPasswordResetEmail({
       previewText: `Reset your ZuvaPay password safely. Link expires in 7 minutes.`,
       headerBadge: 'Security Alert',
       badgeColor: '#F59E0B',
+      contentHtml,
+    }),
+  };
+}
+
+/**
+ * 11. Digital Marketplace & Software Delivery Template
+ */
+export function renderMarketplaceDeliveryEmail({
+  name,
+  productName,
+  quantity = 1,
+  amount,
+  reference,
+  date,
+  delivery,
+}: {
+  name: string;
+  productName: string;
+  quantity?: number;
+  amount?: number;
+  reference: string;
+  date?: string;
+  delivery: {
+    activationLink?: string | null;
+    code?: string | null;
+    instructions?: string | null;
+    credentials?: string | null;
+    rawText?: string;
+  };
+}): { subject: string; html: string } {
+  const activationLink = delivery?.activationLink || null;
+  const code = delivery?.code || null;
+  const instructions = delivery?.instructions || null;
+  const credentials = delivery?.credentials || null;
+
+  const contentHtml = `
+    <h1 style="margin: 0 0 12px 0; font-size: 22px; font-weight: 800; color: #0F172A; letter-spacing: -0.5px;">
+      Your Order is Ready, ${name}! 🚀
+    </h1>
+    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 22px; color: #475569;">
+      Thank you for your purchase on <strong>ZuvaPay AI Marketplace</strong>. Your digital product has been instantly fulfilled and is ready for immediate access.
+    </p>
+
+    <!-- Product Delivery Highlight Card -->
+    <div style="background-color: #FAF5FF; border: 1.5px solid #E9D5FF; border-radius: 16px; padding: 22px; margin-bottom: 24px;">
+      <div style="font-size: 11px; font-weight: 800; color: #7E22CE; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+        ✨ Fulfilled Product Access
+      </div>
+      <div style="font-size: 18px; font-weight: 900; color: #1E1B4B; margin-bottom: 14px;">
+        ${productName} ${quantity > 1 ? `(Qty: ${quantity})` : ''}
+      </div>
+
+      ${activationLink ? `
+      <!-- Direct 1-Click Activation Link Button -->
+      <div style="text-align: center; margin: 18px 0 14px 0;">
+        <a href="${activationLink}" target="_blank" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); color: #FFFFFF; font-size: 13px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);">
+          Activate / Access Your Product Now &rarr;
+        </a>
+      </div>
+      ` : ''}
+
+      <!-- Code / Activation Link Copy Box -->
+      <div style="background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-top: 12px;">
+        <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 700; color: #64748B;">
+          ${activationLink ? 'Direct Activation URL / License Key:' : 'Your Access Code / License:'}
+        </p>
+        <p style="margin: 0; font-size: 12px; font-family: monospace; word-break: break-all; color: #7C3AED; font-weight: 700;">
+          ${code || activationLink || 'See instructions below'}
+        </p>
+      </div>
+
+      ${credentials && credentials !== code && credentials !== activationLink ? `
+      <!-- Additional Credentials / Login Data -->
+      <div style="background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-top: 12px;">
+        <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 700; color: #64748B;">
+          Login Credentials / License Details:
+        </p>
+        <pre style="margin: 0; font-size: 11px; font-family: monospace; white-space: pre-wrap; word-break: break-all; color: #0F172A; line-height: 18px;">${credentials}</pre>
+      </div>
+      ` : ''}
+    </div>
+
+    ${instructions ? `
+    <!-- Redemption Instructions -->
+    <div style="background-color: #FFFBEB; border: 1px solid #FDE68A; border-radius: 14px; padding: 18px; margin-bottom: 24px;">
+      <div style="font-size: 12px; font-weight: 800; color: #B45309; text-transform: uppercase; margin-bottom: 8px;">
+        ⚡ How To Redeem / Activation Instructions:
+      </div>
+      <div style="font-size: 12px; line-height: 20px; color: #78350F; white-space: pre-wrap;">
+        ${instructions}
+      </div>
+    </div>
+    ` : ''}
+
+    <!-- Order Summary Table -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 24px;">
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Product</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${productName}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Quantity</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${quantity} unit(s)</td>
+      </tr>
+      ${amount ? `
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Amount Paid</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 13px; font-weight: 900; color: #0F172A; font-family: monospace; text-align: right;">₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
+      </tr>
+      ` : ''}
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Order Reference</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 11px; font-weight: 700; color: #64748B; font-family: monospace; text-align: right;">${reference}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; font-size: 12px; color: #64748B;">Delivery Date</td>
+        <td style="padding: 12px 18px; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${date || new Date().toLocaleString('en-NG', { timeZone: 'Africa/Lagos' }) + ' WAT'}</td>
+      </tr>
+    </table>
+
+    <!-- Security & Guarantee Notice -->
+    <div style="background-color: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 12px; padding: 14px; text-align: center; font-size: 11px; color: #065F46; line-height: 18px;">
+      🔒 <strong>Keep Details Confidential:</strong> Please keep your credentials and activation links private.<br />
+      🛡️ <strong>Replacement Warranty:</strong> All purchases come with active replacement warranty. Need help? Reply directly to this email or reach us anytime at <strong>hello@zuvapay.com</strong>.
+    </div>
+
+    <div style="text-align: center; margin-top: 24px;">
+      <a href="${getEmailAppUrl()}/dashboard" style="display: inline-block; padding: 12px 24px; background-color: #0F172A; color: #FFFFFF; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 10px;">
+        View in ZuvaPay Dashboard &rarr;
+      </a>
+    </div>
+  `;
+
+  return {
+    subject: `🚀 Your Digital Order: ${productName} (${reference})`,
+    html: renderBaseEmailLayout({
+      previewText: `Your ${productName} access details are ready. Activation code / link enclosed. Ref: ${reference}.`,
+      headerBadge: 'Digital Delivery',
+      badgeColor: '#7C3AED',
       contentHtml,
     }),
   };

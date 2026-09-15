@@ -1,9 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { AIProductItem } from '@/types';
 import {
   getAIPlugCatalog,
   createAIPlugOrder,
+  getAIPlugOrder,
+  parseAIPlugDelivery,
   getAIPlugBalance,
   categorizeAIProduct,
 } from '@/lib/vendors/aiplug';
@@ -184,10 +186,37 @@ export async function POST(request: NextRequest) {
         deliveryMode: 'portal_only',
         deliveryDetails: {
           activationLink: `https://zuvapay.com/activate?token=${Math.random().toString(36).slice(2, 10).toUpperCase()}`,
+          code: `ACT-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
           instructions: `1. Open the activation link or sign in at the official portal.\n2. Use the credentials below if prompted.\n3. Do not change the primary email to keep warranty active.\n\nSupport: Contact ZuvaPay support if you need any assistance.`,
           credentials: `Account: zuvapay_user_${Math.random().toString(36).slice(2, 6)}@gmail.com\nPassword: ProPass${Math.floor(1000 + Math.random() * 9000)}!\nWarranty: 30 Days Replacement Guaranteed`,
+          rawText: `Mock License Delivered for ${productName || 'AI Product'}`,
         },
       };
+
+      try {
+        const adminSupabase = createAdminClient();
+        const { data: existingTx } = await adminSupabase
+          .from('transactions')
+          .select('id, metadata')
+          .eq('reference', orderIdempotencyKey)
+          .maybeSingle();
+
+        const mergedMetadata = {
+          ...(existingTx?.metadata || {}),
+          supplierOrderId: mockOrder.id,
+          delivery: mockOrder.deliveryDetails,
+        };
+
+        await adminSupabase
+          .from('transactions')
+          .update({
+            metadata: mergedMetadata,
+            status: 'completed',
+          })
+          .eq('reference', orderIdempotencyKey);
+      } catch (dbErr: any) {
+        console.warn('[MARKETPLACE_MOCK_METADATA_UPDATE_FAILED]', dbErr.message);
+      }
 
       return NextResponse.json({
         success: true,
@@ -253,27 +282,87 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract delivery information from response
-    // AIPlug response schema for automatic products includes `delivery` or `order`
+    // Extract order identifier
     const orderPayload = data.order || data.data || data;
-    const deliveryPayload = data.delivery || orderPayload.delivery || null;
+    const supplierOrderId = orderPayload.id || orderPayload.orderId || data.id || null;
+    let deliveryPayload = data.delivery || orderPayload.delivery || null;
 
-    let parsedDelivery = null;
-    if (deliveryPayload) {
-      parsedDelivery = {
-        activationLink: deliveryPayload.activationLink || deliveryPayload.url || deliveryPayload.link || null,
-        instructions: deliveryPayload.instructions || deliveryPayload.notes || null,
-        credentials: typeof deliveryPayload.credentials === 'string'
-          ? deliveryPayload.credentials
-          : deliveryPayload.text || deliveryPayload.code || (deliveryPayload.account ? JSON.stringify(deliveryPayload.account) : null),
-        raw: deliveryPayload,
+    // If order was queued/pending or delivery not yet attached, briefly poll the order status
+    if (supplierOrderId && (!deliveryPayload || orderPayload.status === 'pending' || orderPayload.status === 'processing')) {
+      for (let attempt = 0; attempt < 4; attempt++) {
+        await new Promise((r) => setTimeout(r, 1800));
+        try {
+          const pollRes = await getAIPlugOrder(supplierOrderId);
+          if (pollRes.ok && pollRes.data) {
+            const polledOrder = pollRes.data.order || pollRes.data.data || pollRes.data;
+            if (polledOrder?.delivery || pollRes.data?.delivery) {
+              deliveryPayload = polledOrder?.delivery || pollRes.data?.delivery;
+              orderPayload.status = polledOrder?.status || 'fulfilled';
+              break;
+            }
+          }
+        } catch (pollErr: any) {
+          console.warn(`[AI_PLUG_POLL_ATTEMPT_${attempt + 1}_FAILED]`, pollErr.message);
+        }
+      }
+    }
+
+    // Parse and normalize delivery text/attributes
+    const parsedDelivery = parseAIPlugDelivery(deliveryPayload);
+
+    // Save supplierOrderId and parsed delivery into Supabase transactions table
+    try {
+      const adminSupabase = createAdminClient();
+      const { data: existingTx } = await adminSupabase
+        .from('transactions')
+        .select('id, metadata')
+        .eq('reference', orderIdempotencyKey)
+        .maybeSingle();
+
+      const mergedMetadata = {
+        ...(existingTx?.metadata || {}),
+        supplierOrderId: supplierOrderId || undefined,
+        delivery: parsedDelivery,
       };
+
+      await adminSupabase
+        .from('transactions')
+        .update({
+          metadata: mergedMetadata,
+          status: 'completed',
+        })
+        .eq('reference', orderIdempotencyKey);
+    } catch (dbErr: any) {
+      console.error('[MARKETPLACE_METADATA_PERSIST_ERROR]', dbErr.message);
+    }
+
+    // Dispatch delivery transactional email to user
+    const recipientEmail = customerEmail?.trim() || user.email;
+    if (recipientEmail) {
+      const displayName = user.user_metadata?.first_name || user.email?.split('@')[0] || 'Valued Customer';
+      sendTransactionalEmail({
+        to: recipientEmail,
+        templateType: 'marketplace_delivery',
+        data: {
+          recipientName: displayName,
+          productName: productName || orderPayload.productName || 'Digital Subscription / License',
+          reference: orderIdempotencyKey,
+          activationLink: parsedDelivery.activationLink || undefined,
+          code: parsedDelivery.code || undefined,
+          instructions: parsedDelivery.instructions || undefined,
+          credentials: parsedDelivery.credentials || undefined,
+          quantity: qty,
+          warranty: '48h Instant Activation & Replacement Guarantee',
+        },
+      }).catch((emailErr) => {
+        console.warn('[MARKETPLACE_DELIVERY_EMAIL_FAILED]', emailErr.message);
+      });
     }
 
     return NextResponse.json({
       success: true,
       order: {
-        id: orderPayload.id || orderPayload.orderId || `aip_${Date.now()}`,
+        id: supplierOrderId || `aip_${Date.now()}`,
         status: orderPayload.status || 'fulfilled',
         reference: orderIdempotencyKey,
         productName: productName || orderPayload.productName || 'AI Product',

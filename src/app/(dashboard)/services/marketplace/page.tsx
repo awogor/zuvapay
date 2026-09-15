@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useWallet } from '@/context/WalletContext';
 import { useToast } from '@/components/common/Toast';
-import { formatNaira } from '@/lib/utils';
+import { formatNaira, formatDate } from '@/lib/utils';
 import { AIProductItem } from '@/types';
 import {
   Sparkles,
@@ -28,6 +28,7 @@ import {
   Package,
   Eye,
   ShoppingCart,
+  ShoppingBag,
 } from 'lucide-react';
 
 const CATEGORY_TABS = [
@@ -41,7 +42,7 @@ const CATEGORY_TABS = [
 ];
 
 export default function MarketplacePage() {
-  const { wallet, payBill, refundBill, openReceipt, openFundModal, formatBalance } = useWallet();
+  const { wallet, payBill, refundBill, openReceipt, openFundModal, formatBalance, transactions, refreshWallet } = useWallet();
   const { success, error, info } = useToast();
 
   const [products, setProducts] = useState<AIProductItem[]>([]);
@@ -65,6 +66,19 @@ export default function MarketplacePage() {
     delivery: any;
   } | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [showPurchasesModal, setShowPurchasesModal] = useState(false);
+
+  const myPurchases = useMemo(() => {
+    return (transactions || []).filter(
+      (tx) =>
+        (tx.category === 'marketplace' ||
+          tx.category === 'logs' ||
+          tx.metadata?.productId ||
+          tx.metadata?.delivery ||
+          tx.metadata?.credentials) &&
+        tx.type === 'debit'
+    );
+  }, [transactions]);
 
   useEffect(() => {
     async function loadCatalog() {
@@ -225,9 +239,21 @@ export default function MarketplacePage() {
         },
       });
 
-      if (debitResult.transaction) {
-        openReceipt(debitResult.transaction);
+      const fulfilledTx = debitResult.transaction
+        ? {
+            ...debitResult.transaction,
+            metadata: {
+              ...debitResult.transaction.metadata,
+              supplierOrderId: data.order?.id || reference,
+              delivery: data.delivery,
+            },
+          }
+        : null;
+
+      if (fulfilledTx) {
+        openReceipt(fulfilledTx);
       }
+      refreshWallet();
     } catch (err: any) {
       // Catch-all refund
       await refundBill({
@@ -309,8 +335,21 @@ export default function MarketplacePage() {
             )}
           </div>
 
-          <div className="text-xs font-medium text-slate-500 dark:text-slate-400 self-end sm:self-center">
-            Showing <span className="text-purple-600 dark:text-purple-400 font-bold">{filteredProducts.length}</span> tools
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            {myPurchases.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowPurchasesModal(true)}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-600 dark:text-purple-300 font-bold text-xs transition-all shadow-sm"
+              >
+                <ShoppingBag className="w-4 h-4 text-purple-500" />
+                <span>My Purchases ({myPurchases.length})</span>
+              </button>
+            )}
+
+            <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Showing <span className="text-purple-600 dark:text-purple-400 font-bold">{filteredProducts.length}</span> tools
+            </div>
           </div>
         </div>
 
@@ -734,6 +773,103 @@ export default function MarketplacePage() {
                 className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-md shadow-purple-600/20"
               >
                 Done & Return to Store
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* My Purchases / Licenses History Modal */}
+      {showPurchasesModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowPurchasesModal(false);
+          }}
+        >
+          <div className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl p-6 shadow-2xl space-y-5 animate-in zoom-in-95 max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5 flex-shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                  <ShoppingBag className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    My Purchased Digital Products
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Click any item to view its license key, activation link, or redemption instructions
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPurchasesModal(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto space-y-3 flex-1 pr-1">
+              {myPurchases.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 space-y-2">
+                  <Package className="w-10 h-10 mx-auto text-slate-500/50" />
+                  <p className="text-sm font-semibold text-slate-300">No purchases found yet</p>
+                  <p className="text-xs text-slate-500">
+                    Your digital licenses and subscriptions will appear here right after purchase.
+                  </p>
+                </div>
+              ) : (
+                myPurchases.map((purchase) => {
+                  const hasDelivery = Boolean(purchase.metadata?.delivery || purchase.metadata?.credentials);
+                  return (
+                    <div
+                      key={purchase.id || purchase.reference}
+                      onClick={() => {
+                        setShowPurchasesModal(false);
+                        openReceipt(purchase);
+                      }}
+                      className="group flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/40 hover:border-purple-500/40 hover:bg-purple-500/5 transition-all cursor-pointer"
+                    >
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-purple-400 transition-colors truncate">
+                            {purchase.description || 'Digital Product'}
+                          </h4>
+                          {hasDelivery && (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-[10px] font-bold border border-emerald-500/30 flex-shrink-0">
+                              License Ready
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
+                          <span className="text-brand-orange">{purchase.reference}</span>
+                          <span>•</span>
+                          <span>{formatDate(purchase.created_at)}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5">
+                        <span className="font-mono text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                          {formatNaira(purchase.amount)}
+                        </span>
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-colors shadow-sm">
+                          <span>View License</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="pt-2 border-t border-slate-100 dark:border-white/5 flex justify-end flex-shrink-0">
+              <button
+                onClick={() => setShowPurchasesModal(false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-colors"
+              >
+                Close
               </button>
             </div>
           </div>

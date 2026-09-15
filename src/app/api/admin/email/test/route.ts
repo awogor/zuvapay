@@ -13,6 +13,7 @@ import {
   renderEmailVerificationEmail,
   renderPasswordResetEmail,
   renderAdminLowBalanceEmail,
+  renderMarketplaceDeliveryEmail,
   getEmailAppUrl,
 } from '@/lib/email/templates';
 
@@ -152,6 +153,22 @@ export async function POST(request: NextRequest) {
           });
           break;
 
+        case 'marketplace_delivery':
+          rendered = renderMarketplaceDeliveryEmail({
+            name,
+            productName: sampleData.productName || 'Gemini Pro 18-Month Activation Links',
+            quantity: sampleData.quantity || 1,
+            amount: sampleData.amount || 6000,
+            reference: sampleData.reference || 'KP-MAR-MU2AQF29-DW815',
+            date: sampleData.date,
+            delivery: sampleData.delivery || {
+              activationLink: 'https://serviceactivation.google.com/subscription/new/AQCpiIGS...',
+              code: 'https://serviceactivation.google.com/subscription/new/AQCpiIGS...',
+              instructions: '⚡ Paste the received redeem link into your browser and click on "Activate Offer".\n\n⚡ Important Note: The redeem link must be used within 48 hours.',
+            },
+          });
+          break;
+
         default:
           rendered = renderWelcomeEmail({ name, email: targetEmail || 'david@zuvapay.com' });
       }
@@ -175,14 +192,20 @@ export async function POST(request: NextRequest) {
       name: sampleData.name || 'Test Admin',
       amount: sampleData.amount || 5000,
       newBalance: sampleData.newBalance || 18500,
-      reference: `TEST-${Date.now().toString().slice(-6)}`,
-      serviceName: sampleData.serviceName || 'MTN 2.5GB SME Data',
+      reference: sampleData.reference || `TEST-${Date.now().toString().slice(-6)}`,
+      serviceName: sampleData.serviceName || sampleData.productName || 'MTN 2.5GB SME Data',
+      productName: sampleData.productName || 'Gemini Pro 18-Month Activation Links',
       category: sampleData.category || 'DATA',
       reason: 'Simulated Gateway Failure (100% Refunded)',
       actionType: 'Security PIN Setup',
       verificationUrl: `${getEmailAppUrl()}/auth/callback?type=signup&next=/dashboard`,
       resetUrl: `${getEmailAppUrl()}/reset-password`,
       ipAddress: '102.89.23.14 (Lagos, NG)',
+      delivery: sampleData.delivery || {
+        activationLink: 'https://serviceactivation.google.com/subscription/new/AQCpiIGS...',
+        code: 'https://serviceactivation.google.com/subscription/new/AQCpiIGS...',
+        instructions: '⚡ Paste the received redeem link into your browser and click on "Activate Offer".\n\n⚡ Important Note: The redeem link must be used within 48 hours.',
+      },
       virtualAccount: {
         bankName: 'Moniepoint MFB',
         accountNumber: '8910293819',
@@ -193,6 +216,7 @@ export async function POST(request: NextRequest) {
         'Carrier Gateway': 'Gongoz Switch 1',
         Status: 'Verified Delivery',
       },
+      ...sampleData,
     };
 
     const res = await sendTransactionalEmail({

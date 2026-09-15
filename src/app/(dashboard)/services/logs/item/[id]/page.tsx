@@ -29,7 +29,7 @@ export default function ProductDetailPage({
   const productId = resolvedParams.id;
   const router = useRouter();
 
-  const { wallet, payBill, refundBill, openReceipt } = useWallet();
+  const { wallet, payBill, refundBill, openReceipt, refreshWallet } = useWallet();
   const { success, error, info } = useToast();
 
   const [product, setProduct] = useState<AccountLogItem | null>(null);
@@ -156,9 +156,11 @@ export default function ProductDetailPage({
           metadata: {
             ...debitResult.transaction.metadata,
             faddedOrderId: data.orderId,
+            delivery: data.delivery,
           },
         });
       }
+      refreshWallet();
     } catch (err: any) {
       await refundBill({
         amount: totalPrice,

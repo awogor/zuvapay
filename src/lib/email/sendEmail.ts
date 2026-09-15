@@ -11,6 +11,7 @@ import {
   renderElectricityTokenEmail,
   renderAdminBroadcastEmail,
   renderAdminLowBalanceEmail,
+  renderMarketplaceDeliveryEmail,
   getEmailAppUrl,
 } from './templates';
 
@@ -160,6 +161,18 @@ export async function sendTransactionalEmail(
         amount: data.amount || 0,
         errorMessage: data.errorMessage || 'Low reseller wallet balance',
         portalUrl: data.portalUrl,
+      });
+      break;
+
+    case 'marketplace_delivery':
+      rendered = renderMarketplaceDeliveryEmail({
+        name: data.name || 'Valued Customer',
+        productName: data.productName || 'Digital Good / Software License',
+        quantity: Number(data.quantity) || 1,
+        amount: data.amount ? Number(data.amount) : undefined,
+        reference: data.reference || `KP-MAR-${Date.now()}`,
+        date: data.date,
+        delivery: data.delivery || {},
       });
       break;
 

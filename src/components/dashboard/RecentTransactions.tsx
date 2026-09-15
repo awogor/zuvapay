@@ -188,6 +188,22 @@ export function RecentTransactions({ limit = 5, showFilters = true }: RecentTran
                       </span>
                       <span>•</span>
                       <span>{formatDate(tx.created_at)}</span>
+                      {(tx.metadata?.delivery || tx.metadata?.credentials) && (
+                        <>
+                          <span>•</span>
+                          <span className="px-1.5 py-0.5 rounded-full bg-purple-500/15 text-purple-600 dark:text-purple-300 font-bold border border-purple-500/30">
+                            License / Key Ready
+                          </span>
+                        </>
+                      )}
+                      {(tx.metadata?.token || tx.metadata?.meter_token || tx.metadata?.electricity_token) && (
+                        <>
+                          <span>•</span>
+                          <span className="px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-300 font-bold border border-amber-500/30">
+                            Token Generated
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

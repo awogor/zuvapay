@@ -200,3 +200,67 @@ export function categorizeAIProduct(name: string, category: string): string {
 
   return 'Software & Utilities';
 }
+
+export interface ParsedAIPlugDelivery {
+  activationLink: string | null;
+  code: string | null;
+  instructions: string | null;
+  credentials: string | null;
+  rawText: string;
+}
+
+export function parseAIPlugDelivery(delivery: any): ParsedAIPlugDelivery {
+  if (!delivery) {
+    return {
+      activationLink: null,
+      code: null,
+      instructions: null,
+      credentials: null,
+      rawText: '',
+    };
+  }
+
+  if (typeof delivery === 'object') {
+    return {
+      activationLink: delivery.activationLink || delivery.url || delivery.link || null,
+      code: delivery.code || delivery.token || null,
+      instructions: delivery.instructions || delivery.notes || null,
+      credentials: typeof delivery.credentials === 'string'
+        ? delivery.credentials
+        : delivery.text || (delivery.account ? JSON.stringify(delivery.account) : null),
+      rawText: typeof delivery.raw === 'string' ? delivery.raw : JSON.stringify(delivery),
+    };
+  }
+
+  const rawText = String(delivery).trim();
+
+  // Extract URLs (like activation links)
+  const urlMatches = rawText.match(/https?:\/\/[^\s]+/gi);
+  const activationLink = urlMatches && urlMatches.length > 0 ? urlMatches[0] : null;
+
+  // Extract code (e.g. Your code: XXX or the activation link)
+  let code: string | null = null;
+  const codeMatch = rawText.match(/Your code:?\s*([^\n\r]+)/i);
+  if (codeMatch && codeMatch[1]) {
+    code = codeMatch[1].trim();
+  } else if (activationLink) {
+    code = activationLink;
+  }
+
+  // Extract Instructions (e.g. How To Redeem...)
+  let instructions: string | null = null;
+  const instructionsIdx = rawText.search(/how to redeem/i);
+  if (instructionsIdx !== -1) {
+    instructions = rawText.substring(instructionsIdx).trim();
+  } else if (!activationLink) {
+    instructions = rawText;
+  }
+
+  return {
+    activationLink,
+    code,
+    instructions,
+    credentials: rawText,
+    rawText,
+  };
+}
