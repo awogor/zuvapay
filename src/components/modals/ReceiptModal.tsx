@@ -334,18 +334,45 @@ export function ReceiptModal() {
             {activeReceipt.metadata && (
               <>
                 {Object.entries(activeReceipt.metadata)
-                  .filter(([k]) => {
-                    const lower = k.toLowerCase();
-                    // Exclude raw token (already rendered in hero token box)
-                    if (['token', 'meter_token', 'electricity_token'].includes(lower)) return false;
-                    // Exclude digital delivery & credentials (rendered in digital license card)
-                    if (['delivery', 'credentials', 'activationlink', 'activation_link', 'instructions', 'supplierorderid', 'supplier_order_id', 'faddedorderid'].includes(lower)) return false;
-                    // Strict security requirement: hide vendor/operator references from customer view
-                    if (['operatorreference', 'operator_reference', 'operator_ref', 'provider_ref', 'provider_reference', 'external_reference'].includes(lower)) return false;
+                  .filter(([k, val]) => {
+                    if (val === null || val === undefined || val === '') return false;
+                    // Never render nested objects or arrays as raw strings in the key-value table
+                    if (typeof val === 'object') return false;
+
+                    const cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+                    // 1. Exclude electricity token (rendered in dedicated token hero box)
+                    if (['token', 'metertoken', 'electricitytoken'].includes(cleanKey)) return false;
+
+                    // 2. Exclude digital delivery, credentials, instructions (rendered in dedicated license box)
+                    if (['delivery', 'credentials', 'activationlink', 'instructions', 'rawtext', 'raw', 'code'].includes(cleanKey)) return false;
+
+                    // 3. STRICT ADMIN & VENDOR ISOLATION: Never expose vendor/supplier/operator keys to customer
+                    const isInternalVendorKey =
+                      cleanKey.includes('supplier') ||
+                      cleanKey.includes('vendor') ||
+                      cleanKey.includes('provider') ||
+                      cleanKey.includes('operator') ||
+                      cleanKey.includes('external') ||
+                      cleanKey.includes('upstream') ||
+                      cleanKey.includes('backend') ||
+                      cleanKey.includes('fadded') ||
+                      cleanKey.includes('aiplug') ||
+                      cleanKey.includes('gongoz') ||
+                      cleanKey.includes('grizzly') ||
+                      cleanKey.includes('momo');
+
+                    if (isInternalVendorKey) return false;
+
+                    // 4. Hide internal raw catalog IDs (e.g. ext:67, numeric vendor IDs) - customers only care about Product Name
+                    if (['productid', 'itemid', 'planid', 'packageid', 'serviceid'].includes(cleanKey)) return false;
+
+                    // 5. Hide internal user emails or session tokens if present in metadata
+                    if (['customeremail', 'useremail', 'idempotencykey'].includes(cleanKey)) return false;
+
                     return true;
                   })
                   .map(([key, val]) => {
-                    if (val === null || val === undefined || val === '') return null;
                     return (
                       <div key={key} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0">
                         <span className="text-slate-400 text-xs">{formatMetaKey(key)}</span>

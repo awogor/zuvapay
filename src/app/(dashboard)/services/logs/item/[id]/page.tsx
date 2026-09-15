@@ -155,7 +155,6 @@ export default function ProductDetailPage({
           ...debitResult.transaction,
           metadata: {
             ...debitResult.transaction.metadata,
-            faddedOrderId: data.orderId,
             delivery: data.delivery,
           },
         });

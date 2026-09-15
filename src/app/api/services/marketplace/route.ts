@@ -362,7 +362,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       order: {
-        id: supplierOrderId || `aip_${Date.now()}`,
+        id: orderIdempotencyKey,
         status: orderPayload.status || 'fulfilled',
         reference: orderIdempotencyKey,
         productName: productName || orderPayload.productName || 'AI Product',

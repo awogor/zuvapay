@@ -361,7 +361,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        orderId: supplierOrderId,
+        orderId: reference,
         credentials: {
           username: deliveredItems[0]?.details || credentialsText,
           password: 'See complete credentials details string above',

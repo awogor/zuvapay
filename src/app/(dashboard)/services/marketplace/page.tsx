@@ -244,7 +244,6 @@ export default function MarketplacePage() {
             ...debitResult.transaction,
             metadata: {
               ...debitResult.transaction.metadata,
-              supplierOrderId: data.order?.id || reference,
               delivery: data.delivery,
             },
           }
