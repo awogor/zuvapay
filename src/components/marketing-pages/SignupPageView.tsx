@@ -110,29 +110,37 @@ export function SignupPageView() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center py-8 sm:py-10 px-4 bg-[#FFF9F3] bg-gradient-to-br from-[#FFF5EC] via-[#FFF9F4] to-[#FFF0E2] relative overflow-y-auto selection:bg-zuva-solar selection:text-white">
-      {/* Background ambient solar glow orbs */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-[#FF6B00]/10 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 h-96 w-96 rounded-full bg-[#F59E0B]/12 blur-[100px] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[480px] w-[480px] rounded-full bg-[#FFF0E0]/60 blur-[120px] pointer-events-none" />
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-0 sm:py-10 sm:px-4 bg-white sm:bg-[#FFF9F3] sm:bg-gradient-to-br sm:from-[#FFF5EC] sm:via-[#FFF9F4] sm:to-[#FFF0E2] relative overflow-y-auto selection:bg-brand-orange selection:text-white">
+      {/* Background ambient solar glow orbs - visible on desktop */}
+      <div className="hidden sm:block absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-[#FF6B00]/10 blur-[100px] pointer-events-none" />
+      <div className="hidden sm:block absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 h-96 w-96 rounded-full bg-[#F59E0B]/12 blur-[100px] pointer-events-none" />
+      <div className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[480px] w-[480px] rounded-full bg-[#FFF0E0]/60 blur-[120px] pointer-events-none" />
 
-      {/* Floating back button */}
-      <Link
-        href="/"
-        className="absolute top-5 left-5 z-20 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 hover:bg-white border border-slate-200 shadow-sm text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all backdrop-blur-md"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" />
-        <span>Home</span>
-      </Link>
-
-      {/* Form Container - Compact, popping white card with zero wasted gaps */}
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200/90 bg-white p-6 shadow-[0_20px_50px_-12px_rgba(255,107,0,0.12),0_8px_24px_-8px_rgba(15,23,42,0.06)] ring-1 ring-slate-900/5 my-4">
-        {/* Clean Small Heading - No Icon, No Subtitle */}
-        <div className="text-center mb-4">
-          <h1 className="text-lg font-bold tracking-tight text-slate-900">
-            Create an Account on <span className="text-zuva-solar">ZuvaPay</span>
-          </h1>
+      {/* Form Container - Full width dynamic on mobile, sleek centered card on desktop */}
+      <div className="relative z-10 w-full min-h-screen sm:min-h-0 sm:max-w-md flex flex-col justify-between sm:justify-center rounded-none sm:rounded-3xl border-0 sm:border sm:border-slate-200/90 bg-white p-5 sm:p-7 sm:shadow-[0_20px_50px_-12px_rgba(255,107,0,0.12),0_8px_24px_-8px_rgba(15,23,42,0.06)] sm:ring-1 sm:ring-slate-900/5 sm:my-auto">
+        <div className="flex items-center justify-between w-full mb-6 sm:mb-4">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 shadow-sm text-xs font-bold transition-all"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Home</span>
+          </Link>
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-orange to-amber-500 flex items-center justify-center font-black text-base text-slate-950 shadow-md shadow-orange-500/20 ring-2 ring-orange-500/15">
+            ZP
+          </div>
         </div>
+
+        <div>
+          {/* Clean Small Heading */}
+          <div className="text-center mb-5 sm:mb-4">
+            <h1 className="text-2xl sm:text-lg font-black tracking-tight text-slate-900">
+              Create an Account on <span className="text-brand-orange">ZuvaPay</span>
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-1">
+              Fast, reliable everyday digital payments
+            </p>
+          </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           {/* Title and First Name row */}
@@ -299,10 +307,11 @@ export function SignupPageView() {
             </button>
           </div>
         </form>
+        </div>
 
-        <div className="mt-4 text-center text-xs text-slate-500">
+        <div className="pt-4 text-center text-xs text-slate-500 border-t border-slate-100 mt-6 sm:mt-4">
           Already have an account?{' '}
-          <Link href="/login" className="font-bold text-zuva-solar hover:underline">
+          <Link href="/login" className="font-black text-brand-orange hover:underline ml-1">
             Sign In
           </Link>
         </div>

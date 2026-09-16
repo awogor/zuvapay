@@ -92,139 +92,145 @@ function LoginFormContent() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col justify-center items-center py-8 sm:py-10 px-4 bg-[#FFF9F3] bg-gradient-to-br from-[#FFF5EC] via-[#FFF9F4] to-[#FFF0E2] relative overflow-y-auto selection:bg-brand-orange selection:text-white">
-      {/* Background ambient solar glow orbs */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-[#FF6B00]/10 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 h-96 w-96 rounded-full bg-[#F59E0B]/12 blur-[100px] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[480px] w-[480px] rounded-full bg-[#FFF0E0]/60 blur-[120px] pointer-events-none" />
+    <div className="min-h-screen w-full flex flex-col justify-center items-center p-0 sm:py-10 sm:px-4 bg-white sm:bg-[#FFF9F3] sm:bg-gradient-to-br sm:from-[#FFF5EC] sm:via-[#FFF9F4] sm:to-[#FFF0E2] relative overflow-y-auto selection:bg-brand-orange selection:text-white">
+      {/* Background ambient solar glow orbs - visible on desktop */}
+      <div className="hidden sm:block absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-[#FF6B00]/10 blur-[100px] pointer-events-none" />
+      <div className="hidden sm:block absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 h-96 w-96 rounded-full bg-[#F59E0B]/12 blur-[100px] pointer-events-none" />
+      <div className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[480px] w-[480px] rounded-full bg-[#FFF0E0]/60 blur-[120px] pointer-events-none" />
 
-      {/* Floating Home Back Button */}
-      <Link
-        href="/"
-        className="absolute top-4 left-4 sm:top-5 sm:left-5 z-20 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/90 hover:bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-sm text-xs font-bold transition-all backdrop-blur-md"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" />
-        <span>Home</span>
-      </Link>
-
-      {/* Main Login Card - Compact, sleek, responsive */}
-      <div className="relative z-10 w-full max-w-[400px] rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white p-4.5 sm:p-6 shadow-[0_20px_50px_-12px_rgba(255,107,0,0.12),0_8px_24px_-8px_rgba(15,23,42,0.06)] ring-1 ring-slate-900/5 my-auto">
-        {/* Header with popping brand logo and black heading */}
-        <div className="text-center mb-3 sm:mb-3.5">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-orange to-amber-500 flex items-center justify-center font-black text-lg text-slate-950 shadow-md shadow-orange-500/20 mx-auto mb-1.5 ring-2 ring-orange-500/15">
+      {/* Main Login Form Container - Full width dynamic on mobile, sleek centered card on desktop */}
+      <div className="relative z-10 w-full min-h-screen sm:min-h-0 sm:max-w-[440px] flex flex-col justify-between sm:justify-center rounded-none sm:rounded-3xl border-0 sm:border sm:border-slate-200/90 bg-white p-5 sm:p-7 sm:shadow-[0_20px_50px_-12px_rgba(255,107,0,0.12),0_8px_24px_-8px_rgba(15,23,42,0.06)] sm:ring-1 sm:ring-slate-900/5 sm:my-auto">
+        
+        {/* Top Header bar with Home button and brand badge */}
+        <div className="flex items-center justify-between w-full mb-6 sm:mb-5">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 shadow-sm text-xs font-bold transition-all"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Home</span>
+          </Link>
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-orange to-amber-500 flex items-center justify-center font-black text-base text-slate-950 shadow-md shadow-orange-500/20 ring-2 ring-orange-500/15">
             ZP
           </div>
-          <h1 className="text-lg sm:text-xl font-black tracking-tight text-slate-900">
-            Welcome Back
-          </h1>
-          <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
-            Enter your details to continue to your dashboard
-          </p>
         </div>
 
-        <div className="space-y-3">
-          {isMockMode && (
-            <div className="p-2 rounded-xl bg-amber-50 border border-amber-200/80 text-xs text-amber-900 flex items-center justify-between">
-              <span className="text-[11px] font-medium text-amber-800">Demo User: @davidadeleke</span>
-              <button
-                onClick={handleQuickDemo}
-                type="button"
-                className="px-2 py-0.5 rounded-lg bg-brand-orange text-slate-950 font-bold text-[11px] shadow-sm hover:opacity-90"
-              >
-                1-Click Demo
-              </button>
-            </div>
-          )}
+        {/* Center Content Section */}
+        <div className="flex-1 flex flex-col justify-center sm:block">
+          {/* Heading */}
+          <div className="text-center mb-5 sm:mb-4">
+            <h1 className="text-2xl sm:text-xl font-black tracking-tight text-slate-900">
+              Welcome Back
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-1">
+              Enter your details to continue to your dashboard
+            </p>
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
-            {/* Username / Email Field - With brand icon background */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Username or Email
-              </label>
-              <div className="flex items-center gap-2.5 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200 focus-within:border-brand-orange focus-within:bg-white focus-within:ring-2 focus-within:ring-orange-500/15 transition-all shadow-sm">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0">
-                  {identifier.startsWith('@') ? (
-                    <AtSign className="w-4 h-4 text-brand-orange" />
-                  ) : (
-                    <Mail className="w-4 h-4 text-brand-orange" />
-                  )}
-                </div>
-                <input
-                  type="text"
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="Enter your username or email"
-                  required
-                  autoCapitalize="none"
-                  autoCorrect="off"
-                  className="w-full bg-transparent text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none py-1 pr-2.5"
-                />
-              </div>
-            </div>
-
-            {/* Password Field - With brand icon background & Forgot password on top */}
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-xs font-bold text-slate-700">
-                  Password
-                </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs font-bold text-brand-orange hover:text-amber-600 transition-colors"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <div className="flex items-center gap-2.5 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200 focus-within:border-brand-orange focus-within:bg-white focus-within:ring-2 focus-within:ring-orange-500/15 transition-all shadow-sm">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0">
-                  <Lock className="w-4 h-4 text-brand-orange" />
-                </div>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  required
-                  className="w-full bg-transparent text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none py-1"
-                />
+          <div className="space-y-3.5 sm:space-y-3 w-full">
+            {isMockMode && (
+              <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200/80 text-xs text-amber-900 flex items-center justify-between">
+                <span className="text-xs font-medium text-amber-800">Demo User: @davidadeleke</span>
                 <button
+                  onClick={handleQuickDemo}
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors flex-shrink-0 mr-1"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="px-2.5 py-1 rounded-lg bg-brand-orange text-slate-950 font-bold text-xs shadow-sm hover:opacity-90"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  1-Click Demo
                 </button>
               </div>
-            </div>
+            )}
 
-            {/* Sleek Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full h-11 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-xs sm:text-sm transition-all shadow-md shadow-orange-500/20 disabled:opacity-50 flex items-center justify-center gap-1.5 active:scale-[0.99] mt-1"
-            >
-              <span>{loading ? 'Signing in...' : 'Log In'}</span>
-              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-            </button>
-          </form>
+            <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-3">
+              {/* Username / Email Field - With brand icon background */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Username or Email
+                </label>
+                <div className="flex items-center gap-2.5 p-1.5 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200 focus-within:border-brand-orange focus-within:bg-white focus-within:ring-2 focus-within:ring-orange-500/15 transition-all shadow-sm">
+                  <div className="w-10 h-10 rounded-lg sm:rounded-xl bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0">
+                    {identifier.startsWith('@') ? (
+                      <AtSign className="w-4 h-4 text-brand-orange" />
+                    ) : (
+                      <Mail className="w-4 h-4 text-brand-orange" />
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    placeholder="Enter your username or email"
+                    required
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none py-1 pr-2.5"
+                  />
+                </div>
+              </div>
 
-          {/* Security Notice Pill */}
-          <div className="p-2 sm:p-2.5 rounded-xl bg-orange-500/5 border border-orange-500/15 text-slate-700 text-xs flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-lg bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0">
-              <Lock className="w-3 h-3 stroke-[2.5]" />
+              {/* Password Field - With brand icon background & Forgot password on top */}
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-bold text-slate-700">
+                    Password
+                  </label>
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs font-bold text-brand-orange hover:text-amber-600 transition-colors"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="flex items-center gap-2.5 p-1.5 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200 focus-within:border-brand-orange focus-within:bg-white focus-within:ring-2 focus-within:ring-orange-500/15 transition-all shadow-sm">
+                  <div className="w-10 h-10 rounded-lg sm:rounded-xl bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0">
+                    <Lock className="w-4 h-4 text-brand-orange" />
+                  </div>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    required
+                    className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none py-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="p-2 text-slate-400 hover:text-slate-700 transition-colors flex-shrink-0 mr-1"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Full Width Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 sm:h-11 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-sm transition-all shadow-md shadow-orange-500/20 disabled:opacity-50 flex items-center justify-center gap-1.5 active:scale-[0.99] mt-2 sm:mt-1"
+              >
+                <span>{loading ? 'Signing in...' : 'Log In'}</span>
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              </button>
+            </form>
+
+            {/* Security Notice Pill */}
+            <div className="p-2.5 rounded-xl bg-orange-500/5 border border-orange-500/15 text-slate-700 text-xs flex items-center gap-2.5">
+              <div className="w-6 h-6 rounded-lg bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0">
+                <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
+              </div>
+              <span className="text-xs font-medium text-slate-600 leading-snug">
+                Protected by 256-bit financial encryption
+              </span>
             </div>
-            <span className="text-[11px] font-medium text-slate-600 leading-snug">
-              Protected by 256-bit financial encryption
-            </span>
           </div>
         </div>
 
         {/* Register Footer Link */}
-        <div className="pt-3 text-center text-xs text-slate-600 border-t border-slate-100 mt-3">
+        <div className="pt-4 sm:pt-3 text-center text-xs text-slate-600 border-t border-slate-100 mt-6 sm:mt-4">
           Don't have an account?{' '}
-          <Link href="/signup" className="font-black text-brand-orange hover:underline">
+          <Link href="/signup" className="font-black text-brand-orange hover:underline ml-1">
             Register
           </Link>
         </div>

@@ -41,28 +41,37 @@ export function ForgotPasswordPageView() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center py-8 sm:py-10 px-4 bg-[#FFF9F3] bg-gradient-to-br from-[#FFF5EC] via-[#FFF9F4] to-[#FFF0E2] relative overflow-y-auto sm:overflow-hidden selection:bg-zuva-solar selection:text-white">
-      {/* Background ambient solar glow orbs */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-[#FF6B00]/10 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 h-96 w-96 rounded-full bg-[#F59E0B]/12 blur-[100px] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[480px] w-[480px] rounded-full bg-[#FFF0E0]/60 blur-[120px] pointer-events-none" />
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-0 sm:py-10 sm:px-4 bg-white sm:bg-[#FFF9F3] sm:bg-gradient-to-br sm:from-[#FFF5EC] sm:via-[#FFF9F4] sm:to-[#FFF0E2] relative overflow-y-auto selection:bg-brand-orange selection:text-white">
+      {/* Background ambient solar glow orbs - visible on desktop */}
+      <div className="hidden sm:block absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-[#FF6B00]/10 blur-[100px] pointer-events-none" />
+      <div className="hidden sm:block absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 h-96 w-96 rounded-full bg-[#F59E0B]/12 blur-[100px] pointer-events-none" />
+      <div className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[480px] w-[480px] rounded-full bg-[#FFF0E0]/60 blur-[120px] pointer-events-none" />
 
-      {/* Form Container - Compact, popping white card with zero wasted gaps */}
-      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-slate-200/90 bg-white p-6 shadow-[0_20px_50px_-12px_rgba(255,107,0,0.12),0_8px_24px_-8px_rgba(15,23,42,0.06)] ring-1 ring-slate-900/5">
-        <Link
-          href="/login"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 mb-4 transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Back to Login
-        </Link>
-
-        {/* Clean Small Heading */}
-        <div className="text-center mb-5">
-          <h1 className="text-lg font-bold tracking-tight text-slate-900">
-            Reset Password
-          </h1>
+      {/* Form Container - Full width dynamic on mobile, sleek centered card on desktop */}
+      <div className="relative z-10 w-full min-h-screen sm:min-h-0 sm:max-w-sm flex flex-col justify-between sm:justify-center rounded-none sm:rounded-3xl border-0 sm:border sm:border-slate-200/90 bg-white p-5 sm:p-7 sm:shadow-[0_20px_50px_-12px_rgba(255,107,0,0.12),0_8px_24px_-8px_rgba(15,23,42,0.06)] sm:ring-1 sm:ring-slate-900/5 sm:my-auto">
+        <div className="flex items-center justify-between w-full mb-6 sm:mb-4">
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 shadow-sm text-xs font-bold transition-all"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Login</span>
+          </Link>
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-orange to-amber-500 flex items-center justify-center font-black text-base text-slate-950 shadow-md shadow-orange-500/20 ring-2 ring-orange-500/15">
+            ZP
+          </div>
         </div>
+
+        <div className="flex-1 flex flex-col justify-center sm:block">
+          {/* Clean Small Heading */}
+          <div className="text-center mb-6 sm:mb-5">
+            <h1 className="text-2xl sm:text-lg font-black tracking-tight text-slate-900">
+              Reset Password
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-1">
+              Enter your account email to receive a password reset link
+            </p>
+          </div>
 
         {submitted ? (
           <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-2">
@@ -110,6 +119,15 @@ export function ForgotPasswordPageView() {
             </button>
           </form>
         )}
+        </div>
+
+        {/* Return to login link */}
+        <div className="pt-4 text-center text-xs text-slate-600 border-t border-slate-100 mt-6 sm:mt-4">
+          Remember your password?{' '}
+          <Link href="/login" className="font-black text-brand-orange hover:underline ml-1">
+            Log In
+          </Link>
+        </div>
       </div>
     </div>
   );
