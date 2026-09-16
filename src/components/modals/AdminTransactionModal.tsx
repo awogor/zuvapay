@@ -124,10 +124,16 @@ export function AdminTransactionModal({
     meta.refunded === true ||
     Boolean(meta.refund_reference);
 
+  const hasValidDelivery = Boolean(
+    meta.delivery?.activationLink ||
+    meta.delivery?.code ||
+    (meta.delivery?.credentials && meta.delivery.credentials.trim().length > 0) ||
+    (meta.delivery?.rawText && meta.delivery.rawText.trim().length > 0) ||
+    (activeTx.category === 'power' && meta.token)
+  );
+
   const isFulfilled =
-    meta.fulfillment_status === 'fulfilled' ||
-    Boolean(meta.delivery) ||
-    Boolean(meta.token && activeTx.category === 'power');
+    meta.fulfillment_status === 'fulfilled' && hasValidDelivery;
 
   const descLower = (activeTx.description || '').toLowerCase();
 
@@ -470,6 +476,42 @@ export function AdminTransactionModal({
     }
   };
 
+  const handleSyncProvider = async () => {
+    setActionLoading('sync_provider');
+    setActionError(null);
+    setActionSuccess(null);
+    try {
+      const res = await fetch('/api/admin/transactions/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transactionId: activeTx.id,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        if (data.status === 'processing' || data.status === 'pending') {
+          setActionError(data.message || `Order is currently ${data.status?.toUpperCase()} on AI Plug. Waiting for supplier release.`);
+          if (data.transaction) {
+            setCurrentTx(data.transaction);
+            if (onUpdate) onUpdate(data.transaction);
+          }
+          return;
+        }
+        throw new Error(data.error || data.message || 'Failed to sync with provider');
+      }
+      setActionSuccess(data.message || 'Order successfully synced with provider and customer updated!');
+      if (data.transaction) {
+        setCurrentTx(data.transaction);
+        if (onUpdate) onUpdate(data.transaction);
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'An error occurred while syncing with provider');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const copyToClipboard = (text: string, setFn: (val: boolean) => void) => {
     navigator.clipboard.writeText(text);
     setFn(true);
@@ -755,7 +797,29 @@ export function AdminTransactionModal({
                   </button>
                 )}
 
-                {/* 3. Cancel & Refund Customer */}
+                {/* 3. Sync Live Status with AI Plug */}
+                {!isRefunded && meta.supplierOrderId && (
+                  <button
+                    onClick={handleSyncProvider}
+                    disabled={!!actionLoading}
+                    className="px-3.5 py-2.5 rounded-xl border border-sky-300 dark:border-sky-800/60 bg-sky-50/70 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-sky-800 dark:text-sky-300 font-bold text-xs transition-all flex items-center gap-1.5 disabled:opacity-50 active:scale-[0.99]"
+                    title="Check upstream provider for live delivery credentials"
+                  >
+                    {actionLoading === 'sync_provider' ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-sky-600" />
+                        <span>Syncing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 text-sky-600" />
+                        <span>🔄 Sync with AI Plug</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* 4. Cancel & Refund Customer */}
                 {!isRefunded && (
                   <button
                     onClick={handleCancelAndRefund}

@@ -431,6 +431,14 @@ export async function POST(request: NextRequest) {
 
     // Parse and normalize delivery text/attributes
     const parsedDelivery = parseAIPlugDelivery(deliveryPayload);
+    const hasValidDelivery = Boolean(
+      parsedDelivery.activationLink ||
+      parsedDelivery.code ||
+      (parsedDelivery.credentials && parsedDelivery.credentials.trim().length > 0) ||
+      (parsedDelivery.rawText && parsedDelivery.rawText.trim().length > 0)
+    );
+
+    const fulfillmentStatus = hasValidDelivery ? 'fulfilled' : 'processing';
 
     // Save supplierOrderId and parsed delivery into Supabase transactions table
     try {
@@ -443,10 +451,11 @@ export async function POST(request: NextRequest) {
 
       const mergedMetadata = {
         ...(existingTx?.metadata || {}),
+        provider: 'aiplug',
         supplierOrderId: supplierOrderId || undefined,
-        fulfillment_status: 'fulfilled',
-        fulfilled_at: new Date().toISOString(),
-        delivery: parsedDelivery,
+        fulfillment_status: fulfillmentStatus,
+        fulfilled_at: hasValidDelivery ? new Date().toISOString() : undefined,
+        delivery: hasValidDelivery ? parsedDelivery : null,
       };
 
       await adminSupabase
@@ -460,9 +469,9 @@ export async function POST(request: NextRequest) {
       console.error('[MARKETPLACE_METADATA_PERSIST_ERROR]', dbErr.message);
     }
 
-    // Dispatch delivery transactional email to user
+    // Only dispatch delivery transactional email if delivery credentials actually exist!
     const recipientEmail = customerEmail?.trim() || user.email;
-    if (recipientEmail) {
+    if (recipientEmail && hasValidDelivery) {
       const displayName = user.user_metadata?.first_name || user.email?.split('@')[0] || 'Valued Customer';
       sendTransactionalEmail({
         to: recipientEmail,
@@ -487,13 +496,15 @@ export async function POST(request: NextRequest) {
       success: true,
       order: {
         id: orderIdempotencyKey,
-        status: orderPayload.status || 'fulfilled',
+        status: fulfillmentStatus,
         reference: orderIdempotencyKey,
         productName: productName || orderPayload.productName || 'AI Product',
         quantity: qty,
       },
-      delivery: parsedDelivery,
-      message: 'Product order completed successfully!',
+      delivery: hasValidDelivery ? parsedDelivery : null,
+      message: hasValidDelivery
+        ? 'Product order completed successfully!'
+        : 'Order received and is currently processing. Your credentials will be delivered to your email and dashboard within a few minutes.',
     });
   } catch (err: any) {
     console.error('Marketplace POST Error:', err);
