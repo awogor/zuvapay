@@ -148,7 +148,8 @@ declare
   _last_name text;
   _phone_number text;
 begin
-  _role := coalesce(new.raw_user_meta_data->>'role', 'customer');
+  -- Always default new signups to 'customer' to prevent client role injection
+  _role := 'customer';
   _title := new.raw_user_meta_data->>'title';
   _first_name := new.raw_user_meta_data->>'first_name';
   _last_name := new.raw_user_meta_data->>'last_name';
@@ -209,7 +210,13 @@ create policy "Users can view own profile or admin view all"
 drop policy if exists "Users can update own profile or admin update all" on public.profiles;
 create policy "Users can update own profile or admin update all"
   on public.profiles for update
-  using (auth.uid() = id or public.is_admin());
+  using (auth.uid() = id or public.is_admin())
+  with check (
+    public.is_admin() or (
+      role = (select p.role from public.profiles p where p.id = auth.uid()) and
+      status = (select p.status from public.profiles p where p.id = auth.uid())
+    )
+  );
 
 -- Wallets RLS:
 -- Users can view own wallet, Admins can view all wallets
@@ -365,8 +372,8 @@ begin
 end;
 $$;
 
-revoke execute on function public.refund_wallet_for_bill(uuid, numeric, text, text, text, jsonb) from public, anon;
-grant execute on function public.refund_wallet_for_bill(uuid, numeric, text, text, text, jsonb) to authenticated, service_role;
+revoke execute on function public.refund_wallet_for_bill(uuid, numeric, text, text, text, jsonb) from public, anon, authenticated;
+grant execute on function public.refund_wallet_for_bill(uuid, numeric, text, text, text, jsonb) to service_role;
 
 -- Atomic Deposit Crediting Function for Verified Gateway Webhooks (Fail-safe, Idempotent, with Row-Locking)
 create or replace function public.credit_wallet_deposit(
@@ -485,6 +492,48 @@ create policy "Admins can view all login history"
 
 create policy "Service role has full access to login_history"
   on public.login_history for all
+  using (auth.role() = 'service_role');
+
+-- ========================================================
+-- 10. Beneficiaries (30-Day Inactivity Auto-Retention)
+-- ========================================================
+create table if not exists public.beneficiaries (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references public.profiles(id) on delete cascade not null,
+  phone text not null,
+  network text not null,
+  service_type text default 'airtime' not null check (service_type in ('airtime', 'data', 'power', 'tv', 'general')),
+  nickname text,
+  last_used_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  constraint beneficiaries_user_phone_unique unique (user_id, phone)
+);
+
+create index if not exists idx_beneficiaries_user_id on public.beneficiaries(user_id);
+create index if not exists idx_beneficiaries_last_used_at on public.beneficiaries(last_used_at desc);
+create index if not exists idx_beneficiaries_user_last_used on public.beneficiaries(user_id, last_used_at desc);
+
+-- RLS for beneficiaries
+alter table public.beneficiaries enable row level security;
+
+create policy "Users can view own beneficiaries"
+  on public.beneficiaries for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own beneficiaries"
+  on public.beneficiaries for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own beneficiaries"
+  on public.beneficiaries for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete own beneficiaries"
+  on public.beneficiaries for delete
+  using (auth.uid() = user_id);
+
+create policy "Service role has full access to beneficiaries"
+  on public.beneficiaries for all
   using (auth.role() = 'service_role');
 
 

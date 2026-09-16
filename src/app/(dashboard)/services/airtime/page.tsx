@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useWallet } from '@/context/WalletContext';
 import { useToast } from '@/components/common/Toast';
 import { detectNetwork, formatNaira } from '@/lib/utils';
-import { Smartphone, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2, Wallet as WalletIcon, PlusCircle } from 'lucide-react';
+import { Smartphone, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2, Wallet as WalletIcon, PlusCircle, Users } from 'lucide-react';
 import CustomSearchDropdown from '@/components/common/CustomSearchDropdown';
+import { BeneficiaryModal } from '@/components/modals/BeneficiaryModal';
 
 const NETWORKS = [
   { id: 'MTN', name: 'MTN Nigeria' },
@@ -23,16 +24,38 @@ export default function AirtimePage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showBeneficiaryModal, setShowBeneficiaryModal] = useState(false);
+  const [bypassValidation, setBypassValidation] = useState(false);
 
-  // Auto-detect network based on Nigerian phone prefix
+  const handlePhoneChange = (val: string) => {
+    let clean = val.replace(/\D/g, '');
+    if (clean.startsWith('234') && clean.length > 10) {
+      clean = '0' + clean.slice(3);
+    }
+    setPhoneNumber(clean.slice(0, 11));
+  };
+
+  const handleSelectBeneficiary = (b: { phone: string; network?: string }) => {
+    setPhoneNumber(b.phone);
+    if (b.network) {
+      const netStr = b.network.toLowerCase();
+      const match = NETWORKS.find((n) => n.id.toLowerCase() === netStr);
+      if (match) {
+        setNetwork(match.id);
+      }
+    }
+  };
+
+  // Auto-detect network based on Nigerian phone prefix (unless bypassed for ported SIMs)
   useEffect(() => {
+    if (bypassValidation) return;
     if (phoneNumber.length >= 4) {
       const detected = detectNetwork(phoneNumber);
       if (detected && detected !== network && NETWORKS.some((n) => n.id.toLowerCase() === detected.toLowerCase())) {
         setNetwork(detected);
       }
     }
-  }, [phoneNumber, network]);
+  }, [phoneNumber, network, bypassValidation]);
 
   const numAmount = parseFloat(amount) || 0;
   const payableAmount = Math.round(numAmount);
@@ -82,6 +105,8 @@ export default function AirtimePage() {
         network,
         phoneNumber,
         nominalAmount: numAmount,
+        provider: 'strowallet',
+        wholesale_cost: Number((numAmount * 0.98).toFixed(2)),
       },
     });
 
@@ -128,6 +153,17 @@ export default function AirtimePage() {
         `${formatNaira(numAmount)} ${network} airtime sent to ${phoneNumber}.`
       );
 
+      // Auto-save recipient number as beneficiary (30-day auto-retention)
+      fetch('/api/user/beneficiaries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: phoneNumber,
+          network,
+          service_type: 'airtime',
+        }),
+      }).catch(() => {});
+
       // Reset form so the page is immediately fresh for the next transaction
       setPhoneNumber('');
       setAmount('');
@@ -137,7 +173,9 @@ export default function AirtimePage() {
           ...debitResult.transaction,
           metadata: {
             ...debitResult.transaction.metadata,
+            provider: data.provider || 'strowallet',
             operatorReference: data.operatorReference,
+            wholesale_cost: data.wholesaleCost || Number((numAmount * 0.98).toFixed(2)),
           },
         });
       }
@@ -182,16 +220,26 @@ export default function AirtimePage() {
             showSearchThreshold={5}
           />
 
-          {/* Phone Number Input */}
+          {/* Phone Number Input with Choose Beneficiary Link/Button */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              Recipient Phone Number
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Recipient Phone Number
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowBeneficiaryModal(true)}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-orange hover:text-amber-600 dark:hover:text-amber-400 py-0.5 px-2 rounded-lg hover:bg-brand-orange/10 transition-all active:scale-95"
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>Choose Beneficiary</span>
+              </button>
+            </div>
             <div className="relative">
               <input
                 type="tel"
                 value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                onChange={(e) => handlePhoneChange(e.target.value)}
                 placeholder="08031234567"
                 maxLength={11}
                 required
@@ -204,6 +252,30 @@ export default function AirtimePage() {
                   </span>
                 </div>
               )}
+            </div>
+
+            {/* Ported SIM Bypass Number Validation Button */}
+            <div className="flex items-center justify-between mt-2 px-0.5">
+              <button
+                type="button"
+                onClick={() => setBypassValidation(!bypassValidation)}
+                className={`inline-flex items-center gap-2 text-xs font-semibold transition-all py-1 px-2.5 rounded-lg border ${
+                  bypassValidation
+                    ? 'bg-amber-500/10 border-brand-orange/40 text-brand-orange dark:text-amber-400'
+                    : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                }`}
+              >
+                <span
+                  className={`w-3.5 h-3.5 rounded border flex items-center justify-center text-[10px] font-black transition-colors ${
+                    bypassValidation
+                      ? 'bg-brand-orange border-brand-orange text-slate-950'
+                      : 'border-slate-400 dark:border-slate-600'
+                  }`}
+                >
+                  {bypassValidation && '✓'}
+                </span>
+                <span>Bypass number validation</span>
+              </button>
             </div>
           </div>
 
@@ -288,6 +360,14 @@ export default function AirtimePage() {
           <span>Automated Refund: Immediate 100% wallet reversal if telco fails</span>
         </div>
       </div>
+
+      {/* Beneficiary Selection Modal */}
+      <BeneficiaryModal
+        isOpen={showBeneficiaryModal}
+        onClose={() => setShowBeneficiaryModal(false)}
+        onSelect={handleSelectBeneficiary}
+        serviceType="airtime"
+      />
     </div>
   );
 }

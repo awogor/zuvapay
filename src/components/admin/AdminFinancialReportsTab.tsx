@@ -343,7 +343,8 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
               className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-brand-orange"
             >
               <option value="all">All Providers (Consolidated)</option>
-              <option value="gongoz">GongozAPI Gateway (Telco / Power / Cable)</option>
+              <option value="strowallet">StroWallet API Gateway (Electricity & Cable TV)</option>
+              <option value="gongoz">GongozAPI Gateway (Airtime & SME Data)</option>
               <option value="fadded">Fadded Inventory (Account Logs)</option>
               <option value="momo">MomoPanel (Social Media Boost)</option>
               <option value="smspool">SMSPool (Server 1 SMS)</option>

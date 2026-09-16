@@ -37,18 +37,41 @@ function resolveProvider(tx: any): { id: string; name: string } {
   const meta = tx.metadata || {};
   const descLower = (tx.description || '').toLowerCase();
   const cat = (tx.category || '').toLowerCase();
+  const rawProvider = String(meta.provider || meta.vendor || meta.supplier || '').toLowerCase();
+  const opRef = String(meta.operatorReference || meta.operator_reference || meta.provider_ref || '').toUpperCase();
+  const planId = String(meta.planId || meta.plan_id || '').toLowerCase();
+  const planType = String(meta.planType || meta.type || '').toLowerCase();
 
-  if (meta.provider) {
-    const p = String(meta.provider).toLowerCase();
-    if (p.includes('gongoz') || p.includes('strowallet')) return { id: 'gongoz', name: 'GongozAPI Gateway' };
-    if (p.includes('fadded')) return { id: 'fadded', name: 'Fadded Inventory Provider' };
-    if (p.includes('momo')) return { id: 'momo', name: 'MomoPanel Enterprise API' };
-    if (p.includes('grizzly')) return { id: 'grizzly', name: 'GrizzlySMS (Server 2)' };
-    if (p.includes('smspool')) return { id: 'smspool', name: 'SMSPool (Server 1)' };
-    if (p.includes('marketplace') || p.includes('aiplug')) return { id: 'marketplace', name: 'AI Marketplace Gateway' };
-    if (p.includes('korapay')) return { id: 'korapay', name: 'Korapay Virtual Accounts' };
+  // 1. Explicit vendor metadata
+  if (rawProvider) {
+    if (rawProvider.includes('strowallet')) return { id: 'strowallet', name: 'StroWallet API Gateway' };
+    if (rawProvider.includes('gongoz')) return { id: 'gongoz', name: 'GongozAPI Gateway' };
+    if (rawProvider.includes('fadded')) return { id: 'fadded', name: 'Fadded Inventory Provider' };
+    if (rawProvider.includes('momo')) return { id: 'momo', name: 'MomoPanel Enterprise API' };
+    if (rawProvider.includes('grizzly')) return { id: 'grizzly', name: 'GrizzlySMS (Server 2)' };
+    if (rawProvider.includes('smspool')) return { id: 'smspool', name: 'SMSPool (Server 1)' };
+    if (rawProvider.includes('marketplace') || rawProvider.includes('aiplug')) return { id: 'marketplace', name: 'AI Marketplace Gateway' };
+    if (rawProvider.includes('korapay')) return { id: 'korapay', name: 'Korapay Virtual Accounts' };
   }
 
+  // 2. Upstream operator reference prefix inspection
+  if (opRef.startsWith('STRO-') || planId.startsWith('stro-')) {
+    return { id: 'strowallet', name: 'StroWallet API Gateway' };
+  }
+  if (opRef.startsWith('GONGOZ-') || planId.startsWith('gongoz-')) {
+    return { id: 'gongoz', name: 'GongozAPI Gateway' };
+  }
+  if (opRef.startsWith('GRIZZLY-')) {
+    return { id: 'grizzly', name: 'GrizzlySMS (Server 2)' };
+  }
+  if (opRef.startsWith('SMSP-')) {
+    return { id: 'smspool', name: 'SMSPool (Server 1)' };
+  }
+  if (opRef.startsWith('MOMO-')) {
+    return { id: 'momo', name: 'MomoPanel Enterprise API' };
+  }
+
+  // 3. Category contextual fallback
   if (
     cat === 'marketplace' ||
     descLower.includes('chatgpt') ||
@@ -59,7 +82,23 @@ function resolveProvider(tx: any): { id: string; name: string } {
   ) {
     return { id: 'marketplace', name: 'AI Marketplace Gateway' };
   }
-  if (['airtime', 'data', 'power', 'cable', 'tv'].includes(cat) || descLower.includes('airtime') || descLower.includes('data bundle')) {
+  if (
+    ['power', 'cable', 'tv', 'virtual_card', 'card'].includes(cat) ||
+    descLower.includes('electricity') ||
+    descLower.includes('meter') ||
+    descLower.includes('dstv') ||
+    descLower.includes('gotv') ||
+    descLower.includes('startimes')
+  ) {
+    return { id: 'strowallet', name: 'StroWallet API Gateway' };
+  }
+  if (cat === 'airtime') {
+    return { id: 'strowallet', name: 'StroWallet API Gateway' };
+  }
+  if (cat === 'data') {
+    if (planType === 'direct' || planId.startsWith('stro-') || descLower.includes('direct')) {
+      return { id: 'strowallet', name: 'StroWallet API Gateway' };
+    }
     return { id: 'gongoz', name: 'GongozAPI Gateway' };
   }
   if (cat === 'logs' || descLower.includes('account log') || descLower.includes('inventory')) {
@@ -105,14 +144,15 @@ function calculateTxCost(tx: any): { cost: number; profit: number } {
     const cat = (tx.category || '').toLowerCase();
     const descLower = (tx.description || '').toLowerCase();
 
-    if (cat === 'airtime') cost = Math.round(amount * 0.98);
-    else if (cat === 'data') cost = Math.round(amount * 0.88);
-    else if (cat === 'power' || cat === 'cable' || cat === 'tv') cost = Math.max(0, amount - 100);
-    else if (cat === 'sms') cost = Math.round(amount * 0.72);
-    else if (cat === 'social') cost = Math.round(amount * 0.68);
-    else if (cat === 'logs') cost = Math.round(amount * 0.80);
-    else if (cat === 'marketplace' || descLower.includes('chatgpt') || descLower.includes('cursor')) cost = Math.round(amount * 0.82);
-    else cost = Math.round(amount * 0.90);
+    if (cat === 'airtime') cost = Number((amount * 0.98).toFixed(2));
+    else if (cat === 'data') cost = Number((amount * 0.90).toFixed(2));
+    else if (cat === 'power') cost = Number((amount * 0.995).toFixed(2)); // ~0.5% DisCo operator commission
+    else if (cat === 'cable' || cat === 'tv') cost = Number((amount * 0.990).toFixed(2)); // ~1.0% bouquet commission
+    else if (cat === 'sms') cost = Number((amount * 0.75).toFixed(2));
+    else if (cat === 'social') cost = Number((amount * 0.68).toFixed(2));
+    else if (cat === 'logs') cost = Number((amount * 0.80).toFixed(2));
+    else if (cat === 'marketplace' || descLower.includes('chatgpt') || descLower.includes('cursor')) cost = Number((amount * 0.82).toFixed(2));
+    else cost = Number((amount * 0.90).toFixed(2));
   }
 
   const profit = Math.max(0, amount - cost);
@@ -151,14 +191,6 @@ export async function GET(request: NextRequest) {
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
 
-    const adminSupabase = createAdminClient();
-    const { data: dbTxs } = await adminSupabase
-      .from('transactions')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    const mergedTxs = dbTxs || [];
-
     const now = new Date();
     let startTime = new Date(0);
     let endTime = new Date(now.getTime() + 86400 * 1000);
@@ -185,17 +217,25 @@ export async function GET(request: NextRequest) {
       endTime = new Date(new Date(endDateParam).getTime() + 86400 * 1000);
     }
 
-    const filteredTxs = mergedTxs.filter((tx: any) => {
-      const txTime = new Date(tx.created_at);
-      if (txTime < startTime || txTime > endTime) return false;
+    const adminSupabase = createAdminClient();
+    let query = adminSupabase
+      .from('transactions')
+      .select('*')
+      .gte('created_at', startTime.toISOString())
+      .lte('created_at', endTime.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(5000);
 
+    const { data: dbTxs } = await query;
+    const mergedTxs = dbTxs || [];
+
+    const filteredTxs = mergedTxs.filter((tx: any) => {
       const provider = resolveProvider(tx);
       if (providerFilter !== 'all' && provider.id !== providerFilter) return false;
 
       const cat = (tx.category || '').toLowerCase();
       if (categoryFilter !== 'all' && cat !== categoryFilter) return false;
 
-      return true;
     });
 
     let totalGrossSales = 0;
@@ -449,7 +489,7 @@ export async function GET(request: NextRequest) {
       providerBreakdown,
       categoryBreakdown,
       timeSeries,
-      itemizedLedger: itemizedList.slice(0, 100),
+      itemizedLedger: itemizedList.slice(0, 5000),
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

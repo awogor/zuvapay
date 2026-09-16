@@ -90,39 +90,43 @@ export function ReceiptModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 dark:bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) closeReceipt();
       }}
     >
-      <div className="relative w-full max-w-lg md:max-w-xl max-h-[86dvh] sm:max-h-[90vh] flex flex-col rounded-2xl sm:rounded-3xl border border-white/15 bg-slate-900 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-lg md:max-w-xl max-h-[86dvh] sm:max-h-[90vh] flex flex-col rounded-2xl sm:rounded-3xl border border-slate-200/90 dark:border-white/15 bg-gradient-to-b from-orange-500/[0.04] via-amber-500/[0.02] to-white dark:bg-slate-900 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+        {/* Ambient brand color gradient glow */}
+        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-brand-orange/12 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-amber-400/12 blur-3xl pointer-events-none" />
+
         {/* Top decorative bar */}
         <div
           className={`h-2.5 w-full flex-shrink-0 ${
             activeReceipt.status === 'completed'
               ? isCredit
-                ? 'bg-emerald-500'
-                : 'bg-brand-orange'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                : 'bg-gradient-to-r from-brand-orange via-amber-500 to-orange-400'
               : activeReceipt.status === 'pending'
-              ? 'bg-amber-500'
-              : 'bg-rose-500'
+              ? 'bg-gradient-to-r from-amber-500 to-orange-400'
+              : 'bg-gradient-to-r from-rose-500 to-red-600'
           }`}
         />
 
         {/* Modal Header - Sticky at top */}
-        <div className="sticky top-0 z-20 flex-shrink-0 flex items-center justify-between px-6 py-4 bg-slate-900/95 backdrop-blur-sm border-b border-white/10">
+        <div className="sticky top-0 z-20 flex-shrink-0 flex items-center justify-between px-6 py-4 bg-white/85 dark:bg-slate-900/95 backdrop-blur-sm border-b border-slate-200/80 dark:border-white/10">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-zuva-solar via-zuva-amber to-zuva-gold font-black text-slate-950 shadow-lg shadow-orange-500/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-brand-orange via-amber-500 to-amber-400 font-black text-slate-950 shadow-lg shadow-orange-500/20">
               ZP
             </div>
             <div>
-              <h3 className="text-base font-bold text-white tracking-wide">ZuvaPay</h3>
-              <p className="text-[11px] text-slate-400">Transaction Receipt</p>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-wide">ZuvaPay</h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Transaction Receipt</p>
             </div>
           </div>
           <button
             onClick={closeReceipt}
-            className="rounded-xl p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors border border-transparent hover:border-white/10"
+            className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors border border-transparent hover:border-slate-200 dark:hover:border-white/10"
             title="Close Receipt"
           >
             <X className="h-5 w-5" />
@@ -130,34 +134,40 @@ export function ReceiptModal() {
         </div>
 
         {/* Receipt Content - Scrollable container */}
-        <div id="printable-receipt" className="flex-1 overflow-y-auto px-6 py-5 space-y-5 scrollbar-thin scrollbar-thumb-slate-700">
+        <div id="printable-receipt" className="flex-1 overflow-y-auto px-6 py-5 space-y-5 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700 relative z-10">
           {/* Status & Amount Hero */}
-          <div className="text-center py-4 px-4 bg-slate-950/70 rounded-2xl border border-white/5 shadow-inner">
-            <div className="inline-flex items-center justify-center p-2.5 rounded-full mb-2 bg-white/5">
-              {activeReceipt.status === 'completed' && (
-                <CheckCircle2 className="w-9 h-9 text-emerald-400" />
-              )}
-              {activeReceipt.status === 'pending' && (
-                <Clock className="w-9 h-9 text-amber-400 animate-pulse" />
-              )}
-              {activeReceipt.status === 'failed' && (
-                <AlertCircle className="w-9 h-9 text-rose-400" />
-              )}
-            </div>
-            <p className="text-xs uppercase tracking-wider font-semibold text-slate-400">
-              {isCredit ? 'Amount Credited' : 'Amount Paid'}
-            </p>
-            <h2
-              className={`text-3xl sm:text-4xl font-black mt-1 tracking-tight ${
-                isCredit ? 'text-emerald-400' : 'text-white'
-              }`}
-            >
-              {isCredit ? '+' : '-'}
-              {formatNaira(activeReceipt.amount)}
-            </h2>
-            <div className="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              {activeReceipt.status.toUpperCase()}
+          <div className="relative overflow-hidden text-center py-6 px-4 bg-gradient-to-b from-amber-50/70 via-orange-50/30 to-white dark:bg-slate-950/70 rounded-3xl border border-amber-200/70 dark:border-white/10 shadow-xs">
+            {/* Subtle inner decorative glow */}
+            <div className="absolute -top-10 -right-10 w-36 h-36 bg-brand-orange/15 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-10 -left-10 w-36 h-36 bg-amber-400/15 rounded-full blur-2xl pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="inline-flex items-center justify-center p-3 rounded-2xl mb-2.5 bg-gradient-to-tr from-emerald-500/15 to-emerald-400/5 border border-emerald-500/25 shadow-xs">
+                {activeReceipt.status === 'completed' && (
+                  <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400 stroke-[2.2]" />
+                )}
+                {activeReceipt.status === 'pending' && (
+                  <Clock className="w-8 h-8 text-amber-500 dark:text-amber-400 animate-pulse stroke-[2.2]" />
+                )}
+                {activeReceipt.status === 'failed' && (
+                  <AlertCircle className="w-8 h-8 text-rose-500 dark:text-rose-400 stroke-[2.2]" />
+                )}
+              </div>
+              <p className="text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">
+                {isCredit ? 'Amount Credited' : 'Amount Paid'}
+              </p>
+              <h2
+                className={`text-3xl sm:text-4xl font-black mt-1 tracking-tight ${
+                  isCredit ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-950 dark:text-white'
+                }`}
+              >
+                {isCredit ? '+' : '-'}
+                {formatNaira(activeReceipt.amount)}
+              </h2>
+              <div className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25 shadow-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
+                {activeReceipt.status.toUpperCase()}
+              </div>
             </div>
           </div>
 
@@ -187,13 +197,13 @@ export function ReceiptModal() {
 
           {/* Digital Delivery & License Access (Marketplace, Software & Digital Accounts) */}
           {delivery && (
-            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-purple-950/70 via-slate-900 to-indigo-950/70 border border-purple-500/30 text-left space-y-3.5 shadow-lg shadow-purple-950/40">
+            <div className="p-4 sm:p-5 rounded-2xl bg-purple-50/90 dark:bg-gradient-to-br dark:from-purple-950/70 dark:via-slate-900 dark:to-indigo-950/70 border border-purple-200 dark:border-purple-500/30 text-left space-y-3.5 shadow-sm dark:shadow-lg dark:shadow-purple-950/40">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-bold text-purple-300 uppercase tracking-wider">
-                  <Sparkles className="w-4 h-4 text-purple-400" />
+                <div className="flex items-center gap-2 text-xs font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider">
+                  <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                   Digital License & Delivery Details
                 </div>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
                   Ready for Use
                 </span>
               </div>
@@ -201,7 +211,7 @@ export function ReceiptModal() {
               {/* Direct 1-Click Activation Link */}
               {delivery.activationLink && (
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-slate-300">Direct Activation Link</label>
+                  <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Direct Activation Link</label>
                   <div className="flex items-center gap-2">
                     <a
                       href={delivery.activationLink}
@@ -215,10 +225,10 @@ export function ReceiptModal() {
                     <button
                       type="button"
                       onClick={() => copyLink(delivery.activationLink!)}
-                      className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors flex-shrink-0"
+                      className="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-transparent hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors flex-shrink-0"
                       title="Copy Link"
                     >
-                      {linkCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                      {linkCopied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
@@ -228,17 +238,17 @@ export function ReceiptModal() {
               {delivery.code && delivery.code !== delivery.activationLink && (
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-semibold text-slate-300">Activation Code / Token</label>
+                    <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Activation Code / Token</label>
                     <button
                       type="button"
                       onClick={() => copyCode(delivery.code!)}
-                      className="text-[11px] text-purple-400 hover:text-purple-300 flex items-center gap-1 font-semibold"
+                      className="text-[11px] text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-1 font-semibold"
                     >
-                      {codeCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      {codeCopied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
                       {codeCopied ? 'Copied' : 'Copy Code'}
                     </button>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-950/80 border border-purple-500/20 font-mono text-xs text-purple-200 break-all select-all">
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-950/80 border border-purple-200 dark:border-purple-500/20 font-mono text-xs text-purple-950 dark:text-purple-200 break-all select-all">
                     {delivery.code}
                   </div>
                 </div>
@@ -248,17 +258,17 @@ export function ReceiptModal() {
               {delivery.credentials && (
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-semibold text-slate-300">Login Credentials & Details</label>
+                    <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Login Credentials & Details</label>
                     <button
                       type="button"
                       onClick={() => copyCreds(delivery.credentials!)}
-                      className="text-[11px] text-purple-400 hover:text-purple-300 flex items-center gap-1 font-semibold"
+                      className="text-[11px] text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-1 font-semibold"
                     >
-                      {credsCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      {credsCopied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
                       {credsCopied ? 'Copied' : 'Copy Details'}
                     </button>
                   </div>
-                  <pre className="p-3 rounded-xl bg-slate-950/80 border border-purple-500/20 font-mono text-xs text-emerald-300/90 whitespace-pre-wrap break-all select-all leading-relaxed max-h-48 overflow-y-auto">
+                  <pre className="p-3 rounded-xl bg-white dark:bg-slate-950/80 border border-emerald-200 dark:border-purple-500/20 font-mono text-xs text-emerald-950 dark:text-emerald-300/90 whitespace-pre-wrap break-all select-all leading-relaxed max-h-48 overflow-y-auto">
                     {delivery.credentials}
                   </pre>
                 </div>
@@ -266,11 +276,11 @@ export function ReceiptModal() {
 
               {/* Instructions */}
               {delivery.instructions && (
-                <div className="p-3 rounded-xl bg-slate-900/90 border border-white/5 space-y-1 text-xs">
-                  <span className="font-bold text-amber-300 text-[11px] uppercase tracking-wide flex items-center gap-1">
+                <div className="p-3 rounded-xl bg-amber-100/70 dark:bg-slate-900/90 border border-amber-300/60 dark:border-white/5 space-y-1 text-xs">
+                  <span className="font-bold text-amber-900 dark:text-amber-300 text-[11px] uppercase tracking-wide flex items-center gap-1">
                     <FileText className="w-3.5 h-3.5" /> How To Redeem & Instructions
                   </span>
-                  <p className="text-slate-300 text-[11px] whitespace-pre-wrap leading-relaxed">
+                  <p className="text-slate-800 dark:text-slate-300 text-[11px] whitespace-pre-wrap leading-relaxed">
                     {delivery.instructions}
                   </p>
                 </div>
@@ -279,34 +289,34 @@ export function ReceiptModal() {
           )}
 
           {/* Transaction Metadata Breakdown */}
-          <div className="rounded-2xl bg-slate-950/40 p-4 border border-white/5 space-y-3 text-sm">
-            <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-              <span className="text-slate-400 text-xs">Service Category</span>
-              <span className="font-semibold text-slate-200 capitalize text-xs bg-slate-800/60 px-2.5 py-0.5 rounded-md border border-white/5">
+          <div className="rounded-3xl bg-gradient-to-b from-white via-orange-50/15 to-white dark:bg-slate-950/40 p-5 border border-slate-200/90 dark:border-white/5 space-y-3.5 text-sm shadow-xs">
+            <div className="flex justify-between items-center py-1.5 border-b border-slate-200/60 dark:border-white/5">
+              <span className="text-slate-500 dark:text-slate-400 text-xs">Service Category</span>
+              <span className="font-semibold text-slate-700 dark:text-slate-200 capitalize text-xs bg-slate-200/70 dark:bg-slate-800/60 px-2.5 py-0.5 rounded-md border border-slate-300/40 dark:border-white/5">
                 {activeReceipt.category}
               </span>
             </div>
 
-            <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-              <span className="text-slate-400 text-xs">Description</span>
-              <span className="font-medium text-slate-200 text-xs text-right max-w-[280px]">
+            <div className="flex justify-between items-center py-1.5 border-b border-slate-200/60 dark:border-white/5">
+              <span className="text-slate-500 dark:text-slate-400 text-xs">Description</span>
+              <span className="font-medium text-slate-800 dark:text-slate-200 text-xs text-right max-w-[280px]">
                 {activeReceipt.description || 'Digital Payment'}
               </span>
             </div>
 
-            <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-              <span className="text-slate-400 text-xs">Reference No.</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-slate-200/60 dark:border-white/5">
+              <span className="text-slate-500 dark:text-slate-400 text-xs">Reference No.</span>
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs text-brand-orange font-bold">
                   {activeReceipt.reference}
                 </span>
                 <button
                   onClick={copyReference}
-                  className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                  className="p-1 rounded-md text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                   title="Copy Reference"
                 >
                   {copied ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <Check className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
                   ) : (
                     <Copy className="w-3.5 h-3.5" />
                   )}
@@ -314,17 +324,17 @@ export function ReceiptModal() {
               </div>
             </div>
 
-            <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-              <span className="text-slate-400 text-xs">Date & Time</span>
-              <span className="text-slate-300 text-xs font-mono">
+            <div className="flex justify-between items-center py-1.5 border-b border-slate-200/60 dark:border-white/5">
+              <span className="text-slate-500 dark:text-slate-400 text-xs">Date & Time</span>
+              <span className="text-slate-700 dark:text-slate-300 text-xs font-mono">
                 {formatDate(activeReceipt.created_at)}
               </span>
             </div>
 
             {profile && (
-              <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-                <span className="text-slate-400 text-xs">Customer Name</span>
-                <span className="text-slate-200 font-medium text-xs">
+              <div className="flex justify-between items-center py-1.5 border-b border-slate-200/60 dark:border-white/5">
+                <span className="text-slate-500 dark:text-slate-400 text-xs">Customer Name</span>
+                <span className="text-slate-800 dark:text-slate-200 font-medium text-xs">
                   {profile.first_name} {profile.last_name}
                 </span>
               </div>
@@ -374,9 +384,9 @@ export function ReceiptModal() {
                   })
                   .map(([key, val]) => {
                     return (
-                      <div key={key} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0">
-                        <span className="text-slate-400 text-xs">{formatMetaKey(key)}</span>
-                        <span className="text-slate-200 font-medium text-xs text-right max-w-[280px] break-all">
+                      <div key={key} className="flex justify-between items-center py-1.5 border-b border-slate-200/60 dark:border-white/5 last:border-0">
+                        <span className="text-slate-500 dark:text-slate-400 text-xs">{formatMetaKey(key)}</span>
+                        <span className="text-slate-800 dark:text-slate-200 font-medium text-xs text-right max-w-[280px] break-all">
                           {String(val)}
                         </span>
                       </div>
@@ -386,14 +396,14 @@ export function ReceiptModal() {
             )}
           </div>
 
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 pt-1 pb-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 pt-1 pb-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
             <span>Verified Secure ZuvaPay Transaction</span>
           </div>
         </div>
 
         {/* Modal Actions - Sticky at bottom */}
-        <div className="sticky bottom-0 z-20 flex-shrink-0 no-print flex items-center justify-end gap-2 p-3 sm:p-4 bg-slate-950/95 backdrop-blur-sm border-t border-white/10">
+        <div className="sticky bottom-0 z-20 flex-shrink-0 no-print flex items-center justify-end gap-2 p-3.5 sm:p-4 bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm border-t border-slate-200/80 dark:border-white/10">
           <button
             onClick={copyReference}
             className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 py-2 px-3.5 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 text-[11px] sm:text-xs font-bold transition-all shadow-md shadow-orange-500/20"
@@ -403,7 +413,7 @@ export function ReceiptModal() {
           </button>
           <button
             onClick={closeReceipt}
-            className="px-3.5 py-2 rounded-xl border border-white/10 text-slate-300 hover:bg-slate-800 hover:text-white text-[11px] sm:text-xs font-semibold transition-colors"
+            className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white text-[11px] sm:text-xs font-semibold transition-colors"
           >
             Done
           </button>

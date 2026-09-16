@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { DataPlan } from '@/types';
 import { gongozFetch, NETWORK_IDS } from '@/lib/vendors/gongoz';
 import { GONGOZ_DATA_PLANS } from '@/lib/data/gongozCatalog';
@@ -123,7 +123,75 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { network, phone, planId, vendor, variationCode, serviceName, serviceId, amount } = body;
+    const { network, phone, planId, vendor, variationCode, serviceName, serviceId, amount, reference } = body;
+
+    const adminSupabase = createAdminClient();
+    const isMock = process.env.NEXT_PUBLIC_MOCK_DATA === 'true';
+
+    // Anti-exploit guard: Verify debit transaction in database
+    let verifiedTx: any = null;
+    if (!isMock) {
+      if (!reference) {
+        return NextResponse.json(
+          { success: false, error: 'Missing transaction debit reference' },
+          { status: 400 }
+        );
+      }
+
+      const { data: tx, error: txErr } = await adminSupabase
+        .from('transactions')
+        .select('*, wallets!inner(user_id)')
+        .eq('reference', reference)
+        .maybeSingle();
+
+      if (txErr || !tx) {
+        return NextResponse.json(
+          { success: false, error: 'Debit transaction reference not found or unverified' },
+          { status: 400 }
+        );
+      }
+
+      if (tx.wallets?.user_id !== user.id) {
+        return NextResponse.json(
+          { success: false, error: 'Unauthorized transaction reference' },
+          { status: 403 }
+        );
+      }
+
+      if (tx.type !== 'debit' || tx.status !== 'completed') {
+        return NextResponse.json(
+          { success: false, error: 'Transaction is not a verified completed debit' },
+          { status: 400 }
+        );
+      }
+
+      if (tx.metadata?.fulfillment_status === 'fulfilled') {
+        return NextResponse.json(
+          { success: false, error: 'Transaction reference has already been fulfilled' },
+          { status: 409 }
+        );
+      }
+
+      verifiedTx = tx;
+    }
+
+    // Helper to record fulfillment metadata
+    const markTxFulfilled = async (opRef: string, chosenVendor: string) => {
+      if (!isMock && verifiedTx && reference) {
+        await adminSupabase
+          .from('transactions')
+          .update({
+            metadata: {
+              ...(verifiedTx.metadata || {}),
+              fulfillment_status: 'fulfilled',
+              operatorReference: opRef,
+              provider: chosenVendor,
+              fulfilled_at: new Date().toISOString(),
+            },
+          })
+          .eq('reference', reference);
+      }
+    };
 
     // -------------------------------------------------------------
     // 1. STROWALLET DIRECT DATA FULFILLMENT
@@ -156,9 +224,12 @@ export async function POST(request: NextRequest) {
           );
         }
 
+        const opRef = data?.response?.transactions?.transactionId || data?.reference || `STRO-DAT-${Date.now()}`;
+        await markTxFulfilled(opRef, 'strowallet');
+
         return NextResponse.json({
           success: true,
-          operatorReference: data?.response?.transactions?.transactionId || data?.reference || `STRO-DAT-${Date.now()}`,
+          operatorReference: opRef,
           network,
           phone,
           planName: body.planName || `${network} Direct Data`,
@@ -169,9 +240,12 @@ export async function POST(request: NextRequest) {
 
       // Simulation fallback for StroWallet
       await new Promise((res) => setTimeout(res, 500));
+      const simOpRef = `STRO-DAT-${Date.now()}`;
+      await markTxFulfilled(simOpRef, 'strowallet');
+
       return NextResponse.json({
         success: true,
-        operatorReference: `STRO-DAT-${Date.now()}`,
+        operatorReference: simOpRef,
         network,
         phone,
         planName: body.planName || `${network} Direct Data`,
@@ -214,9 +288,12 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      const opRef = data?.id || data?.operator_ref || `GONGOZ-DAT-${Date.now()}`;
+      await markTxFulfilled(opRef, 'gongoz');
+
       return NextResponse.json({
         success: true,
-        operatorReference: data?.id || data?.operator_ref || `GONGOZ-DAT-${Date.now()}`,
+        operatorReference: opRef,
         network,
         phone,
         planName: plan.name,
@@ -234,9 +311,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const simGongozOpRef = `GONGOZ-DAT-${Date.now()}`;
+    await markTxFulfilled(simGongozOpRef, 'gongoz');
+
     return NextResponse.json({
       success: true,
-      operatorReference: `GONGOZ-DAT-${Date.now()}`,
+      operatorReference: simGongozOpRef,
       network,
       phone,
       planName: plan.name,

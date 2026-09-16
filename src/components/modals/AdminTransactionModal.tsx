@@ -89,125 +89,160 @@ export function AdminTransactionModal({
     ? originalRefMatch[1]
     : meta.original_reference || meta.order_id || null;
 
-  // 1. Resolve Provider Identity accurately
-  let providerName = meta.provider || meta.server || meta.gateway || '';
-  if (isRefund) {
-    if (descLower.includes('sms') || descLower.includes('virtual line') || originalOrderRef?.includes('SMS')) {
-      providerName =
-        descLower.includes('server 2') || meta.server === 'server2' || descLower.includes('grizzly')
-          ? 'GrizzlySMS (Server 2) — Reversal'
-          : 'SMSPool (Server 1) — Reversal';
-    } else if (
-      descLower.includes('log') ||
-      descLower.includes('tiktok') ||
-      descLower.includes('facebook') ||
-      originalOrderRef?.includes('LOG')
-    ) {
-      providerName = 'Fadded Inventory Provider — Reversal';
-    } else if (
-      descLower.includes('social') ||
-      descLower.includes('follower') ||
-      descLower.includes('likes') ||
-      originalOrderRef?.includes('SOC')
-    ) {
-      providerName = 'MomoPanel Enterprise API — Reversal';
-    } else if (
-      descLower.includes('airtime') ||
-      descLower.includes('data') ||
-      descLower.includes('power') ||
-      descLower.includes('cable')
-    ) {
-      providerName = 'GongozAPI Gateway — Reversal';
+  // 1. DYNAMIC PROVIDER RESOLUTION:
+  // Dynamically inspect explicit metadata, operator reference, plan ID, or category routing
+  const rawProvider = String(
+    meta.provider ||
+    meta.vendor ||
+    meta.supplier ||
+    meta.gateway ||
+    meta.server ||
+    ''
+  ).toLowerCase();
+
+  const opRef = String(
+    meta.operatorReference ||
+    meta.operator_reference ||
+    meta.provider_ref ||
+    meta.provider_reference ||
+    meta.order_id ||
+    meta.orderId ||
+    ''
+  ).toUpperCase();
+
+  const planId = String(meta.planId || meta.plan_id || '').toLowerCase();
+  const planType = String(meta.planType || meta.type || '').toLowerCase();
+
+  let resolvedProviderId: 'strowallet' | 'gongoz' | 'smspool' | 'grizzly' | 'momo' | 'fadded' | 'korapay' | 'internal' = 'internal';
+  let providerName = '';
+
+  // Priority 1: Check upstream response operator reference prefix & explicit vendor metadata
+  if (opRef.startsWith('STRO-') || rawProvider.includes('strowallet') || planId.startsWith('stro-')) {
+    resolvedProviderId = 'strowallet';
+    providerName = 'StroWallet API Gateway';
+  } else if (opRef.startsWith('GONGOZ-') || rawProvider.includes('gongoz') || planId.startsWith('gongoz-')) {
+    resolvedProviderId = 'gongoz';
+    providerName = 'GongozAPI Gateway';
+  } else if (opRef.startsWith('GRIZZLY-') || rawProvider.includes('grizzly') || meta.server === 'server2') {
+    resolvedProviderId = 'grizzly';
+    providerName = 'GrizzlySMS (Server 2)';
+  } else if (opRef.startsWith('SMSP-') || rawProvider.includes('smspool') || (tx.category === 'sms' && meta.server !== 'server2')) {
+    resolvedProviderId = 'smspool';
+    providerName = 'SMSPool (Server 1)';
+  } else if (opRef.startsWith('MOMO-') || rawProvider.includes('momo') || tx.category === 'social') {
+    resolvedProviderId = 'momo';
+    providerName = 'MomoPanel Enterprise API';
+  } else if (opRef.startsWith('FAD-') || rawProvider.includes('fadded') || tx.category === 'logs') {
+    resolvedProviderId = 'fadded';
+    providerName = 'Fadded Inventory Provider';
+  } else if (rawProvider.includes('korapay') || tx.category === 'deposit' || opRef.startsWith('KP-VBA') || opRef.startsWith('KORA-')) {
+    resolvedProviderId = 'korapay';
+    providerName = 'Korapay Dedicated Virtual Account';
+  } else if (tx.category === 'power' || tx.category === 'cable' || tx.category === 'tv' || tx.category === 'virtual_card' || tx.category === 'card') {
+    resolvedProviderId = 'strowallet';
+    providerName = 'StroWallet API Gateway';
+  } else if (tx.category === 'airtime') {
+    // Airtime in ZuvaPay routes via StroWallet
+    resolvedProviderId = 'strowallet';
+    providerName = 'StroWallet API Gateway';
+  } else if (tx.category === 'data') {
+    // For Data: dynamically differentiate StroWallet Direct vs Gongoz SME
+    if (planType === 'direct' || planId.startsWith('stro-') || descLower.includes('direct')) {
+      resolvedProviderId = 'strowallet';
+      providerName = 'StroWallet API Gateway';
     } else {
-      providerName = 'Automated Wallet Reversal Engine';
-    }
-  } else if (!providerName) {
-    if (tx.category === 'sms' || descLower.includes('sms')) {
-      providerName =
-        meta.server === 'server2' || descLower.includes('server 2')
-          ? 'GrizzlySMS (Server 2)'
-          : 'SMSPool (Server 1)';
-    } else if (
-      ['power', 'airtime', 'data', 'cable', 'tv'].includes(tx.category) ||
-      descLower.includes('airtime') ||
-      descLower.includes('data')
-    ) {
+      resolvedProviderId = 'gongoz';
       providerName = 'GongozAPI Gateway';
-    } else if (
-      tx.category === 'social' ||
-      descLower.includes('follower') ||
-      descLower.includes('tiktok') ||
-      descLower.includes('instagram')
-    ) {
-      providerName = 'MomoPanel Enterprise API';
-    } else if (
-      tx.category === 'logs' ||
-      descLower.includes('account log') ||
-      descLower.includes('inventory')
-    ) {
-      providerName = 'Fadded Inventory Provider';
-    } else if (tx.category === 'deposit') {
-      providerName = 'Korapay Dedicated Virtual Account';
-    } else {
-      providerName = 'Internal Settlement Gateway';
     }
+  } else {
+    resolvedProviderId = 'internal';
+    providerName = 'Internal Settlement Gateway';
   }
 
-  // 2. Resolve Provider Cost & Margin
+  if (isRefund) {
+    providerName = `${providerName} — Reversal`;
+  }
+
+  // 2. Resolve Dynamic Wholesale Cost & Platform Margin
   let providerCostNgn = 0;
   let grossProfit = 0;
   let profitMarginPercent = 0;
 
   if (isRefund) {
-    // A refund is a wallet reimbursement to the customer; net margin is ₦0.00
     providerCostNgn = amount;
     grossProfit = 0;
     profitMarginPercent = 0;
   } else if (isCredit) {
-    // Deposit inflow
     providerCostNgn = 0;
     grossProfit = 0;
     profitMarginPercent = 0;
   } else {
-    // Debit purchases
-    if (meta.provider_cost !== undefined) {
-      providerCostNgn = parseFloat(meta.provider_cost);
-    } else if (meta.wholesale_cost !== undefined) {
+    // Priority 1: Exact wholesale cost recorded dynamically from the provider API response
+    if (meta.wholesale_cost !== undefined) {
       providerCostNgn = parseFloat(meta.wholesale_cost);
+    } else if (meta.provider_cost !== undefined) {
+      providerCostNgn = parseFloat(meta.provider_cost);
     } else if (meta.cost !== undefined) {
       providerCostNgn = parseFloat(meta.cost);
     } else {
-      if (tx.category === 'airtime') {
-        providerCostNgn = Math.round(amount * 0.98);
-      } else if (tx.category === 'data') {
-        providerCostNgn = Math.round(amount * 0.88);
-      } else if (tx.category === 'power') {
-        providerCostNgn = Math.max(0, amount - 100);
-      } else if (tx.category === 'cable' || tx.category === 'tv') {
-        providerCostNgn = Math.max(0, amount - 100);
-      } else if (tx.category === 'sms') {
-        providerCostNgn = Math.round(amount * 0.72);
-      } else if (tx.category === 'social') {
-        providerCostNgn = Math.round(amount * 0.68);
-      } else if (tx.category === 'logs') {
-        providerCostNgn = Math.round(amount * 0.80);
+      // Priority 2: Compute dynamically based on the detected provider and service type
+      if (resolvedProviderId === 'strowallet') {
+        if (tx.category === 'power') {
+          // StroWallet DisCo operator commission: 0.5%
+          providerCostNgn = Number((amount * 0.995).toFixed(2));
+        } else if (tx.category === 'cable' || tx.category === 'tv') {
+          // StroWallet Cable bouquet commission: 1.0%
+          providerCostNgn = Number((amount * 0.990).toFixed(2));
+        } else if (tx.category === 'airtime') {
+          // StroWallet Airtime wholesale discount: 2.0%
+          providerCostNgn = Number((amount * 0.98).toFixed(2));
+        } else if (tx.category === 'data') {
+          // StroWallet Direct Data wholesale: ~5% margin
+          providerCostNgn = Number((amount * 0.95).toFixed(2));
+        } else {
+          providerCostNgn = Number((amount * 0.95).toFixed(2));
+        }
+      } else if (resolvedProviderId === 'gongoz') {
+        if (tx.category === 'airtime') {
+          providerCostNgn = Number((amount * 0.98).toFixed(2));
+        } else if (tx.category === 'data') {
+          providerCostNgn = Number((amount * 0.90).toFixed(2));
+        } else {
+          providerCostNgn = Number((amount * 0.90).toFixed(2));
+        }
+      } else if (resolvedProviderId === 'smspool' || resolvedProviderId === 'grizzly') {
+        providerCostNgn = Number((amount * 0.75).toFixed(2));
+      } else if (resolvedProviderId === 'momo') {
+        providerCostNgn = Number((amount * 0.68).toFixed(2));
+      } else if (resolvedProviderId === 'fadded') {
+        providerCostNgn = Number((amount * 0.80).toFixed(2));
       } else {
-        providerCostNgn = Math.round(amount * 0.90);
+        providerCostNgn = Number((amount * 0.90).toFixed(2));
       }
     }
-    grossProfit = Math.max(0, amount - providerCostNgn);
-    profitMarginPercent = amount > 0 ? Math.round((grossProfit / amount) * 100) : 0;
+    grossProfit = Math.max(0, Number((amount - providerCostNgn).toFixed(2)));
+    profitMarginPercent = amount > 0 ? Number(((grossProfit / amount) * 100).toFixed(1)) : 0;
   }
 
-  // 3. Provider Order Reference
+  // 3. Provider Order Reference (Dynamic)
   const providerRef = isRefund
     ? (originalOrderRef || tx.reference)
-    : (meta.provider_ref ||
+    : (meta.operatorReference ||
+       meta.operator_reference ||
+       meta.provider_ref ||
        meta.provider_reference ||
        meta.order_id ||
        meta.orderId ||
        meta.external_reference ||
-       `PRV-${tx.reference.replace(/^(KP-REF-|KP-)/, '')}`);
+       (resolvedProviderId === 'strowallet'
+         ? (tx.category === 'power'
+             ? `STRO-PWR-${tx.reference.replace(/^(KP-POW-|KP-)/, '')}`
+             : tx.category === 'cable' || tx.category === 'tv'
+             ? `STRO-CBL-${tx.reference.replace(/^(KP-CBL-|KP-TV-|KP-)/, '')}`
+             : `STRO-AIR-${tx.reference.replace(/^(KP-AIR-|KP-)/, '')}`)
+         : resolvedProviderId === 'gongoz'
+         ? `GONGOZ-DAT-${tx.reference.replace(/^(KP-DAT-|KP-)/, '')}`
+         : `PRV-${tx.reference.replace(/^(KP-REF-|KP-)/, '')}`));
 
   // 4. Resolve Failure Reason & True Diagnostic Telemetry (Source of Truth)
   let failureReason: string | null =

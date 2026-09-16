@@ -81,26 +81,29 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-md max-h-[88dvh] sm:max-h-[90dvh] flex flex-col overflow-hidden rounded-t-[28px] sm:rounded-2xl border border-white/10 bg-slate-900 shadow-2xl animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200">
+      <div className="relative w-full max-w-md max-h-[88dvh] sm:max-h-[90dvh] flex flex-col overflow-hidden rounded-t-[28px] sm:rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200">
+        {/* Top brand accent bar */}
+        <div className="h-1.5 w-full bg-gradient-to-r from-brand-orange via-amber-500 to-brand-blue flex-shrink-0" />
+
         {/* Mobile Drag Indicator */}
-        <div className="sm:hidden pt-2.5 pb-1 flex justify-center flex-shrink-0 bg-slate-900">
-          <div className="w-10 h-1 rounded-full bg-slate-700" />
+        <div className="sm:hidden pt-2.5 pb-1 flex justify-center flex-shrink-0 bg-transparent">
+          <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
         </div>
 
         {/* Header */}
-        <div className="flex-shrink-0 flex items-center justify-between px-5 sm:px-6 pt-3 sm:pt-5 pb-3 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-brand-blue/20 text-brand-blue">
+        <div className="flex-shrink-0 flex items-center justify-between px-5 sm:px-6 pt-3 sm:pt-4 pb-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/80">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-brand-orange/10 border border-brand-orange/20 text-brand-orange shadow-xs">
               <RefreshCw className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Instant Currency Swap</h3>
-              <p className="text-xs text-slate-400">Exchange between NGN & USD balances</p>
+              <h3 className="text-base font-black text-slate-900 dark:text-white">Instant Currency Swap</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Exchange between NGN & USD balances</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -108,20 +111,20 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
 
         <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 overscroll-contain">
           {/* Rate ticker */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/70 border border-white/5 text-xs">
-            <span className="text-slate-400 flex items-center gap-1.5 font-medium">
+          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 text-xs">
+            <span className="text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 font-semibold">
               Live Mid-Market Rate:
             </span>
-            <span className="font-mono font-bold text-emerald-400">
+            <span className="font-mono font-black text-emerald-700 dark:text-emerald-400 text-sm">
               1 USD = ₦{exchangeRate.toLocaleString()} NGN
             </span>
           </div>
 
           {/* From Input */}
-          <div className="p-4 rounded-xl bg-slate-950/80 border border-white/10 space-y-2">
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2.5">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-400">You Pay</span>
-              <span className="text-slate-300 font-medium">
+              <span className="text-slate-500 dark:text-slate-400 font-semibold">You Pay</span>
+              <span className="text-slate-700 dark:text-slate-300 font-bold">
                 Balance:{' '}
                 {direction === 'NGN_TO_USD'
                   ? formatBalance(wallet?.balance || 0, 'NGN')
@@ -134,9 +137,9 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="w-full bg-transparent text-2xl font-black text-white focus:outline-none placeholder-slate-600"
+                className="w-full !bg-transparent border-0 !p-0 text-2xl font-black text-slate-900 dark:text-white focus:outline-none focus:ring-0 placeholder-slate-400 dark:placeholder-slate-600 shadow-none"
               />
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-bold text-white">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-white shadow-xs flex-shrink-0">
                 <span>{direction === 'NGN_TO_USD' ? '🇳🇬 NGN' : '🇺🇸 USD'}</span>
               </div>
             </div>
@@ -146,7 +149,7 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
           <div className="flex justify-center -my-2 relative z-10">
             <button
               onClick={toggleDirection}
-              className="p-2 rounded-full bg-brand-orange hover:bg-amber-500 text-slate-950 shadow-lg transition-transform hover:rotate-180 duration-300"
+              className="p-2.5 rounded-full bg-brand-orange hover:bg-orange-600 text-white shadow-md shadow-orange-500/25 transition-transform hover:rotate-180 duration-300 active:scale-95"
               title="Reverse Swap Direction"
             >
               <ArrowDownUp className="w-4 h-4 stroke-[2.5]" />
@@ -154,10 +157,10 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
           </div>
 
           {/* To Input (Calculated) */}
-          <div className="p-4 rounded-xl bg-slate-950/80 border border-white/10 space-y-2">
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2.5">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-400">You Receive (Estimated)</span>
-              <span className="text-slate-300 font-medium">
+              <span className="text-slate-500 dark:text-slate-400 font-semibold">You Receive (Estimated)</span>
+              <span className="text-slate-700 dark:text-slate-300 font-bold">
                 Balance:{' '}
                 {direction === 'NGN_TO_USD'
                   ? formatBalance(usdBalance, 'USD')
@@ -165,12 +168,12 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
               </span>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-2xl font-black text-emerald-400">
+              <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
                 {direction === 'NGN_TO_USD'
                   ? formatUSD(converted)
                   : formatNaira(converted)}
               </span>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 text-xs font-bold text-white">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-white shadow-xs flex-shrink-0">
                 <span>{direction === 'NGN_TO_USD' ? '🇺🇸 USD' : '🇳🇬 NGN'}</span>
               </div>
             </div>
@@ -181,7 +184,7 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
             <button
               onClick={handleSwap}
               disabled={loading || numAmount <= 0}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-sm transition-all shadow-lg disabled:opacity-50"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50"
             >
               {loading ? 'Processing Swap...' : 'Confirm Currency Swap'}
             </button>

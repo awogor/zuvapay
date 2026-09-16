@@ -5,8 +5,9 @@ import { useWallet } from '@/context/WalletContext';
 import { useToast } from '@/components/common/Toast';
 import { detectNetwork, formatNaira } from '@/lib/utils';
 import { DataPlan } from '@/types';
-import { Wifi, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2, PlusCircle } from 'lucide-react';
+import { Wifi, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2, PlusCircle, Users } from 'lucide-react';
 import CustomSearchDropdown, { type DropdownItem } from '@/components/common/CustomSearchDropdown';
+import { BeneficiaryModal } from '@/components/modals/BeneficiaryModal';
 
 const NETWORKS = [
   { id: 'MTN', name: 'MTN Nigeria' },
@@ -27,16 +28,38 @@ export default function DataBundlePage() {
   const [selectedPlanId, setSelectedPlanId] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [fetchingPlans, setFetchingPlans] = useState(false);
+  const [showBeneficiaryModal, setShowBeneficiaryModal] = useState(false);
+  const [bypassValidation, setBypassValidation] = useState(false);
 
-  // Auto-detect network from phone
+  const handlePhoneChange = (val: string) => {
+    let clean = val.replace(/\D/g, '');
+    if (clean.startsWith('234') && clean.length > 10) {
+      clean = '0' + clean.slice(3);
+    }
+    setPhone(clean.slice(0, 11));
+  };
+
+  const handleSelectBeneficiary = (b: { phone: string; network?: string }) => {
+    setPhone(b.phone);
+    if (b.network) {
+      const netStr = b.network.toLowerCase();
+      const match = NETWORKS.find((n) => n.id.toLowerCase() === netStr);
+      if (match) {
+        setNetwork(match.id);
+      }
+    }
+  };
+
+  // Auto-detect network from phone (unless bypassed for ported SIMs)
   useEffect(() => {
+    if (bypassValidation) return;
     if (phone.length >= 4) {
       const detected = detectNetwork(phone);
       if (detected && detected !== network && NETWORKS.some((n) => n.id.toLowerCase() === detected.toLowerCase())) {
         setNetwork(detected);
       }
     }
-  }, [phone, network]);
+  }, [phone, network, bypassValidation]);
 
   // Fetch plans when network changes
   useEffect(() => {
@@ -150,6 +173,9 @@ export default function DataBundlePage() {
         planName: selectedPlan.name,
         planType: selectedPlan.type,
         validity: selectedPlan.validity,
+        planId: selectedPlan.id,
+        provider: selectedPlan.vendor || (String(selectedPlan.id).startsWith('stro-') ? 'strowallet' : 'gongoz'),
+        wholesale_cost: selectedPlan.vendor === 'strowallet' ? Math.round(price * 0.95) : Math.round(price * 0.90),
       },
     });
 
@@ -198,6 +224,17 @@ export default function DataBundlePage() {
       // 5. SUCCESS
       success('Data Activated!', `${selectedPlan.name} has been sent to ${phone}.`);
 
+      // Auto-save recipient number as beneficiary (30-day auto-retention)
+      fetch('/api/user/beneficiaries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone,
+          network,
+          service_type: 'data',
+        }),
+      }).catch(() => {});
+
       // Reset form so the page is immediately fresh for the next transaction
       setPhone('');
       setSelectedPlanId('');
@@ -207,7 +244,9 @@ export default function DataBundlePage() {
           ...debitResult.transaction,
           metadata: {
             ...debitResult.transaction.metadata,
+            provider: data.vendor || selectedPlan.vendor || (String(selectedPlan.id).startsWith('stro-') ? 'strowallet' : 'gongoz'),
             operatorReference: data.operatorReference,
+            wholesale_cost: data.wholesaleCost || (selectedPlan.vendor === 'strowallet' ? Math.round(price * 0.95) : Math.round(price * 0.90)),
           },
         });
       }
@@ -300,20 +339,54 @@ export default function DataBundlePage() {
             accentColor="sky"
           />
 
-          {/* Recipient Phone */}
+          {/* Recipient Phone with Choose Beneficiary Link/Button */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              Recipient Phone Number
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Recipient Phone Number
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowBeneficiaryModal(true)}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-500 hover:text-sky-600 dark:hover:text-sky-400 py-0.5 px-2 rounded-lg hover:bg-sky-500/10 transition-all active:scale-95"
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>Choose Beneficiary</span>
+              </button>
+            </div>
             <input
               type="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => handlePhoneChange(e.target.value)}
               placeholder="08031234567"
               maxLength={11}
               required
               className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white font-mono text-sm tracking-wider focus:outline-none focus:border-sky-500"
             />
+
+            {/* Ported SIM Bypass Number Validation Button */}
+            <div className="flex items-center justify-between mt-2 px-0.5">
+              <button
+                type="button"
+                onClick={() => setBypassValidation(!bypassValidation)}
+                className={`inline-flex items-center gap-2 text-xs font-semibold transition-all py-1 px-2.5 rounded-lg border ${
+                  bypassValidation
+                    ? 'bg-amber-500/10 border-brand-orange/40 text-brand-orange dark:text-amber-400'
+                    : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                }`}
+              >
+                <span
+                  className={`w-3.5 h-3.5 rounded border flex items-center justify-center text-[10px] font-black transition-colors ${
+                    bypassValidation
+                      ? 'bg-brand-orange border-brand-orange text-slate-950'
+                      : 'border-slate-400 dark:border-slate-600'
+                  }`}
+                >
+                  {bypassValidation && '✓'}
+                </span>
+                <span>Bypass number validation</span>
+              </button>
+            </div>
           </div>
 
           {/* Selected Plan Details & Summary */}
@@ -363,6 +436,14 @@ export default function DataBundlePage() {
           <span>Automated Refund: Immediate wallet reversal if carrier network fails</span>
         </div>
       </div>
+
+      {/* Beneficiary Selection Modal */}
+      <BeneficiaryModal
+        isOpen={showBeneficiaryModal}
+        onClose={() => setShowBeneficiaryModal(false)}
+        onSelect={handleSelectBeneficiary}
+        serviceType="data"
+      />
     </div>
   );
 }

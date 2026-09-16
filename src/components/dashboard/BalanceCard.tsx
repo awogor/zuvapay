@@ -33,7 +33,7 @@ export function BalanceCard({ onFundWallet, onSwap }: BalanceCardProps) {
           <div className="flex items-center gap-2">
             <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
               <WalletIcon className="h-4 w-4 text-brand-orange" />
-              Primary NGN Wallet
+              Wallet
             </span>
             <button
               onClick={toggleBalanceHidden}
@@ -81,7 +81,7 @@ export function BalanceCard({ onFundWallet, onSwap }: BalanceCardProps) {
             className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-2xl border border-white/15 bg-slate-800/80 hover:bg-slate-800 px-5 py-3.5 text-xs md:text-sm font-bold text-white transition-all active:scale-95 hover:border-brand-orange/40"
           >
             <RefreshCw className="h-4 w-4 text-brand-orange" />
-            Currency Swap
+            Swap
           </button>
         </div>
       </div>

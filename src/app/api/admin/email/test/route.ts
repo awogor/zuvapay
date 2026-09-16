@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
             name,
             amount: sampleData.amount || 15000,
             newBalance: sampleData.newBalance || 24850,
-            reference: sampleData.reference || 'KP-DEP-8492019',
+            reference: sampleData.reference || 'ZP-DEP-8492019',
             payerName: sampleData.payerName || 'Musa Ibrahim',
             bankName: sampleData.bankName || 'Wema Bank Virtual Account',
             date: new Date().toLocaleString('en-NG'),
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
             serviceName: sampleData.serviceName || 'MTN SME Data 2.5GB (30 Days)',
             category: sampleData.category || 'DATA BUNDLE',
             amount: sampleData.amount || 640,
-            reference: sampleData.reference || 'KP-DAT-994820',
+            reference: sampleData.reference || 'ZP-DAT-994820',
             date: new Date().toLocaleString('en-NG'),
             details: sampleData.details || {
               'Beneficiary Number': '0803 123 4567',
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
             name,
             serviceName: sampleData.serviceName || 'IKEDC Prepaid Electricity ₦3,000',
             amount: sampleData.amount || 3000,
-            reference: sampleData.reference || 'KP-PWR-882910',
+            reference: sampleData.reference || 'ZP-PWR-882910',
             reason: sampleData.reason || 'Disco switch timed out (Auto-reversal executed)',
             newBalance: sampleData.newBalance || 14200,
           });
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
             token: sampleData.token || '4839-2049-1830-4920-1940',
             units: sampleData.units || '73.0 kWh',
             amount: sampleData.amount || 5000,
-            reference: sampleData.reference || 'KP-PWR-920194',
+            reference: sampleData.reference || 'ZP-PWR-920194',
             operatorReference: sampleData.operatorReference || 'IKEDC-TX-88201',
             date: new Date().toLocaleString('en-NG'),
           });
@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
             productName: sampleData.productName || 'MTN SME Data 1GB',
             providerName: sampleData.providerName || 'Gongoz Switch 1',
             customerEmail: targetEmail || 'customer@zuvapay.com',
-            orderReference: sampleData.orderReference || 'KP-ORD-882190',
+            orderReference: sampleData.orderReference || 'ZP-ORD-882190',
             amount: sampleData.amount || 280,
             errorMessage: sampleData.errorMessage || 'Reseller wallet balance insufficient (NGN 14.20 left)',
             portalUrl: sampleData.portalUrl || 'https://resellers.aiplug.store',
@@ -159,12 +159,12 @@ export async function POST(request: NextRequest) {
             productName: sampleData.productName || 'Gemini Pro 18-Month Activation Links',
             quantity: sampleData.quantity || 1,
             amount: sampleData.amount || 6000,
-            reference: sampleData.reference || 'KP-MAR-MU2AQF29-DW815',
+            reference: sampleData.reference || 'ZP-MAR-MU2AQF29-DW815',
             date: sampleData.date,
             delivery: sampleData.delivery || {
               activationLink: 'https://serviceactivation.google.com/subscription/new/AQCpiIGS...',
               code: 'https://serviceactivation.google.com/subscription/new/AQCpiIGS...',
-              instructions: '⚡ Paste the received redeem link into your browser and click on "Activate Offer".\n\n⚡ Important Note: The redeem link must be used within 48 hours.',
+              instructions: 'Paste the received redeem link into your browser and click on "Activate Offer".\n\nImportant Note: The redeem link must be used within 48 hours.',
             },
           });
           break;
@@ -204,7 +204,7 @@ export async function POST(request: NextRequest) {
       delivery: sampleData.delivery || {
         activationLink: 'https://serviceactivation.google.com/subscription/new/AQCpiIGS...',
         code: 'https://serviceactivation.google.com/subscription/new/AQCpiIGS...',
-        instructions: '⚡ Paste the received redeem link into your browser and click on "Activate Offer".\n\n⚡ Important Note: The redeem link must be used within 48 hours.',
+        instructions: 'Paste the received redeem link into your browser and click on "Activate Offer".\n\nImportant Note: The redeem link must be used within 48 hours.',
       },
       virtualAccount: {
         bankName: 'Moniepoint MFB',

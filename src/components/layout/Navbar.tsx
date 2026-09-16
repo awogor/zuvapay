@@ -163,9 +163,9 @@ export function Navbar({ onOpenMobileMenu, onOpenFundModal }: NavbarProps) {
               />
 
               {/* Notification Menu Container: Responsive on Mobile & Desktop */}
-              <div className="fixed sm:absolute left-3 right-3 sm:left-auto sm:right-0 top-16 sm:top-full sm:mt-2 w-auto sm:w-88 md:w-96 max-h-[75dvh] sm:max-h-[480px] flex flex-col rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-white/10 bg-white/95 dark:bg-slate-900/95 p-0 shadow-2xl backdrop-blur-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+              <div className="fixed sm:absolute left-3 right-3 sm:left-auto sm:right-0 top-16 sm:top-full sm:mt-2 w-auto sm:w-88 md:w-96 max-h-[75dvh] sm:max-h-[480px] flex flex-col rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-0 shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                 {/* Header */}
-                <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 sm:py-3.5 border-b border-slate-100 dark:border-white/5 bg-slate-50/90 dark:bg-slate-950/70 backdrop-blur-sm">
+                <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 sm:py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
                   <div className="flex items-center gap-2">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
                       Notifications

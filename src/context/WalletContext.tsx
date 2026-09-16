@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from './AuthContext';
 import { Wallet, Transaction, TransactionCategory } from '@/types';
 import { generateReference, formatNaira, formatUSD } from '@/lib/utils';
+import { TransactionPinModal, PinPromptDetails } from '@/components/modals/TransactionPinModal';
+import { PinSetupModal } from '@/components/modals/PinSetupModal';
 
 interface PayBillParams {
   amount: number;
@@ -54,6 +56,8 @@ interface WalletContextType {
     reference?: string;
     newBalance?: number;
   }) => Promise<void>;
+  requestPinAuthorization: (details: PinPromptDetails) => Promise<boolean>;
+  openPinSetupModal: () => void;
   exchangeRate: number; // NGN per USD, e.g. 1550
 }
 
@@ -73,6 +77,51 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [activeReceipt, setActiveReceipt] = useState<Transaction | null>(null);
   const [isFundModalOpen, setIsFundModalOpen] = useState(false);
+
+  // Transaction PIN verification modal state
+  const [pinModalState, setPinModalState] = useState<{
+    isOpen: boolean;
+    details: PinPromptDetails | null;
+    resolver: ((authorized: boolean) => void) | null;
+  }>({
+    isOpen: false,
+    details: null,
+    resolver: null,
+  });
+
+  const [isPinSetupModalOpen, setIsPinSetupModalOpen] = useState(false);
+
+  const requestPinAuthorization = useCallback((details: PinPromptDetails): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setPinModalState({
+        isOpen: true,
+        details,
+        resolver: resolve,
+      });
+    });
+  }, []);
+
+  const handlePinSuccess = useCallback(() => {
+    setPinModalState((prev) => {
+      if (prev.resolver) prev.resolver(true);
+      return { isOpen: false, details: null, resolver: null };
+    });
+  }, []);
+
+  const handlePinCancel = useCallback(() => {
+    setPinModalState((prev) => {
+      if (prev.resolver) prev.resolver(false);
+      return { isOpen: false, details: null, resolver: null };
+    });
+  }, []);
+
+  const handleNeedSetupPin = useCallback(() => {
+    setPinModalState((prev) => {
+      if (prev.resolver) prev.resolver(false);
+      return { isOpen: false, details: null, resolver: null };
+    });
+    setIsPinSetupModalOpen(true);
+  }, []);
 
   // Global persistent hidden balance state across all views and page refreshes
   // Initialized to false to guarantee identical server and initial client render (prevents Next.js hydration mismatch)
@@ -354,6 +403,22 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       return {
         success: false,
         error: `Insufficient wallet balance. You have ₦${wallet.balance.toLocaleString()} but need ₦${amount.toLocaleString()}. Please fund your wallet.`,
+      };
+    }
+
+    // 2. MANDATORY TRANSACTION PIN AUTHORIZATION
+    const isAuthorized = await requestPinAuthorization({
+      title: `${category.toUpperCase()} Payment`,
+      category,
+      amount,
+      currency: 'NGN',
+      description,
+    });
+
+    if (!isAuthorized) {
+      return {
+        success: false,
+        error: 'Transaction cancelled by user or PIN authorization failed.',
       };
     }
 
@@ -725,10 +790,27 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   ): Promise<{ success: boolean; error?: string }> => {
     if (!wallet) return { success: false, error: 'Wallet not found' };
 
+    if (from === 'NGN' && to === 'USD' && wallet.balance < amount) {
+      return { success: false, error: 'Insufficient NGN balance for swap' };
+    }
+    if (from === 'USD' && to === 'NGN' && usdBalance < amount) {
+      return { success: false, error: 'Insufficient USD balance for swap' };
+    }
+
+    // MANDATORY TRANSACTION PIN AUTHORIZATION
+    const isAuthorized = await requestPinAuthorization({
+      title: 'Currency Swap Authorization',
+      category: 'Currency Swap',
+      amount,
+      currency: from,
+      description: `Swap ${from === 'NGN' ? formatNaira(amount) : formatUSD(amount)} to ${to}`,
+    });
+
+    if (!isAuthorized) {
+      return { success: false, error: 'Swap cancelled by user or PIN authorization failed.' };
+    }
+
     if (from === 'NGN' && to === 'USD') {
-      if (wallet.balance < amount) {
-        return { success: false, error: 'Insufficient NGN balance for swap' };
-      }
       const receivedUSD = Number((amount / rate).toFixed(2));
       const newNgn = wallet.balance - amount;
       const newUsd = usdBalance + receivedUSD;
@@ -896,10 +978,23 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         swapCurrency,
         refreshWallet,
         recordManualAdjustment,
+        requestPinAuthorization,
+        openPinSetupModal: () => setIsPinSetupModalOpen(true),
         exchangeRate: NGN_USD_RATE,
       }}
     >
       {children}
+      <TransactionPinModal
+        isOpen={pinModalState.isOpen}
+        details={pinModalState.details}
+        onSuccess={handlePinSuccess}
+        onCancel={handlePinCancel}
+        onNeedSetupPin={handleNeedSetupPin}
+      />
+      <PinSetupModal
+        isOpen={isPinSetupModalOpen}
+        onSuccess={() => setIsPinSetupModalOpen(false)}
+      />
     </WalletContext.Provider>
   );
 }

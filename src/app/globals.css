@@ -6,17 +6,6 @@
 @tailwind utilities;
 
 :root {
-  --background: #0B1120;
-  --foreground: #F8FAFC;
-  --card-bg: rgba(15, 23, 42, 0.75);
-  --card-border: rgba(255, 255, 255, 0.08);
-  --text-main: #FFFFFF;
-  --text-muted: #94A3B8;
-  color-scheme: dark;
-}
-
-html.light,
-html[data-theme='light'] {
   --background: #F8FAFC;
   --foreground: #0F172A;
   --card-bg: rgba(255, 255, 255, 0.9);
@@ -24,6 +13,17 @@ html[data-theme='light'] {
   --text-main: #0F172A;
   --text-muted: #64748B;
   color-scheme: light;
+}
+
+html.dark,
+html[data-theme='dark'] {
+  --background: #0B1120;
+  --foreground: #F8FAFC;
+  --card-bg: rgba(15, 23, 42, 0.75);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --text-main: #FFFFFF;
+  --text-muted: #94A3B8;
+  color-scheme: dark;
 }
 
 body {

@@ -163,11 +163,13 @@ export default function ElectricityPage() {
       category: 'power',
       description: `${disco.toUpperCase()} Electricity (${meterType.toUpperCase()}: ${meterNumber})`,
       metadata: {
+        provider: 'strowallet',
         disco,
         meterType,
         meterNumber,
         customerName: customerName || 'Verified Customer',
         meterAddress: customerAddress || undefined,
+        wholesale_cost: Number((numAmount * 0.992).toFixed(2)),
       },
     });
 
@@ -242,10 +244,12 @@ export default function ElectricityPage() {
           ...debitResult.transaction,
           metadata: {
             ...debitResult.transaction.metadata,
+            provider: 'strowallet',
             token: data.token,
             ...(data.units ? { units: data.units } : {}),
             meterAddress: data.customerAddress || customerAddress || undefined,
             operatorReference: data.operatorReference, // Kept in backend metadata for admin telemetry, hidden in customer receipt
+            wholesale_cost: Number((numAmount * 0.995).toFixed(2)),
           },
         });
       }

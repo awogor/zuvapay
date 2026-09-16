@@ -91,24 +91,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="light" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                var saved = localStorage.getItem('zuvapay_theme') || 'dark';
+                var saved = localStorage.getItem('zuvapay_theme') || 'light';
                 var d = document.documentElement;
-                if (saved === 'light') {
-                  d.classList.remove('dark');
-                  d.classList.add('light');
-                  d.setAttribute('data-theme', 'light');
-                  d.style.colorScheme = 'light';
-                } else {
+                if (saved === 'dark') {
                   d.classList.add('dark');
                   d.classList.remove('light');
                   d.setAttribute('data-theme', 'dark');
                   d.style.colorScheme = 'dark';
+                } else {
+                  d.classList.remove('dark');
+                  d.classList.add('light');
+                  d.setAttribute('data-theme', 'light');
+                  d.style.colorScheme = 'light';
                 }
               } catch (e) {}
             `,
@@ -120,16 +120,16 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider>
-          <AuthProvider>
-            <WalletProvider>
-              <ToastProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <WalletProvider>
                 <SupportProvider>
                   {children}
                   <ReceiptModal />
                 </SupportProvider>
-              </ToastProvider>
-            </WalletProvider>
-          </AuthProvider>
+              </WalletProvider>
+            </AuthProvider>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -11,13 +11,13 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: 'dark',
+  theme: 'light',
   toggleTheme: () => {},
   setTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark');
+  const [theme, setThemeState] = useState<Theme>('light');
 
   const applyTheme = (newTheme: Theme) => {
     const root = document.documentElement;
@@ -36,7 +36,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem('zuvapay_theme') as Theme | null;
-    const initialTheme = saved === 'light' || saved === 'dark' ? saved : 'dark';
+    const initialTheme = saved === 'dark' ? 'dark' : 'light';
     setThemeState(initialTheme);
     applyTheme(initialTheme);
   }, []);

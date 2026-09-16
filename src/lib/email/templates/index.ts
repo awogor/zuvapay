@@ -32,56 +32,51 @@ export type EmailTemplateType =
 export function renderWelcomeEmail({
   name,
   email,
+  virtualAccount,
 }: {
   name: string;
   email: string;
   virtualAccount?: { bankName: string; accountNumber: string; accountName: string };
 }): { subject: string; html: string } {
   const contentHtml = `
-    <h1 style="margin: 0 0 12px 0; font-size: 22px; font-weight: 800; color: #0F172A; letter-spacing: -0.5px;">
-      Welcome to ZuvaPay, ${name}!
+    <h1 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">
+      Welcome to ZuvaPay, ${name}
     </h1>
-    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 24px; color: #475569;">
-      Your account is active and ready to use. ZuvaPay makes it easy to purchase cheap SME data bundles, generate instant 20-digit electricity tokens, pay cable TV bills, and manage digital subscriptions all in one place.
+    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 22px; color: #475569;">
+      Your account is active. ZuvaPay gives you fast, reliable access to telecom data bundles, electricity tokens, cable TV renewals, and digital utilities.
     </p>
 
-    <!-- Services Overview Card -->
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 24px; padding: 14px;">
+    <!-- Services Overview -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px; font-size: 13px;">
       <tr>
-        <td style="padding: 8px 12px; font-size: 13px; color: #334155; line-height: 20px;">
-          <strong>Internet Data &amp; Airtime:</strong> Instant wholesale SME &amp; gifting bundles for MTN, Airtel, Glo, and 9mobile.
+        <td style="padding: 10px 0; border-bottom: 1px solid #F1F5F9; color: #334155; line-height: 20px;">
+          <strong>Data &amp; Airtime:</strong> Instant wholesale SME &amp; gifting bundles across MTN, Airtel, Glo, and 9mobile.
         </td>
       </tr>
       <tr>
-        <td style="padding: 8px 12px; font-size: 13px; color: #334155; line-height: 20px;">
-          <strong>Electricity Tokens:</strong> Instant 20-digit prepaid tokens and postpaid bill payment for all Discos.
+        <td style="padding: 10px 0; border-bottom: 1px solid #F1F5F9; color: #334155; line-height: 20px;">
+          <strong>Electricity:</strong> Instant 20-digit prepaid meter tokens and postpaid settlements for all Discos.
         </td>
       </tr>
       <tr>
-        <td style="padding: 8px 12px; font-size: 13px; color: #334155; line-height: 20px;">
-          <strong>Cable TV &amp; Subscriptions:</strong> Fast renewals for DStv, GOtv, StarTimes, and verified digital software.
+        <td style="padding: 10px 0; border-bottom: 1px solid #F1F5F9; color: #334155; line-height: 20px;">
+          <strong>Cable &amp; Subscriptions:</strong> Instant renewals for DStv, GOtv, StarTimes, and software tools.
         </td>
       </tr>
     </table>
 
     <!-- Action Button -->
-    <div style="text-align: center; margin: 28px 0;">
-      <a href="${getEmailAppUrl()}/dashboard" style="display: inline-block; padding: 12px 28px; background-color: #FF6B00; color: #FFFFFF; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 10px;">
-        Go to Your Dashboard &rarr;
+    <div style="margin: 24px 0 20px 0;">
+      <a href="${getEmailAppUrl()}/dashboard" style="display: inline-block; padding: 11px 24px; background-color: #FF6B00; color: #FFFFFF; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px;">
+        Go to Dashboard &rarr;
       </a>
     </div>
-
-    <p style="margin: 0; font-size: 12px; line-height: 20px; color: #64748B;">
-      If you have questions or need help, you can reply directly to this email or reach us anytime at <a href="mailto:hello@zuvapay.com" style="color: #FF6B00; text-decoration: none; font-weight: 600;">hello@zuvapay.com</a>.
-    </p>
   `;
 
   return {
     subject: `Welcome to ZuvaPay, ${name}`,
     html: renderBaseEmailLayout({
       previewText: `Welcome to ZuvaPay! Your account is active and ready to use.`,
-      headerBadge: 'Account Ready',
-      badgeColor: '#10B981',
       contentHtml,
     }),
   };
@@ -108,55 +103,44 @@ export function renderWalletCreditEmail({
   date?: string;
 }): { subject: string; html: string } {
   const contentHtml = `
-    <div style="text-align: center; margin-bottom: 24px;">
-      <div style="display: inline-block; width: 56px; height: 56px; line-height: 56px; background-color: #ECFDF5; border-radius: 50%; text-align: center; font-size: 28px; margin-bottom: 12px;">
-        💰
-      </div>
-      <h1 style="margin: 0 0 6px 0; font-size: 22px; font-weight: 900; color: #0F172A;">
-        Wallet Credited Successfully!
+    <div style="margin-bottom: 20px;">
+      <h1 style="margin: 0 0 4px 0; font-size: 20px; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">
+        Wallet Credited
       </h1>
-      <div style="font-size: 32px; font-weight: 900; color: #059669; font-family: monospace; letter-spacing: -1px; margin-top: 8px;">
+      <div style="font-size: 28px; font-weight: 800; color: #059669; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-top: 6px;">
         +₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
       </div>
     </div>
 
-    <!-- Transaction Summary Receipt -->
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; margin-bottom: 24px;">
+    <!-- Transaction Summary -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px; font-size: 13px;">
       <tr>
-        <td style="padding: 14px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Recipient</td>
-        <td style="padding: 14px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${name}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Recipient</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 700; color: #0F172A;">${name}</td>
       </tr>
       <tr>
-        <td style="padding: 14px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Source / Payer</td>
-        <td style="padding: 14px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${payerName || 'Bank Transfer'} (${bankName || 'Virtual Account'})</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Source</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 600; color: #0F172A;">${payerName || 'Bank Transfer'} (${bankName || 'Virtual Account'})</td>
       </tr>
       <tr>
-        <td style="padding: 14px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Transaction Ref</td>
-        <td style="padding: 14px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; font-family: monospace; text-align: right;">${reference}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Reference</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-family: monospace; font-size: 12px; color: #64748B;">${reference}</td>
       </tr>
       <tr>
-        <td style="padding: 14px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Date & Time</td>
-        <td style="padding: 14px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${date || new Date().toLocaleString('en-NG')}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Date</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 600; color: #0F172A;">${date || new Date().toLocaleString('en-NG')}</td>
       </tr>
       <tr>
-        <td style="padding: 14px 18px; font-size: 12px; color: #64748B;">Updated Wallet Balance</td>
-        <td style="padding: 14px 18px; font-size: 13px; font-weight: 900; color: #0F172A; font-family: monospace; text-align: right;">₦${newBalance.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
+        <td style="padding: 9px 0; color: #64748B;">Wallet Balance</td>
+        <td align="right" style="padding: 9px 0; font-weight: 800; color: #0F172A;">₦${newBalance.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
       </tr>
     </table>
-
-    <div style="text-align: center; margin-top: 24px;">
-      <a href="${getEmailAppUrl()}/dashboard" style="display: inline-block; padding: 12px 24px; background-color: #0F172A; color: #FFFFFF; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 10px;">
-        View Transaction in Dashboard
-      </a>
-    </div>
   `;
 
   return {
-    subject: `Credit Alert: ₦${amount.toLocaleString('en-NG')} received in your wallet! 💰`,
+    subject: `Wallet Credited: ₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })} - ZuvaPay`,
     html: renderBaseEmailLayout({
-      previewText: `₦${amount.toLocaleString('en-NG')} successfully credited to your ZuvaPay wallet. New Balance: ₦${newBalance.toLocaleString('en-NG')}.`,
-      headerBadge: 'Credit Alert',
-      badgeColor: '#10B981',
+      previewText: `₦${amount.toLocaleString('en-NG')} credited to your ZuvaPay wallet. New Balance: ₦${newBalance.toLocaleString('en-NG')}.`,
       contentHtml,
     }),
   };
@@ -188,8 +172,8 @@ export function renderServiceReceiptEmail({
       .map(
         ([key, val]) => `
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">${key}</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right; font-family: ${key.toLowerCase().includes('token') || key.toLowerCase().includes('code') || key.toLowerCase().includes('password') ? 'monospace' : 'inherit'};">${val}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">${key}</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 600; color: #0F172A; font-family: ${key.toLowerCase().includes('token') || key.toLowerCase().includes('code') || key.toLowerCase().includes('password') ? 'monospace' : 'inherit'};">${val}</td>
       </tr>
     `
       )
@@ -197,54 +181,45 @@ export function renderServiceReceiptEmail({
   }
 
   const contentHtml = `
-    <div style="text-align: center; margin-bottom: 24px;">
-      <div style="display: inline-block; width: 56px; height: 56px; line-height: 56px; background-color: #FEF3C7; border-radius: 50%; text-align: center; font-size: 28px; margin-bottom: 12px;">
-        ⚡
-      </div>
-      <h1 style="margin: 0 0 6px 0; font-size: 22px; font-weight: 900; color: #0F172A;">
-        Fulfillment Confirmed!
+    <div style="margin-bottom: 20px;">
+      <h1 style="margin: 0 0 4px 0; font-size: 20px; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">
+        Order Receipt
       </h1>
       <p style="margin: 0; font-size: 13px; color: #64748B;">
         Your order for <strong>${serviceName}</strong> has been fulfilled.
       </p>
     </div>
 
-    <!-- Itemized Table -->
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; margin-bottom: 24px;">
+    <!-- Summary Table -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px; font-size: 13px;">
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Service Item</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${serviceName}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Service</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 700; color: #0F172A;">${serviceName}</td>
       </tr>
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Category</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 11px; font-weight: 800; color: #EA580C; text-transform: uppercase; text-align: right;">${category}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Category</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 11px;">${category}</td>
       </tr>
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Amount Paid</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 13px; font-weight: 900; color: #0F172A; font-family: monospace; text-align: right;">₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Amount Paid</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 800; color: #0F172A;">₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
       </tr>
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Order Reference</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; font-family: monospace; text-align: right;">${reference}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Reference</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-family: monospace; font-size: 12px; color: #64748B;">${reference}</td>
       </tr>
       ${detailsHtml}
       <tr>
-        <td style="padding: 12px 18px; font-size: 12px; color: #64748B;">Date</td>
-        <td style="padding: 12px 18px; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${date || new Date().toLocaleString('en-NG')}</td>
+        <td style="padding: 9px 0; color: #64748B;">Date</td>
+        <td align="right" style="padding: 9px 0; font-weight: 600; color: #0F172A;">${date || new Date().toLocaleString('en-NG')}</td>
       </tr>
     </table>
-
-    <div style="background-color: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 12px; padding: 14px; text-align: center; font-size: 11px; color: #065F46;">
-      🛡️ <strong>Automated Warranty:</strong> Immediate full wallet refund if purchase fails or is rejected by provider switches.
-    </div>
   `;
 
   return {
-    subject: `Order Receipt: ${serviceName} Delivered (Ref: ${reference})`,
+    subject: `Receipt for ${serviceName} - ZuvaPay`,
     html: renderBaseEmailLayout({
       previewText: `Your ${serviceName} order of ₦${amount.toLocaleString('en-NG')} was fulfilled successfully.`,
-      headerBadge: 'Order Completed',
-      badgeColor: '#10B981',
       contentHtml,
     }),
   };
@@ -269,58 +244,52 @@ export function renderRefundEmail({
   newBalance?: number;
 }): { subject: string; html: string } {
   const contentHtml = `
-    <div style="text-align: center; margin-bottom: 24px;">
-      <div style="display: inline-block; width: 56px; height: 56px; line-height: 56px; background-color: #EFF6FF; border-radius: 50%; text-align: center; font-size: 28px; margin-bottom: 12px;">
-        ↩️
-      </div>
-      <h1 style="margin: 0 0 6px 0; font-size: 22px; font-weight: 900; color: #0F172A;">
-        Automated Instant Refund
+    <div style="margin-bottom: 20px;">
+      <h1 style="margin: 0 0 4px 0; font-size: 20px; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">
+        Refund Processed
       </h1>
-      <p style="margin: 0; font-size: 13px; color: #64748B;">
-        The provider switch rejected or timed out your order. <strong>100% of your funds have been returned to your wallet.</strong>
+      <div style="font-size: 28px; font-weight: 800; color: #2563EB; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-top: 6px;">
+        +₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+      </div>
+      <p style="margin: 8px 0 0 0; font-size: 13px; color: #64748B;">
+        Your order could not be completed by the carrier gateway. Funds have been returned to your wallet.
       </p>
     </div>
 
-    <!-- Refund Receipt Box -->
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; margin-bottom: 24px;">
+    <!-- Refund Table -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px; font-size: 13px;">
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Failed Service</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${serviceName}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Item</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 700; color: #0F172A;">${serviceName}</td>
       </tr>
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Refunded Amount</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 14px; font-weight: 900; color: #2563EB; font-family: monospace; text-align: right;">+₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Refunded Amount</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 800; color: #2563EB;">₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
       </tr>
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Reason</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 600; color: #DC2626; text-align: right;">${reason || 'Carrier gateway timed out / out of stock'}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Reason</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B; font-size: 12px;">${reason || 'Carrier gateway timeout'}</td>
       </tr>
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Original Reference</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; font-family: monospace; text-align: right;">${reference}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-size: 12px; color: #64748B;">Original Reference</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-family: monospace; font-size: 12px; color: #64748B;">${reference}</td>
       </tr>
       ${
         newBalance !== undefined
           ? `
       <tr>
-        <td style="padding: 12px 18px; font-size: 12px; color: #64748B;">Current Balance</td>
-        <td style="padding: 12px 18px; font-size: 13px; font-weight: 900; color: #0F172A; font-family: monospace; text-align: right;">₦${newBalance.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
+        <td style="padding: 9px 0; color: #64748B;">Current Wallet Balance</td>
+        <td align="right" style="padding: 9px 0; font-weight: 800; color: #0F172A;">₦${newBalance.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
       </tr>`
           : ''
       }
     </table>
-
-    <div style="background-color: #FEF2F2; border: 1px solid #FECACA; border-radius: 12px; padding: 14px; text-align: center; font-size: 11px; color: #991B1B;">
-      No support ticket required! Your funds were automatically credited back into your wallet within 5 seconds.
-    </div>
   `;
 
   return {
-    subject: `Instant Refund: ₦${amount.toLocaleString('en-NG')} returned to your wallet (Ref: ${reference})`,
+    subject: `Refund Confirmation: ₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })} - ZuvaPay`,
     html: renderBaseEmailLayout({
-      previewText: `Your order for ${serviceName} could not be delivered by the operator. ₦${amount.toLocaleString('en-NG')} was automatically refunded.`,
-      headerBadge: 'Auto Refund',
-      badgeColor: '#3B82F6',
+      previewText: `Your order for ${serviceName} was refunded. ₦${amount.toLocaleString('en-NG')} credited to your wallet.`,
       contentHtml,
     }),
   };
@@ -343,11 +312,8 @@ export function renderSecurityPinEmail({
   date?: string;
 }): { subject: string; html: string } {
   const contentHtml = `
-    <div style="text-align: center; margin-bottom: 24px;">
-      <div style="display: inline-block; width: 56px; height: 56px; line-height: 56px; background-color: #FEF2F2; border-radius: 50%; text-align: center; font-size: 28px; margin-bottom: 12px;">
-        🛡️
-      </div>
-      <h1 style="margin: 0 0 6px 0; font-size: 22px; font-weight: 900; color: #0F172A;">
+    <div style="margin-bottom: 20px;">
+      <h1 style="margin: 0 0 6px 0; font-size: 20px; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">
         Security Notification
       </h1>
       <p style="margin: 0; font-size: 13px; color: #64748B;">
@@ -356,21 +322,21 @@ export function renderSecurityPinEmail({
     </div>
 
     <!-- Security Activity Details -->
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; margin-bottom: 24px;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px; font-size: 13px;">
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Action</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${actionType}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Action</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 700; color: #0F172A;">${actionType}</td>
       </tr>
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Date & Time</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${date || new Date().toLocaleString('en-NG')}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Date &amp; Time</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 600; color: #0F172A;">${date || new Date().toLocaleString('en-NG')}</td>
       </tr>
       ${
         ipAddress
           ? `
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">IP Address</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; font-family: monospace; text-align: right;">${ipAddress}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">IP Address</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-family: monospace; font-size: 12px; color: #0F172A;">${ipAddress}</td>
       </tr>`
           : ''
       }
@@ -378,31 +344,29 @@ export function renderSecurityPinEmail({
         userAgent
           ? `
       <tr>
-        <td style="padding: 12px 18px; font-size: 12px; color: #64748B;">Device</td>
-        <td style="padding: 12px 18px; font-size: 11px; font-weight: 600; color: #475569; text-align: right;">${userAgent}</td>
+        <td style="padding: 9px 0; color: #64748B;">Device</td>
+        <td align="right" style="padding: 9px 0; font-size: 11px; font-weight: 600; color: #475569;">${userAgent}</td>
       </tr>`
           : ''
       }
     </table>
 
-    <div style="background-color: #FFFBEB; border: 1px solid #FCD34D; border-radius: 12px; padding: 14px; font-size: 12px; color: #92400E; line-height: 18px;">
-      ⚠️ <strong>Didn't authorize this?</strong> If you did not perform this change, immediately message our security desk via WhatsApp to freeze your wallet and reset your credentials.
+    <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 14px; font-size: 12px; color: #64748B; line-height: 18px;">
+      <strong style="color: #0F172A;">Didn't authorize this?</strong> If you did not perform this change, please immediately contact our support desk at <a href="mailto:hello@zuvapay.com" style="color: #FF6B00; text-decoration: none; font-weight: 600;">hello@zuvapay.com</a> to secure your account.
     </div>
   `;
 
   return {
-    subject: `Security Alert: ${actionType} on your ZuvaPay Account`,
+    subject: `Security Alert: ${actionType} - ZuvaPay`,
     html: renderBaseEmailLayout({
-      previewText: `Security alert: ${actionType} was recently performed on your ZuvaPay profile.`,
-      headerBadge: 'Security Alert',
-      badgeColor: '#EF4444',
+      previewText: `Security alert: ${actionType} was recorded on your ZuvaPay account.`,
       contentHtml,
     }),
   };
 }
 
 /**
- * 6. Electricity / NEPA Prepaid Meter Token Alert Template
+ * 6. Electricity Prepaid Meter Token Email Template
  */
 export function renderElectricityTokenEmail({
   name,
@@ -431,7 +395,7 @@ export function renderElectricityTokenEmail({
   operatorReference?: string;
   date?: string;
 }): { subject: string; html: string } {
-  // Ensure token is cleanly formatted with spaces or hyphens for ease of reading
+  // Format token cleanly: "6032 - 5848 - 1710 - 4711 - 0091"
   const cleanDigits = (token || '').replace(/\D/g, '');
   const formattedToken =
     cleanDigits.length === 20
@@ -439,115 +403,88 @@ export function renderElectricityTokenEmail({
       : token;
 
   const contentHtml = `
-    <!-- Hero Header -->
-    <div style="text-align: center; margin-bottom: 24px;">
-      <div style="display: inline-block; width: 56px; height: 56px; line-height: 56px; background-color: #FEF3C7; border-radius: 50%; text-align: center; font-size: 28px; margin-bottom: 12px; border: 2px solid #FDE68A;">
-        ⚡
-      </div>
-      <h1 style="margin: 0 0 6px 0; font-size: 22px; font-weight: 900; color: #0F172A; letter-spacing: -0.5px;">
-        Your NEPA Token is Ready!
+    <!-- Header -->
+    <div style="margin-bottom: 20px;">
+      <h1 style="margin: 0 0 6px 0; font-size: 20px; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">
+        Your ${disco} Electricity Token
       </h1>
       <p style="margin: 0; font-size: 13px; color: #64748B;">
-        Electricity recharge generated for <strong>${disco}</strong> (${meterType})
+        Prepaid meter recharge for <strong>${meterNumber}</strong> (${disco})
       </p>
     </div>
 
-    <!-- Highlighted NEPA Token Box -->
-    <div style="background-color: #0F172A; border: 2px solid #10B981; border-radius: 16px; padding: 24px 20px; text-align: center; margin-bottom: 24px; box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);">
-      <div style="font-size: 11px; font-weight: 800; color: #10B981; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
-        ⚡ 20-Digit Meter Recharge Token
+    <!-- Token Box: Responsive & Never breaks awkwardly on mobile -->
+    <div class="token-box" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 20px 16px; text-align: center; margin-bottom: 24px;">
+      <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+        20-Digit Meter Token
       </div>
-      <div style="font-size: 22px; sm-font-size: 26px; font-weight: 900; color: #34D399; font-family: 'Courier New', Courier, monospace; letter-spacing: 2px; word-break: break-all; padding: 10px 0;">
+      <div class="token-digits" style="font-size: 18px; font-weight: 800; font-family: 'Courier New', Courier, monospace; color: #0F172A; letter-spacing: 1.5px; padding: 4px 0; white-space: nowrap;">
         ${formattedToken}
       </div>
-      <div style="font-size: 11px; color: #94A3B8; margin-top: 6px;">
-        Key these 20 digits on your meter CIU keypad followed by the <strong>blue/red enter key (↵ / #)</strong>.
+      <div style="font-size: 12px; color: #64748B; margin-top: 8px;">
+        Key these 20 digits into your meter CIU keypad, then press the <strong>Enter</strong> key.
       </div>
       ${
         units
           ? `
-      <div style="display: inline-block; margin-top: 14px; padding: 6px 14px; background-color: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 20px; font-size: 12px; font-weight: 800; color: #6EE7B7;">
-        ⚡ Units Credited: ${units}
+      <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #059669;">
+        Units Credited: ${units}
       </div>`
           : ''
       }
     </div>
 
-    <!-- Meter & Account Summary Table -->
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; margin-bottom: 24px;">
+    <!-- Recharge Summary -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 20px; font-size: 13px;">
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">DISCO Provider</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 800; color: #0F172A; text-align: right;">${disco}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Provider</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 700; color: #0F172A;">${disco}</td>
       </tr>
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Meter Number</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 13px; font-weight: 800; color: #0F172A; font-family: monospace; text-align: right;">${meterNumber}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Meter Number</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-family: monospace; font-weight: 700; color: #0F172A;">${meterNumber}</td>
       </tr>
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Meter Type</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 11px; font-weight: 800; color: #EA580C; text-transform: uppercase; text-align: right;">${meterType}</td>
-      </tr>
-      <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Customer / Owner</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${customerName}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Customer Name</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 600; color: #0F172A;">${customerName}</td>
       </tr>
       ${
         customerAddress
           ? `
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Premise Address</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 11px; color: #334155; text-align: right; max-width: 220px;">${customerAddress}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Premise Address</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #334155; font-size: 12px; max-width: 240px;">${customerAddress}</td>
       </tr>`
           : ''
       }
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Amount Paid</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 13px; font-weight: 900; color: #0F172A; font-family: monospace; text-align: right;">₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Amount Paid</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 800; color: #0F172A;">₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
       </tr>
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Transaction Ref</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 11px; font-weight: 700; color: #64748B; font-family: monospace; text-align: right;">${reference}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Transaction Ref</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-family: monospace; font-size: 12px; color: #64748B;">${reference}</td>
       </tr>
       ${
         operatorReference
           ? `
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Disco Operator Ref</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 11px; font-weight: 700; color: #64748B; font-family: monospace; text-align: right;">${operatorReference}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Operator Ref</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-family: monospace; font-size: 12px; color: #64748B;">${operatorReference}</td>
       </tr>`
           : ''
       }
       <tr>
-        <td style="padding: 12px 18px; font-size: 12px; color: #64748B;">Recharge Date</td>
-        <td style="padding: 12px 18px; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${date || new Date().toLocaleString('en-NG')}</td>
+        <td style="padding: 9px 0; color: #64748B;">Date</td>
+        <td align="right" style="padding: 9px 0; font-weight: 600; color: #0F172A;">${date || new Date().toLocaleString('en-NG')}</td>
       </tr>
     </table>
-
-    <!-- Meter Recharge Instructions -->
-    <div style="background-color: #FFFBEB; border: 1px solid #FDE68A; border-radius: 14px; padding: 18px; margin-bottom: 24px;">
-      <div style="font-size: 12px; font-weight: 800; color: #B45309; text-transform: uppercase; margin-bottom: 8px;">
-        💡 How to Load Your Token onto Your Meter:
-      </div>
-      <ol style="margin: 0; padding-left: 18px; font-size: 12px; line-height: 20px; color: #78350F;">
-        <li>Ensure your meter interface unit (CIU) is connected to a direct wall socket.</li>
-        <li>Carefully type in the <strong>20 digits</strong> displayed above.</li>
-        <li>Press the <strong>blue/red button</strong> or <strong>Enter / #</strong> key.</li>
-        <li>Your meter will display <strong>ACCEPTED</strong> or <strong>GOOD</strong> and credit the kWh units.</li>
-      </ol>
-    </div>
-
-    <!-- Automated Warranty -->
-    <div style="background-color: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 12px; padding: 14px; text-align: center; font-size: 11px; color: #065F46;">
-      🛡️ <strong>Automated Warranty:</strong> If your token is not accepted due to carrier switch errors, our team resolves it within minutes or refunds your wallet in full.
-    </div>
   `;
 
   return {
-    subject: `⚡ Your NEPA Token: ${token} (${disco} - ${units || `₦${amount.toLocaleString('en-NG')}`})`,
+    subject: `Your ${disco} Electricity Token - ZuvaPay`,
     html: renderBaseEmailLayout({
-      previewText: `Your 20-digit ${disco} token is: ${token}. Units: ${units || 'Generated'}. Amount: ₦${amount.toLocaleString('en-NG')}.`,
-      headerBadge: 'Token Delivered',
-      badgeColor: '#10B981',
+      previewText: `Your ${disco} meter recharge token is ready for meter ${meterNumber}. Amount: ₦${amount.toLocaleString('en-NG')}.`,
       contentHtml,
     }),
   };
@@ -570,19 +507,19 @@ export function renderAdminBroadcastEmail({
   ctaUrl?: string;
 }): { subject: string; html: string } {
   const contentHtml = `
-    <h1 style="margin: 0 0 14px 0; font-size: 22px; font-weight: 900; color: #0F172A;">
+    <h1 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">
       ${headline}
     </h1>
-    <div style="font-size: 13px; line-height: 22px; color: #475569; margin-bottom: 24px;">
+    <div style="font-size: 14px; line-height: 22px; color: #475569; margin-bottom: 24px;">
       ${bodyHtml}
     </div>
 
     ${
       ctaText && ctaUrl
         ? `
-    <div style="text-align: center; margin: 28px 0;">
-      <a href="${ctaUrl}" style="display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #FF6B00 0%, #EA580C 100%); color: #FFFFFF; font-size: 13px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);">
-        ${ctaText}
+    <div style="margin: 24px 0;">
+      <a href="${ctaUrl}" style="display: inline-block; padding: 12px 24px; background-color: #FF6B00; color: #FFFFFF; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px;">
+        ${ctaText} &rarr;
       </a>
     </div>`
         : ''
@@ -590,11 +527,9 @@ export function renderAdminBroadcastEmail({
   `;
 
   return {
-    subject: headline,
+    subject: `${headline} - ZuvaPay`,
     html: renderBaseEmailLayout({
       previewText: headline,
-      headerBadge: 'Official Update',
-      badgeColor: '#FF6B00',
       contentHtml,
     }),
   };
@@ -621,76 +556,66 @@ export function renderAdminLowBalanceEmail({
   portalUrl?: string;
 }): { subject: string; html: string } {
   const contentHtml = `
-    <div style="background-color: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 14px; padding: 20px; margin-bottom: 24px;">
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-        <span style="font-size: 11px; font-weight: 900; color: #DC2626; text-transform: uppercase; letter-spacing: 0.5px;">
-          ⚠️ Action Required: Supplier Wallet Depleted
-        </span>
+    <div style="margin-bottom: 20px;">
+      <div style="font-size: 11px; font-weight: 700; color: #DC2626; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+        Action Required
       </div>
-      <h2 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 900; color: #991B1B;">
-        Customer purchase blocked due to low provider balance
-      </h2>
-      <p style="margin: 0; font-size: 13px; line-height: 20px; color: #7F1D1D;">
-        A customer tried to purchase <strong>${productName}</strong>, but the order could not be fulfilled by <strong>${providerName}</strong> because your reseller wallet balance is depleted.
+      <h1 style="margin: 0 0 6px 0; font-size: 20px; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">
+        Low Provider Balance: ${providerName}
+      </h1>
+      <p style="margin: 0; font-size: 13px; color: #64748B; line-height: 20px;">
+        A customer order for <strong>${productName}</strong> could not be fulfilled because your reseller wallet balance on <strong>${providerName}</strong> is depleted. The customer has been automatically refunded.
       </p>
     </div>
 
     <!-- Diagnostic Details Table -->
-    <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; padding: 18px; margin-bottom: 24px;">
-      <div style="font-size: 11px; font-weight: 800; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">
-        Diagnostic Incident Details
-      </div>
-
-      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 13px;">
-        <tr>
-          <td style="color: #64748B; padding: 6px 0;">Attempted Product:</td>
-          <td align="right" style="font-weight: 800; color: #0F172A; padding: 6px 0;">${productName}</td>
-        </tr>
-        <tr>
-          <td style="color: #64748B; padding: 6px 0;">API Provider / Gateway:</td>
-          <td align="right" style="font-weight: 800; color: #7C3AED; padding: 6px 0;">${providerName}</td>
-        </tr>
-        <tr>
-          <td style="color: #64748B; padding: 6px 0;">Order Value:</td>
-          <td align="right" style="font-weight: 800; color: #0F172A; padding: 6px 0;">₦${typeof amount === 'number' ? amount.toLocaleString() : amount}</td>
-        </tr>
-        <tr>
-          <td style="color: #64748B; padding: 6px 0;">Customer Account:</td>
-          <td align="right" style="font-weight: 700; color: #0F172A; padding: 6px 0;">${customerEmail}</td>
-        </tr>
-        <tr>
-          <td style="color: #64748B; padding: 6px 0;">Order Reference:</td>
-          <td align="right" style="font-family: monospace; font-weight: 700; color: #475569; padding: 6px 0;">${orderReference}</td>
-        </tr>
-        <tr>
-          <td style="color: #64748B; padding: 6px 0;">Provider Error Reason:</td>
-          <td align="right" style="font-weight: 800; color: #DC2626; padding: 6px 0;">${errorMessage}</td>
-        </tr>
-        <tr>
-          <td style="color: #64748B; padding: 6px 0;">User Status:</td>
-          <td align="right" style="font-weight: 800; color: #059669; padding: 6px 0;">Automatically Refunded to Wallet</td>
-        </tr>
-      </table>
-    </div>
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px; font-size: 13px;">
+      <tr>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Attempted Product</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 700; color: #0F172A;">${productName}</td>
+      </tr>
+      <tr>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">API Gateway</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 600; color: #0F172A;">${providerName}</td>
+      </tr>
+      <tr>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Order Value</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 800; color: #0F172A;">₦${typeof amount === 'number' ? amount.toLocaleString('en-NG') : amount}</td>
+      </tr>
+      <tr>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Customer Account</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 600; color: #0F172A;">${customerEmail}</td>
+      </tr>
+      <tr>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Order Reference</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-family: monospace; font-size: 12px; color: #475569;">${orderReference}</td>
+      </tr>
+      <tr>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Error Reason</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 600; color: #DC2626;">${errorMessage}</td>
+      </tr>
+      <tr>
+        <td style="padding: 9px 0; color: #64748B;">Customer Status</td>
+        <td align="right" style="padding: 9px 0; font-weight: 600; color: #059669;">Automatically Refunded</td>
+      </tr>
+    </table>
 
     <!-- CTA Button to Fund Provider -->
-    <div style="text-align: center; margin: 28px 0 16px 0;">
-      <a href="${portalUrl || 'https://resellers.aiplug.store'}" target="_blank" style="display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); color: #FFFFFF; font-size: 13px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);">
-        Fund ${providerName} Wallet Now →
+    <div style="margin: 24px 0 12px 0;">
+      <a href="${portalUrl || 'https://resellers.aiplug.store'}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #0F172A; color: #FFFFFF; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px;">
+        Fund ${providerName} Balance &rarr;
       </a>
     </div>
 
-    <p style="text-align: center; font-size: 11px; color: #94A3B8; margin: 0;">
+    <p style="font-size: 12px; color: #94A3B8; margin: 0;">
       Once funded, subsequent customer orders for this product will complete automatically.
     </p>
   `;
 
-    return {
-    subject: `🚨 [URGENT] ${providerName} Wallet Low: Customer purchase of "${productName}" failed`,
+  return {
+    subject: `Action Required: Low ${providerName} Balance - ZuvaPay`,
     html: renderBaseEmailLayout({
-      previewText: `Action required: Fund your ${providerName} wallet. Customer order failed due to low balance.`,
-      headerBadge: 'Low Provider Balance',
-      badgeColor: '#DC2626',
+      previewText: `Action required: Low balance on ${providerName}. Customer order failed and was refunded.`,
       contentHtml,
     }),
   };
@@ -715,61 +640,51 @@ export function renderEmailVerificationEmail({
     .replace(/https?:\/\/127\.0\.0\.1(:\d+)?/gi, 'https://zuvapay.com');
 
   const contentHtml = `
-    <h1 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 900; color: #0F172A; letter-spacing: -0.5px;">
-      Verify your email address, ${name} ✨
-    </h1>
-    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 22px; color: #475569;">
-      Thank you for creating your account with <strong>ZuvaPay</strong>. Please confirm that <strong>${email}</strong> belongs to you to activate automated wallet funding and wholesale telecom utilities.
-    </p>
-
-    <!-- Security Box -->
-    <div style="background-color: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 14px; padding: 20px; margin-bottom: 24px;">
-      <div style="font-size: 11px; font-weight: 800; color: #15803D; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
-        🛡️ Secure 1-Click Verification
-      </div>
-      <p style="margin: 0 0 14px 0; font-size: 13px; line-height: 20px; color: #166534;">
-        Click the button below to instantly verify your account and unlock your dedicated virtual funding account.
-      </p>
-      <div style="text-align: center; margin: 16px 0;">
-        <a href="${safeVerifyUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #FF6B00 0%, #EA580C 100%); color: #FFFFFF; font-size: 14px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);">
-          Verify My Email Address →
-        </a>
-      </div>
-      ${token ? `
-      <div style="text-align: center; margin-top: 12px; font-size: 12px; color: #15803D;">
-        Or enter this 6-digit verification code on your screen:
-        <div style="font-size: 24px; font-family: monospace; font-weight: 900; letter-spacing: 4px; color: #0F172A; margin-top: 6px;">
-          ${token}
-        </div>
-      </div>` : ''}
-    </div>
-
-    <!-- Secondary Link Copy Box -->
-    <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-bottom: 24px;">
-      <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 700; color: #64748B;">
-        Button not working? Copy and paste this link into your browser:
-      </p>
-      <p style="margin: 0; font-size: 11px; font-family: monospace; word-break: break-all; color: #3B82F6;">
-        ${safeVerifyUrl}
+    <div style="margin-bottom: 20px;">
+      <h1 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">
+        Verify your email address
+      </h1>
+      <p style="margin: 0; font-size: 14px; line-height: 22px; color: #475569;">
+        Thanks for signing up for ZuvaPay, ${name}. Please confirm that <strong>${email}</strong> is your email address to get started.
       </p>
     </div>
 
-    <div style="border-top: 1px solid #E2E8F0; padding-top: 16px; font-size: 12px; color: #64748B; line-height: 18px;">
-      <p style="margin: 0 0 6px 0;">
-        <strong>Didn't sign up for ZuvaPay?</strong> You can safely ignore this email. No account will be activated without verification.
-      </p>
-      <p style="margin: 0; font-size: 11px; color: #94A3B8;">
-        This verification link will expire in 7 minutes for your account security.
-      </p>
+    <!-- Verification Button -->
+    <div style="margin: 24px 0;">
+      <a href="${safeVerifyUrl}" target="_blank" style="display: inline-block; padding: 12px 28px; background-color: #FF6B00; color: #FFFFFF; font-size: 14px; font-weight: 700; text-decoration: none; border-radius: 8px;">
+        Verify Email Address &rarr;
+      </a>
+    </div>
+
+    ${
+      token
+        ? `
+    <div class="token-box" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 16px; text-align: center; margin: 20px 0;">
+      <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+        Verification Code
+      </div>
+      <div class="token-digits" style="font-size: 22px; font-weight: 800; font-family: monospace; letter-spacing: 4px; color: #0F172A;">
+        ${token}
+      </div>
+    </div>`
+        : ''
+    }
+
+    <!-- Fallback Link -->
+    <div style="margin-bottom: 20px; font-size: 12px; color: #64748B; line-height: 18px;">
+      <p style="margin: 0 0 4px 0;">If the button above does not work, copy and paste this link into your browser:</p>
+      <p style="margin: 0; font-family: monospace; word-break: break-all; color: #FF6B00;">${safeVerifyUrl}</p>
+    </div>
+
+    <div style="border-top: 1px solid #F1F5F9; padding-top: 16px; font-size: 12px; color: #94A3B8; line-height: 18px;">
+      This link will expire in 7 minutes. If you did not create an account, you can safely ignore this email.
     </div>
   `;
 
   return {
-    subject: `Verify your ZuvaPay account — ${name}`,
+    subject: `Verify your email address - ZuvaPay`,
     html: renderBaseEmailLayout({
-      previewText: `Confirm your email to activate your ZuvaPay account and unlock instant utilities.`,
-      headerBadge: 'Email Verification',
-      badgeColor: '#10B981',
+      previewText: `Verify your email address to activate your ZuvaPay account.`,
       contentHtml,
     }),
   };
@@ -794,76 +709,58 @@ export function renderPasswordResetEmail({
     .replace(/https?:\/\/127\.0\.0\.1(:\d+)?/gi, 'https://zuvapay.com');
 
   const contentHtml = `
-    <h1 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 900; color: #0F172A; letter-spacing: -0.5px;">
-      Reset your ZuvaPay password 🔒
-    </h1>
-    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 22px; color: #475569;">
-      We received a request to reset the password for your ZuvaPay account (<strong>${email}</strong>).
-    </p>
-
-    <!-- Reset Action Box -->
-    <div style="background-color: #FFF7ED; border: 1px solid #FFEDD5; border-radius: 14px; padding: 22px; margin-bottom: 24px;">
-      <div style="font-size: 11px; font-weight: 800; color: #C2410C; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
-        🔑 Password Recovery
-      </div>
-      <p style="margin: 0 0 16px 0; font-size: 13px; line-height: 20px; color: #9A3412;">
-        Click the button below to choose a strong, new password. For your security, this recovery link will expire in <strong>7 minutes</strong>.
-      </p>
-      <div style="text-align: center; margin: 18px 0;">
-        <a href="${safeResetUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #FF6B00 0%, #EA580C 100%); color: #FFFFFF; font-size: 14px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);">
-          Set New Password →
-        </a>
-      </div>
-    </div>
-
-    <!-- Security Advisory & Metadata -->
-    <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
-      <div style="font-size: 11px; font-weight: 800; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">
-        Security Advisory & Request Details
-      </div>
-      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-size: 12px;">
-        <tr>
-          <td style="color: #64748B; padding: 4px 0;">Target Account:</td>
-          <td align="right" style="font-weight: 700; color: #0F172A; padding: 4px 0;">${email}</td>
-        </tr>
-        <tr>
-          <td style="color: #64748B; padding: 4px 0;">Requested At:</td>
-          <td align="right" style="font-weight: 700; color: #0F172A; padding: 4px 0;">${new Date().toLocaleString('en-NG', { timeZone: 'Africa/Lagos' })} WAT</td>
-        </tr>
-        ${ipAddress ? `
-        <tr>
-          <td style="color: #64748B; padding: 4px 0;">Request IP Address:</td>
-          <td align="right" style="font-family: monospace; font-weight: 700; color: #475569; padding: 4px 0;">${ipAddress}</td>
-        </tr>` : ''}
-      </table>
-    </div>
-
-    <!-- Secondary Fallback Link -->
-    <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-bottom: 24px;">
-      <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 700; color: #64748B;">
-        Button not opening? Copy and paste this URL into your browser:
-      </p>
-      <p style="margin: 0; font-size: 11px; font-family: monospace; word-break: break-all; color: #3B82F6;">
-        ${safeResetUrl}
+    <div style="margin-bottom: 20px;">
+      <h1 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">
+        Reset your password
+      </h1>
+      <p style="margin: 0; font-size: 14px; line-height: 22px; color: #475569;">
+        We received a request to reset the password for your ZuvaPay account (<strong>${email}</strong>).
       </p>
     </div>
 
-    <div style="border-top: 1px solid #E2E8F0; padding-top: 16px; font-size: 12px; color: #64748B; line-height: 18px;">
-      <p style="margin: 0 0 6px 0; color: #DC2626; font-weight: 700;">
-        ⚠️ Didn't request a password reset?
-      </p>
-      <p style="margin: 0; font-size: 11px; color: #64748B;">
-        If you didn't initiate this request, your account may be at risk. We recommend reviewing your security settings or reaching out immediately to <strong>hello@zuvapay.com</strong>.
-      </p>
+    <!-- Reset Button -->
+    <div style="margin: 24px 0;">
+      <a href="${safeResetUrl}" target="_blank" style="display: inline-block; padding: 12px 28px; background-color: #FF6B00; color: #FFFFFF; font-size: 14px; font-weight: 700; text-decoration: none; border-radius: 8px;">
+        Reset Password &rarr;
+      </a>
+    </div>
+
+    <!-- Request Details -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 20px; font-size: 13px;">
+      <tr>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Account</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 600; color: #0F172A;">${email}</td>
+      </tr>
+      <tr>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Date</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 600; color: #0F172A;">${new Date().toLocaleString('en-NG')}</td>
+      </tr>
+      ${
+        ipAddress
+          ? `
+      <tr>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">IP Address</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-family: monospace; font-size: 12px; color: #0F172A;">${ipAddress}</td>
+      </tr>`
+          : ''
+      }
+    </table>
+
+    <!-- Fallback Link -->
+    <div style="margin-bottom: 20px; font-size: 12px; color: #64748B; line-height: 18px;">
+      <p style="margin: 0 0 4px 0;">If the button does not work, copy and paste this link into your browser:</p>
+      <p style="margin: 0; font-family: monospace; word-break: break-all; color: #FF6B00;">${safeResetUrl}</p>
+    </div>
+
+    <div style="border-top: 1px solid #F1F5F9; padding-top: 16px; font-size: 12px; color: #94A3B8; line-height: 18px;">
+      This password reset link will expire in 7 minutes. If you did not request this, please ignore this email or contact <a href="mailto:hello@zuvapay.com" style="color: #64748B; text-decoration: underline;">hello@zuvapay.com</a> if you suspect unauthorized access.
     </div>
   `;
 
   return {
-    subject: `Reset your ZuvaPay password`,
+    subject: `Reset your password - ZuvaPay`,
     html: renderBaseEmailLayout({
-      previewText: `Reset your ZuvaPay password safely. Link expires in 7 minutes.`,
-      headerBadge: 'Security Alert',
-      badgeColor: '#F59E0B',
+      previewText: `Reset your ZuvaPay password. This link will expire in 7 minutes.`,
       contentHtml,
     }),
   };
@@ -901,109 +798,93 @@ export function renderMarketplaceDeliveryEmail({
   const credentials = delivery?.credentials || null;
 
   const contentHtml = `
-    <h1 style="margin: 0 0 12px 0; font-size: 22px; font-weight: 800; color: #0F172A; letter-spacing: -0.5px;">
-      Your Order is Ready, ${name}! 🚀
-    </h1>
-    <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 22px; color: #475569;">
-      Thank you for your purchase on <strong>ZuvaPay AI Marketplace</strong>. Your digital product has been instantly fulfilled and is ready for immediate access.
-    </p>
+    <div style="margin-bottom: 20px;">
+      <h1 style="margin: 0 0 4px 0; font-size: 20px; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">
+        Your Digital Order is Ready
+      </h1>
+      <p style="margin: 0; font-size: 13px; color: #64748B;">
+        Your order for <strong>${productName}</strong> has been fulfilled.
+      </p>
+    </div>
 
-    <!-- Product Delivery Highlight Card -->
-    <div style="background-color: #FAF5FF; border: 1.5px solid #E9D5FF; border-radius: 16px; padding: 22px; margin-bottom: 24px;">
-      <div style="font-size: 11px; font-weight: 800; color: #7E22CE; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
-        ✨ Fulfilled Product Access
+    <!-- Product Access Box -->
+    <div class="token-box" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 18px; margin-bottom: 24px;">
+      <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+        ${activationLink ? 'Access / License' : 'Access Code'}
       </div>
-      <div style="font-size: 18px; font-weight: 900; color: #1E1B4B; margin-bottom: 14px;">
-        ${productName} ${quantity > 1 ? `(Qty: ${quantity})` : ''}
+      <div style="font-size: 15px; font-weight: 800; font-family: monospace; color: #0F172A; word-break: break-all; margin-bottom: 8px;">
+        ${code || activationLink || 'See instructions below'}
       </div>
-
-      ${activationLink ? `
-      <!-- Direct 1-Click Activation Link Button -->
-      <div style="text-align: center; margin: 18px 0 14px 0;">
-        <a href="${activationLink}" target="_blank" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); color: #FFFFFF; font-size: 13px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);">
-          Activate / Access Your Product Now &rarr;
+      ${
+        credentials && credentials !== code && credentials !== activationLink
+          ? `
+      <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #E2E8F0; font-size: 12px; font-family: monospace; color: #475569; white-space: pre-wrap; word-break: break-all;">
+        ${credentials}
+      </div>`
+          : ''
+      }
+      ${
+        activationLink
+          ? `
+      <div style="margin-top: 14px;">
+        <a href="${activationLink}" target="_blank" style="display: inline-block; padding: 10px 20px; background-color: #FF6B00; color: #FFFFFF; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 6px;">
+          Open Link &rarr;
         </a>
-      </div>
-      ` : ''}
-
-      <!-- Code / Activation Link Copy Box -->
-      <div style="background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-top: 12px;">
-        <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 700; color: #64748B;">
-          ${activationLink ? 'Direct Activation URL / License Key:' : 'Your Access Code / License:'}
-        </p>
-        <p style="margin: 0; font-size: 12px; font-family: monospace; word-break: break-all; color: #7C3AED; font-weight: 700;">
-          ${code || activationLink || 'See instructions below'}
-        </p>
-      </div>
-
-      ${credentials && credentials !== code && credentials !== activationLink ? `
-      <!-- Additional Credentials / Login Data -->
-      <div style="background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-top: 12px;">
-        <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 700; color: #64748B;">
-          Login Credentials / License Details:
-        </p>
-        <pre style="margin: 0; font-size: 11px; font-family: monospace; white-space: pre-wrap; word-break: break-all; color: #0F172A; line-height: 18px;">${credentials}</pre>
-      </div>
-      ` : ''}
+      </div>`
+          : ''
+      }
     </div>
 
-    ${instructions ? `
-    <!-- Redemption Instructions -->
-    <div style="background-color: #FFFBEB; border: 1px solid #FDE68A; border-radius: 14px; padding: 18px; margin-bottom: 24px;">
-      <div style="font-size: 12px; font-weight: 800; color: #B45309; text-transform: uppercase; margin-bottom: 8px;">
-        ⚡ How To Redeem / Activation Instructions:
-      </div>
-      <div style="font-size: 12px; line-height: 20px; color: #78350F; white-space: pre-wrap;">
-        ${instructions}
-      </div>
-    </div>
-    ` : ''}
+    ${
+      instructions
+        ? `
+    <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 14px; margin-bottom: 24px; font-size: 12px; line-height: 20px; color: #475569; white-space: pre-wrap;">
+      <strong style="color: #0F172A; display: block; margin-bottom: 4px;">Instructions:</strong>
+      ${instructions}
+    </div>`
+        : ''
+    }
 
     <!-- Order Summary Table -->
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 24px;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px; font-size: 13px;">
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Product</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${productName}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Product</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 700; color: #0F172A;">${productName}</td>
       </tr>
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Quantity</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${quantity} unit(s)</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Quantity</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 600; color: #0F172A;">${quantity} unit${quantity > 1 ? 's' : ''}</td>
       </tr>
-      ${amount ? `
+      ${
+        amount
+          ? `
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Amount Paid</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 13px; font-weight: 900; color: #0F172A; font-family: monospace; text-align: right;">₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Amount Paid</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 800; color: #0F172A;">₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</td>
+      </tr>`
+          : ''
+      }
+      <tr>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Order Reference</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-family: monospace; font-size: 12px; color: #64748B;">${reference}</td>
       </tr>
-      ` : ''}
       <tr>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 12px; color: #64748B;">Order Reference</td>
-        <td style="padding: 12px 18px; border-bottom: 1px solid #EDF2F7; font-size: 11px; font-weight: 700; color: #64748B; font-family: monospace; text-align: right;">${reference}</td>
-      </tr>
-      <tr>
-        <td style="padding: 12px 18px; font-size: 12px; color: #64748B;">Delivery Date</td>
-        <td style="padding: 12px 18px; font-size: 12px; font-weight: 700; color: #0F172A; text-align: right;">${date || new Date().toLocaleString('en-NG', { timeZone: 'Africa/Lagos' }) + ' WAT'}</td>
+        <td style="padding: 9px 0; color: #64748B;">Date</td>
+        <td align="right" style="padding: 9px 0; font-weight: 600; color: #0F172A;">${date || new Date().toLocaleString('en-NG')}</td>
       </tr>
     </table>
 
-    <!-- Security & Guarantee Notice -->
-    <div style="background-color: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 12px; padding: 14px; text-align: center; font-size: 11px; color: #065F46; line-height: 18px;">
-      🔒 <strong>Keep Details Confidential:</strong> Please keep your credentials and activation links private.<br />
-      🛡️ <strong>Replacement Warranty:</strong> All purchases come with active replacement warranty. Need help? Reply directly to this email or reach us anytime at <strong>hello@zuvapay.com</strong>.
-    </div>
-
-    <div style="text-align: center; margin-top: 24px;">
-      <a href="${getEmailAppUrl()}/dashboard" style="display: inline-block; padding: 12px 24px; background-color: #0F172A; color: #FFFFFF; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 10px;">
-        View in ZuvaPay Dashboard &rarr;
+    <div style="margin-top: 20px;">
+      <a href="${getEmailAppUrl()}/dashboard" style="display: inline-block; padding: 11px 24px; background-color: #0F172A; color: #FFFFFF; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 8px;">
+        View in Dashboard &rarr;
       </a>
     </div>
   `;
 
   return {
-    subject: `🚀 Your Digital Order: ${productName} (${reference})`,
+    subject: `Your digital order: ${productName} - ZuvaPay`,
     html: renderBaseEmailLayout({
-      previewText: `Your ${productName} access details are ready. Activation code / link enclosed. Ref: ${reference}.`,
-      headerBadge: 'Digital Delivery',
-      badgeColor: '#7C3AED',
+      previewText: `Your digital order for ${productName} is ready. Order Ref: ${reference}.`,
       contentHtml,
     }),
   };

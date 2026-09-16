@@ -85,7 +85,7 @@ export async function sendTransactionalEmail(
         name: data.name || 'Valued Customer',
         amount: Number(data.amount) || 0,
         newBalance: Number(data.newBalance) || 0,
-        reference: data.reference || `KP-DEP-${Date.now()}`,
+        reference: data.reference || `ZP-DEP-${Date.now()}`,
         payerName: data.payerName,
         bankName: data.bankName,
         date: data.date,
@@ -98,7 +98,7 @@ export async function sendTransactionalEmail(
         serviceName: data.serviceName || 'Utility Service',
         category: data.category || 'General',
         amount: Number(data.amount) || 0,
-        reference: data.reference || `KP-TX-${Date.now()}`,
+        reference: data.reference || `ZP-TX-${Date.now()}`,
         date: data.date,
         details: data.details,
       });
@@ -109,7 +109,7 @@ export async function sendTransactionalEmail(
         name: data.name || 'Valued Customer',
         serviceName: data.serviceName || 'Utility Service',
         amount: Number(data.amount) || 0,
-        reference: data.reference || `KP-REF-${Date.now()}`,
+        reference: data.reference || `ZP-REF-${Date.now()}`,
         reason: data.reason,
         newBalance: data.newBalance !== undefined ? Number(data.newBalance) : undefined,
       });
@@ -136,7 +136,7 @@ export async function sendTransactionalEmail(
         token: data.token || '0000-0000-0000-0000-0000',
         units: data.units,
         amount: Number(data.amount) || 0,
-        reference: data.reference || `KP-PWR-${Date.now()}`,
+        reference: data.reference || `ZP-PWR-${Date.now()}`,
         operatorReference: data.operatorReference,
         date: data.date,
       });
@@ -170,7 +170,7 @@ export async function sendTransactionalEmail(
         productName: data.productName || 'Digital Good / Software License',
         quantity: Number(data.quantity) || 1,
         amount: data.amount ? Number(data.amount) : undefined,
-        reference: data.reference || `KP-MAR-${Date.now()}`,
+        reference: data.reference || `ZP-MAR-${Date.now()}`,
         date: data.date,
         delivery: data.delivery || {},
       });
