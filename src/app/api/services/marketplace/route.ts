@@ -307,6 +307,69 @@ export async function POST(request: NextRequest) {
         rawErrorText.includes('insufficient') ||
         rawErrorText.includes('out of stock');
 
+      // 1. Immediately persist failure and provider diagnostic in Postgres transaction ledger
+      try {
+        const adminSupabase = createAdminClient();
+        const { data: existingTx } = await adminSupabase
+          .from('transactions')
+          .select('id, wallet_id, amount, metadata')
+          .eq('reference', orderIdempotencyKey)
+          .maybeSingle();
+
+        const baseUpdatedMeta = {
+          ...(existingTx?.metadata || {}),
+          provider: 'aiplug',
+          fulfillment_status: 'failed',
+          provider_error: data?.error || data?.message || 'Vendor rejected order fulfillment',
+          provider_code: data?.code,
+          provider_status: status,
+          failed_at: new Date().toISOString(),
+        };
+
+        await adminSupabase
+          .from('transactions')
+          .update({
+            status: 'failed',
+            metadata: baseUpdatedMeta,
+          })
+          .eq('reference', orderIdempotencyKey);
+
+        // 2. Server-side atomic auto-refund: restore customer funds immediately without relying on client browser
+        if (existingTx) {
+          const refundReference = `KP-REF-${orderIdempotencyKey}`;
+          const refundDesc = `Refund: Marketplace (${productName || 'Product'}) (Stock replenishment) [Ref: ${orderIdempotencyKey}]`;
+          const { data: rpcData, error: rpcErr } = await adminSupabase.rpc('refund_wallet_for_bill', {
+            p_wallet_id: existingTx.wallet_id,
+            p_amount: Number(existingTx.amount),
+            p_category: 'refund',
+            p_description: refundDesc,
+            p_reference: refundReference,
+            p_metadata: {
+              original_reference: orderIdempotencyKey,
+              refund_reason: 'Provider stock replenishment / upstream failure',
+              auto_refund: true,
+            },
+          });
+
+          if (!rpcErr && rpcData?.success) {
+            await adminSupabase
+              .from('transactions')
+              .update({
+                status: 'refunded',
+                metadata: {
+                  ...baseUpdatedMeta,
+                  refunded: true,
+                  refund_reference: refundReference,
+                  refunded_at: new Date().toISOString(),
+                },
+              })
+              .eq('reference', orderIdempotencyKey);
+          }
+        }
+      } catch (dbErr: any) {
+        console.error('[MARKETPLACE_PERSIST_FAILURE_ERROR]', dbErr.message);
+      }
+
       // User-facing error message (never expose internal vendor balance or confuse user)
       const userFacingError = isBalanceOrStockError
         ? 'This item is temporarily undergoing stock replenishment. Your payment was automatically refunded.'
@@ -335,6 +398,7 @@ export async function POST(request: NextRequest) {
           success: false,
           error: userFacingError,
           adminCode: data?.code || 'PROVIDER_ERROR',
+          refunded: true,
         },
         { status: 502 }
       );

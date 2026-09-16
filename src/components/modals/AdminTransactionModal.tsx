@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatNaira, formatDate } from '@/lib/utils';
 import {
   X,
@@ -19,6 +19,13 @@ import {
   AlertOctagon,
   Info,
   RotateCcw,
+  Zap,
+  Key,
+  CheckCircle2,
+  AlertTriangle,
+  RefreshCw,
+  Send,
+  Lock,
 } from 'lucide-react';
 
 interface AdminTransactionModalProps {
@@ -27,6 +34,7 @@ interface AdminTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectUser?: (userId: string) => void;
+  onUpdate?: (updatedTx: any) => void;
 }
 
 export function AdminTransactionModal({
@@ -35,62 +43,101 @@ export function AdminTransactionModal({
   isOpen,
   onClose,
   onSelectUser,
+  onUpdate,
 }: AdminTransactionModalProps) {
+  const [currentTx, setCurrentTx] = useState<any>(tx);
   const [copiedRef, setCopiedRef] = useState(false);
   const [copiedProviderRef, setCopiedProviderRef] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedJson, setCopiedJson] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedCreds, setCopiedCreds] = useState(false);
   // Unfiltered diagnostic JSON expanded by default for admin source of truth
-  const [showJson, setShowJson] = useState(true);
+  const [showJson, setShowJson] = useState(false);
 
-  if (!isOpen || !tx) return null;
+  // Administrative action states
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
-  const amount = parseFloat(tx.amount || 0);
-  const isCredit = tx.type === 'credit';
-  const meta = tx.metadata || {};
+  // Manual fulfillment drawer state
+  const [showManualForm, setShowManualForm] = useState(false);
+  const [manualLink, setManualLink] = useState('');
+  const [manualCode, setManualCode] = useState('');
+  const [manualCreds, setManualCreds] = useState('');
+  const [manualInstructions, setManualInstructions] = useState('');
 
-  // Resolve Customer Details across user, tx, and metadata
+  useEffect(() => {
+    setCurrentTx(tx);
+    setActionError(null);
+    setActionSuccess(null);
+    setShowManualForm(false);
+    setManualLink('');
+    setManualCode('');
+    setManualCreds('');
+    setManualInstructions('');
+  }, [tx]);
+
+  if (!isOpen || !currentTx) return null;
+
+  const activeTx = currentTx;
+  const amount = parseFloat(activeTx.amount || 0);
+  const isCredit = activeTx.type === 'credit';
+  const meta = activeTx.metadata || {};
+
+  // Resolve Customer Details across user, activeTx, and metadata
   const customerEmail =
     user?.email ||
-    tx.user_email ||
+    activeTx.user_email ||
     meta.user_email ||
     meta.email ||
     meta.customer_email ||
+    meta.customerEmail ||
     (user as any)?.email_address ||
-    (tx.wallet_id === '26e7d4d2-eaa0-4e71-9708-a61e19752240' ? 'awogorm@gmail.com' : '') ||
+    (activeTx.wallet_id === '26e7d4d2-eaa0-4e71-9708-a61e19752240' ? 'awogorm@gmail.com' : '') ||
     'Not Available';
 
   const customerName =
     (user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : '') ||
-    tx.user_name ||
+    activeTx.user_name ||
     meta.customer_name ||
     meta.user_name ||
-    (tx.wallet_id === '26e7d4d2-eaa0-4e71-9708-a61e19752240' ? 'Awogor Matthew' : '') ||
+    (activeTx.wallet_id === '26e7d4d2-eaa0-4e71-9708-a61e19752240' ? 'Awogor Matthew' : '') ||
     'Customer Account';
 
   const customerPhone =
     user?.phone_number ||
-    tx.user_phone ||
+    activeTx.user_phone ||
     meta.phone ||
     meta.phone_number ||
-    (tx.wallet_id === '26e7d4d2-eaa0-4e71-9708-a61e19752240' ? '07012665024' : null);
+    (activeTx.wallet_id === '26e7d4d2-eaa0-4e71-9708-a61e19752240' ? '07012665024' : null);
 
   const isRefund =
-    tx.category === 'refund' ||
-    tx.reference?.startsWith('KP-REF') ||
-    (tx.description || '').toLowerCase().startsWith('refund') ||
+    activeTx.category === 'refund' ||
+    activeTx.reference?.startsWith('KP-REF') ||
+    (activeTx.description || '').toLowerCase().startsWith('refund') ||
     meta.is_refund === true;
 
-  const descLower = (tx.description || '').toLowerCase();
+  const isRefunded =
+    activeTx.status === 'refunded' ||
+    meta.refunded === true ||
+    Boolean(meta.refund_reference);
+
+  const isFulfilled =
+    meta.fulfillment_status === 'fulfilled' ||
+    Boolean(meta.delivery) ||
+    Boolean(meta.token && activeTx.category === 'power');
+
+  const descLower = (activeTx.description || '').toLowerCase();
 
   // Extract original order reference if present (e.g., [Ref: KP-SMS-MTVXDHYD-HTZVV])
-  const originalRefMatch = tx.description?.match(/\[Ref:\s*([^\]]+)\]/);
+  const originalRefMatch = activeTx.description?.match(/\[Ref:\s*([^\]]+)\]/);
   const originalOrderRef = originalRefMatch
     ? originalRefMatch[1]
     : meta.original_reference || meta.order_id || null;
 
   // 1. DYNAMIC PROVIDER RESOLUTION:
-  // Dynamically inspect explicit metadata, operator reference, plan ID, or category routing
   const rawProvider = String(
     meta.provider ||
     meta.vendor ||
@@ -107,17 +154,28 @@ export function AdminTransactionModal({
     meta.provider_reference ||
     meta.order_id ||
     meta.orderId ||
+    meta.supplierOrderId ||
     ''
   ).toUpperCase();
 
   const planId = String(meta.planId || meta.plan_id || '').toLowerCase();
   const planType = String(meta.planType || meta.type || '').toLowerCase();
 
-  let resolvedProviderId: 'strowallet' | 'gongoz' | 'smspool' | 'grizzly' | 'momo' | 'fadded' | 'korapay' | 'internal' = 'internal';
+  let resolvedProviderId: 'strowallet' | 'gongoz' | 'smspool' | 'grizzly' | 'momo' | 'fadded' | 'korapay' | 'aiplug' | 'internal' = 'internal';
   let providerName = '';
 
   // Priority 1: Check upstream response operator reference prefix & explicit vendor metadata
-  if (opRef.startsWith('STRO-') || rawProvider.includes('strowallet') || planId.startsWith('stro-')) {
+  if (
+    rawProvider.includes('aiplug') ||
+    activeTx.category === 'marketplace' ||
+    activeTx.category === 'digital_service' ||
+    opRef.startsWith('AIP-') ||
+    opRef.startsWith('PRV-MAR') ||
+    activeTx.reference?.startsWith('KP-MAR')
+  ) {
+    resolvedProviderId = 'aiplug';
+    providerName = 'AI Plug Reseller API';
+  } else if (opRef.startsWith('STRO-') || rawProvider.includes('strowallet') || planId.startsWith('stro-')) {
     resolvedProviderId = 'strowallet';
     providerName = 'StroWallet API Gateway';
   } else if (opRef.startsWith('GONGOZ-') || rawProvider.includes('gongoz') || planId.startsWith('gongoz-')) {
@@ -126,27 +184,25 @@ export function AdminTransactionModal({
   } else if (opRef.startsWith('GRIZZLY-') || rawProvider.includes('grizzly') || meta.server === 'server2') {
     resolvedProviderId = 'grizzly';
     providerName = 'GrizzlySMS (Server 2)';
-  } else if (opRef.startsWith('SMSP-') || rawProvider.includes('smspool') || (tx.category === 'sms' && meta.server !== 'server2')) {
+  } else if (opRef.startsWith('SMSP-') || rawProvider.includes('smspool') || (activeTx.category === 'sms' && meta.server !== 'server2')) {
     resolvedProviderId = 'smspool';
     providerName = 'SMSPool (Server 1)';
-  } else if (opRef.startsWith('MOMO-') || rawProvider.includes('momo') || tx.category === 'social') {
+  } else if (opRef.startsWith('MOMO-') || rawProvider.includes('momo') || activeTx.category === 'social') {
     resolvedProviderId = 'momo';
     providerName = 'MomoPanel Enterprise API';
-  } else if (opRef.startsWith('FAD-') || rawProvider.includes('fadded') || tx.category === 'logs') {
+  } else if (opRef.startsWith('FAD-') || rawProvider.includes('fadded') || activeTx.category === 'logs') {
     resolvedProviderId = 'fadded';
     providerName = 'Fadded Inventory Provider';
-  } else if (rawProvider.includes('korapay') || tx.category === 'deposit' || opRef.startsWith('KP-VBA') || opRef.startsWith('KORA-')) {
+  } else if (rawProvider.includes('korapay') || activeTx.category === 'deposit' || opRef.startsWith('KP-VBA') || opRef.startsWith('KORA-')) {
     resolvedProviderId = 'korapay';
     providerName = 'Korapay Dedicated Virtual Account';
-  } else if (tx.category === 'power' || tx.category === 'cable' || tx.category === 'tv' || tx.category === 'virtual_card' || tx.category === 'card') {
+  } else if (activeTx.category === 'power' || activeTx.category === 'cable' || activeTx.category === 'tv' || activeTx.category === 'virtual_card' || activeTx.category === 'card') {
     resolvedProviderId = 'strowallet';
     providerName = 'StroWallet API Gateway';
-  } else if (tx.category === 'airtime') {
-    // Airtime in ZuvaPay routes via StroWallet
+  } else if (activeTx.category === 'airtime') {
     resolvedProviderId = 'strowallet';
     providerName = 'StroWallet API Gateway';
-  } else if (tx.category === 'data') {
-    // For Data: dynamically differentiate StroWallet Direct vs Gongoz SME
+  } else if (activeTx.category === 'data') {
     if (planType === 'direct' || planId.startsWith('stro-') || descLower.includes('direct')) {
       resolvedProviderId = 'strowallet';
       providerName = 'StroWallet API Gateway';
@@ -177,7 +233,6 @@ export function AdminTransactionModal({
     grossProfit = 0;
     profitMarginPercent = 0;
   } else {
-    // Priority 1: Exact wholesale cost recorded dynamically from the provider API response
     if (meta.wholesale_cost !== undefined) {
       providerCostNgn = parseFloat(meta.wholesale_cost);
     } else if (meta.provider_cost !== undefined) {
@@ -185,27 +240,28 @@ export function AdminTransactionModal({
     } else if (meta.cost !== undefined) {
       providerCostNgn = parseFloat(meta.cost);
     } else {
-      // Priority 2: Compute dynamically based on the detected provider and service type
-      if (resolvedProviderId === 'strowallet') {
-        if (tx.category === 'power') {
-          // StroWallet DisCo operator commission: 0.5%
+      if (resolvedProviderId === 'aiplug') {
+        if (meta.productId === 'ext:67' || descLower.includes('gemini')) {
+          providerCostNgn = 3500;
+        } else {
+          providerCostNgn = Number((amount * 0.65).toFixed(2));
+        }
+      } else if (resolvedProviderId === 'strowallet') {
+        if (activeTx.category === 'power') {
           providerCostNgn = Number((amount * 0.995).toFixed(2));
-        } else if (tx.category === 'cable' || tx.category === 'tv') {
-          // StroWallet Cable bouquet commission: 1.0%
+        } else if (activeTx.category === 'cable' || activeTx.category === 'tv') {
           providerCostNgn = Number((amount * 0.990).toFixed(2));
-        } else if (tx.category === 'airtime') {
-          // StroWallet Airtime wholesale discount: 2.0%
+        } else if (activeTx.category === 'airtime') {
           providerCostNgn = Number((amount * 0.98).toFixed(2));
-        } else if (tx.category === 'data') {
-          // StroWallet Direct Data wholesale: ~5% margin
+        } else if (activeTx.category === 'data') {
           providerCostNgn = Number((amount * 0.95).toFixed(2));
         } else {
           providerCostNgn = Number((amount * 0.95).toFixed(2));
         }
       } else if (resolvedProviderId === 'gongoz') {
-        if (tx.category === 'airtime') {
+        if (activeTx.category === 'airtime') {
           providerCostNgn = Number((amount * 0.98).toFixed(2));
-        } else if (tx.category === 'data') {
+        } else if (activeTx.category === 'data') {
           providerCostNgn = Number((amount * 0.90).toFixed(2));
         } else {
           providerCostNgn = Number((amount * 0.90).toFixed(2));
@@ -226,25 +282,28 @@ export function AdminTransactionModal({
 
   // 3. Provider Order Reference (Dynamic)
   const providerRef = isRefund
-    ? (originalOrderRef || tx.reference)
-    : (meta.operatorReference ||
+    ? (originalOrderRef || activeTx.reference)
+    : (meta.supplierOrderId ||
+       meta.operatorReference ||
        meta.operator_reference ||
        meta.provider_ref ||
        meta.provider_reference ||
        meta.order_id ||
        meta.orderId ||
        meta.external_reference ||
-       (resolvedProviderId === 'strowallet'
-         ? (tx.category === 'power'
-             ? `STRO-PWR-${tx.reference.replace(/^(KP-POW-|KP-)/, '')}`
-             : tx.category === 'cable' || tx.category === 'tv'
-             ? `STRO-CBL-${tx.reference.replace(/^(KP-CBL-|KP-TV-|KP-)/, '')}`
-             : `STRO-AIR-${tx.reference.replace(/^(KP-AIR-|KP-)/, '')}`)
+       (resolvedProviderId === 'aiplug'
+         ? (isFulfilled ? `AIP-ORD-${activeTx.reference.replace(/^(KP-MAR-|KP-)/, '')}` : 'AIPLUG-PENDING-REISSUE')
+         : resolvedProviderId === 'strowallet'
+         ? (activeTx.category === 'power'
+             ? `STRO-PWR-${activeTx.reference.replace(/^(KP-POW-|KP-)/, '')}`
+             : activeTx.category === 'cable' || activeTx.category === 'tv'
+             ? `STRO-CBL-${activeTx.reference.replace(/^(KP-CBL-|KP-TV-|KP-)/, '')}`
+             : `STRO-AIR-${activeTx.reference.replace(/^(KP-AIR-|KP-)/, '')}`)
          : resolvedProviderId === 'gongoz'
-         ? `GONGOZ-DAT-${tx.reference.replace(/^(KP-DAT-|KP-)/, '')}`
-         : `PRV-${tx.reference.replace(/^(KP-REF-|KP-)/, '')}`));
+         ? `GONGOZ-DAT-${activeTx.reference.replace(/^(KP-DAT-|KP-)/, '')}`
+         : `PRV-${activeTx.reference.replace(/^(KP-REF-|KP-)/, '')}`));
 
-  // 4. Resolve Failure Reason & True Diagnostic Telemetry (Source of Truth)
+  // 4. Resolve Failure Reason & True Diagnostic Telemetry
   let failureReason: string | null =
     meta.error ||
     meta.reason ||
@@ -253,11 +312,11 @@ export function AdminTransactionModal({
     meta.provider_error ||
     meta.provider_response ||
     meta.status_message ||
+    meta.last_reissue_error ||
     null;
 
-  if (!failureReason && tx.description) {
-    // Extract parenthesized diagnostic explanations from raw description
-    const matches = Array.from(tx.description.matchAll(/\(([^)]+)\)/g)).map((m: any) => m[1].trim());
+  if (!failureReason && activeTx.description) {
+    const matches = Array.from(activeTx.description.matchAll(/\(([^)]+)\)/g)).map((m: any) => m[1].trim());
     if (matches && matches.length > 0) {
       const reasonMatch = matches.find((inner: string) =>
         /insufficient|stock|whitelist|fail|error|cancelled|canceled|timeout|unavailable|declined|rejected|limit|virtual/i.test(
@@ -266,13 +325,17 @@ export function AdminTransactionModal({
       );
       if (reasonMatch) {
         failureReason = reasonMatch;
-      } else if (tx.description.toLowerCase().includes('refund') || tx.status === 'failed') {
+      } else if (activeTx.description.toLowerCase().includes('refund') || activeTx.status === 'failed') {
         failureReason = matches[matches.length - 1];
       }
     }
   }
 
-  // Detect issue category, root cause, and remediation guidance
+  // If order was debited but never fulfilled and not yet refunded, provide diagnostic context
+  if (!failureReason && activeTx.type === 'debit' && !isFulfilled && !isRefund && !isRefunded) {
+    failureReason = 'Order debited customer balance, but provider order fulfillment was not finalized or timed out.';
+  }
+
   let issueCategory = 'PROVIDER FEEDBACK';
   let issueAction = '';
   let resolutionUrl = '';
@@ -284,39 +347,146 @@ export function AdminTransactionModal({
       resolutionUrl = urlMatch[0];
     }
 
-    if (lower.includes('insufficient balance')) {
-      issueCategory = 'UPSTREAM BALANCE EXHAUSTION (402)';
+    if (lower.includes('insufficient') || lower.includes('balance') || lower.includes('low')) {
+      issueCategory = 'UPSTREAM VENDOR BALANCE EXHAUSTION (402)';
       issueAction =
-        'The upstream provider account has zero or insufficient balance. Top up your wholesale vendor balance on their portal.';
+        'The upstream provider account has zero or insufficient balance. Top up your wholesale vendor balance, then click "Reissue via AI Plug" below.';
     } else if (lower.includes('whitelist')) {
       issueCategory = 'VENDOR ACCESS WHITELIST REQUIRED (403)';
       issueAction =
         'This virtual service is restricted to whitelisted accounts. Complete provider service authorization.';
-    } else if (lower.includes('out of stock') || lower.includes('virtual lines')) {
+    } else if (lower.includes('out of stock') || lower.includes('stock')) {
       issueCategory = 'PROVIDER INVENTORY EXHAUSTION (503)';
       issueAction =
-        'All virtual numbers on this provider server are temporarily exhausted. Re-route order to Server 2 or alternate vendor.';
+        'Provider stock temporarily exhausted. Retry once replenished, manually fulfill, or refund customer wallet.';
     } else if (lower.includes('cancelled') || lower.includes('canceled')) {
       issueCategory = 'ORDER ABORTED / EXPIRED';
-      issueAction = 'Transaction was cancelled by customer before OTP/verification delivery.';
+      issueAction = 'Transaction was cancelled before delivery.';
     } else if (lower.includes('timeout')) {
       issueCategory = 'UPSTREAM CARRIER TIMEOUT';
-      issueAction = 'The telco carrier or vendor API did not respond within the SLA window.';
+      issueAction = 'The provider API did not respond within SLA window.';
     } else {
-      issueCategory = 'VENDOR EXCEPTION / REJECTION';
-      issueAction = 'Upstream vendor rejected the payload with raw diagnostic feedback.';
+      issueCategory = 'VENDOR EXCEPTION / UNFULFILLED';
+      issueAction = 'Take action below: click Reissue to retry with provider, manually enter credentials, or cancel and refund.';
     }
   }
 
-  // Build complete, unfiltered diagnostic record for admin source of truth
+  // Administrative action handlers
+  const handleReissueAuto = async () => {
+    setActionLoading('reissue_auto');
+    setActionError(null);
+    setActionSuccess(null);
+    try {
+      const res = await fetch('/api/admin/transactions/reissue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transactionId: activeTx.id,
+          mode: 'auto',
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to reissue order with provider');
+      }
+      setActionSuccess(data.message || 'Product successfully reissued and delivered to customer!');
+      if (data.transaction) {
+        setCurrentTx(data.transaction);
+        if (onUpdate) onUpdate(data.transaction);
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'An error occurred during reissue');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleManualFulfill = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setActionLoading('manual_fulfill');
+    setActionError(null);
+    setActionSuccess(null);
+    try {
+      const res = await fetch('/api/admin/transactions/reissue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transactionId: activeTx.id,
+          mode: 'manual',
+          manualDelivery: {
+            activationLink: manualLink,
+            code: manualCode,
+            credentials: manualCreds,
+            instructions: manualInstructions,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to submit manual fulfillment');
+      }
+      setActionSuccess(data.message || 'Product manually fulfilled and delivered to customer!');
+      setShowManualForm(false);
+      if (data.transaction) {
+        setCurrentTx(data.transaction);
+        if (onUpdate) onUpdate(data.transaction);
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'An error occurred during manual fulfillment');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleCancelAndRefund = async () => {
+    const confirmMsg = `Are you sure you want to cancel this order and refund ${formatNaira(amount)} to ${customerName}'s wallet?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setActionLoading('cancel_refund');
+    setActionError(null);
+    setActionSuccess(null);
+    try {
+      const res = await fetch('/api/admin/transactions/refund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transactionId: activeTx.id,
+          reason: 'Admin cancelled order due to vendor fulfillment failure / customer request',
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to cancel and refund transaction');
+      }
+      setActionSuccess(data.message || `Order cancelled and ${formatNaira(amount)} refunded to customer's wallet!`);
+      if (data.transaction) {
+        setCurrentTx(data.transaction);
+        if (onUpdate) onUpdate(data.transaction);
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'An error occurred while refunding customer');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const copyToClipboard = (text: string, setFn: (val: boolean) => void) => {
+    navigator.clipboard.writeText(text);
+    setFn(true);
+    setTimeout(() => setFn(false), 2000);
+  };
+
+  const canTakeAction = activeTx.type === 'debit' && !isCredit && !isRefund;
+
+  // Build complete diagnostic record for admin source of truth
   const fullDiagnosticTelemetry = {
-    id: tx.id,
-    reference: tx.reference,
+    id: activeTx.id,
+    reference: activeTx.reference,
     provider_order_ref: providerRef,
     fulfillment_provider: providerName,
-    status: tx.status,
-    type: tx.type,
-    category: tx.category,
+    status: activeTx.status,
+    type: activeTx.type,
+    category: activeTx.category,
     amount_ngn: amount,
     provider_cost_ngn: providerCostNgn,
     gross_margin_ngn: grossProfit,
@@ -325,8 +495,14 @@ export function AdminTransactionModal({
       name: customerName,
       email: customerEmail,
       phone: customerPhone,
-      wallet_id: tx.wallet_id,
-      user_id: tx.user_id || user?.id,
+      wallet_id: activeTx.wallet_id,
+      user_id: activeTx.user_id || user?.id,
+    },
+    fulfillment: {
+      is_fulfilled: isFulfilled,
+      is_refunded: isRefunded,
+      delivery: meta.delivery || null,
+      supplier_order_id: meta.supplierOrderId || null,
     },
     diagnostic_source_of_truth: {
       has_error: !!failureReason,
@@ -336,23 +512,17 @@ export function AdminTransactionModal({
       resolution_url: resolutionUrl || null,
     },
     raw_database_record: {
-      id: tx.id,
-      wallet_id: tx.wallet_id,
-      amount: tx.amount,
-      type: tx.type,
-      category: tx.category,
-      description: tx.description,
-      reference: tx.reference,
-      status: tx.status,
-      created_at: tx.created_at,
-      metadata: tx.metadata || null,
+      id: activeTx.id,
+      wallet_id: activeTx.wallet_id,
+      amount: activeTx.amount,
+      type: activeTx.type,
+      category: activeTx.category,
+      description: activeTx.description,
+      reference: activeTx.reference,
+      status: activeTx.status,
+      created_at: activeTx.created_at,
+      metadata: activeTx.metadata || null,
     },
-  };
-
-  const copyToClipboard = (text: string, setFn: (val: boolean) => void) => {
-    navigator.clipboard.writeText(text);
-    setFn(true);
-    setTimeout(() => setFn(false), 2000);
   };
 
   return (
@@ -362,11 +532,17 @@ export function AdminTransactionModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-2xl max-h-[88dvh] flex flex-col rounded-3xl border border-slate-200 dark:border-white/15 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-2xl max-h-[90dvh] flex flex-col rounded-3xl border border-slate-200 dark:border-white/15 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Decorative top bar */}
         <div
           className={`h-2 w-full flex-shrink-0 ${
-            isRefund ? 'bg-purple-500' : isCredit ? 'bg-emerald-500' : 'bg-brand-orange'
+            isRefunded
+              ? 'bg-purple-500'
+              : isCredit
+              ? 'bg-emerald-500'
+              : !isFulfilled
+              ? 'bg-amber-500'
+              : 'bg-brand-orange'
           }`}
         />
 
@@ -375,14 +551,16 @@ export function AdminTransactionModal({
           <div className="flex items-center gap-3">
             <div
               className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
-                isRefund
+                isRefunded
                   ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400'
                   : isCredit
                   ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                  : !isFulfilled
+                  ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
                   : 'bg-brand-orange/15 text-brand-orange'
               }`}
             >
-              {isRefund ? (
+              {isRefunded ? (
                 <RotateCcw className="w-5 h-5" />
               ) : isCredit ? (
                 <ArrowDownLeft className="w-5 h-5" />
@@ -395,30 +573,32 @@ export function AdminTransactionModal({
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
                   Audit Telemetry
                 </h3>
-                {isRefund ? (
+                {isRefunded ? (
                   <span className="px-2 py-0.5 rounded text-[9.5px] font-bold uppercase tracking-wider bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 flex items-center gap-1">
                     <RotateCcw className="w-2.5 h-2.5" />
-                    Refund / Reversal
+                    Refunded / Cancelled
                   </span>
                 ) : (
                   <span className="px-2 py-0.5 rounded text-[9.5px] font-bold uppercase tracking-wider bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300">
-                    {tx.category}
+                    {activeTx.category}
                   </span>
                 )}
                 <span
                   className={`px-2 py-0.5 rounded text-[9.5px] font-bold uppercase tracking-wider ${
-                    tx.status === 'completed'
+                    isRefunded
+                      ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/20'
+                      : activeTx.status === 'completed'
                       ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                      : tx.status === 'pending'
+                      : activeTx.status === 'pending'
                       ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20'
                       : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20'
                   }`}
                 >
-                  {tx.status}
+                  {isRefunded ? 'REFUNDED' : activeTx.status?.toUpperCase()}
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-                TX-ID: {tx.id}
+                TX-ID: {activeTx.id}
               </p>
             </div>
           </div>
@@ -432,7 +612,270 @@ export function AdminTransactionModal({
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700">
-          {/* CRITICAL: Provider Diagnostics & Failure Analysis (Source of Truth) */}
+          {/* Action Success / Error Banners */}
+          {actionSuccess && (
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/30 p-3.5 flex items-center gap-3 text-xs font-semibold text-emerald-800 dark:text-emerald-200">
+              <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+              <span>{actionSuccess}</span>
+            </div>
+          )}
+          {actionError && (
+            <div className="rounded-2xl border border-rose-500/30 bg-rose-50 dark:bg-rose-950/30 p-3.5 flex items-center gap-3 text-xs font-semibold text-rose-800 dark:text-rose-200">
+              <AlertTriangle className="w-5 h-5 text-rose-500 flex-shrink-0" />
+              <span>{actionError}</span>
+            </div>
+          )}
+
+          {/* CRITICAL: Administrative Resolution & Fulfillment Control Center */}
+          {canTakeAction && (
+            <div className="rounded-2xl border-2 border-brand-orange/30 bg-gradient-to-br from-orange-50/50 via-white to-amber-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 p-4 space-y-3.5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-brand-orange animate-pulse" />
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-brand-orange" />
+                    Admin Resolution & Operations Control
+                  </h4>
+                </div>
+                {isRefunded ? (
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800">
+                    Refund Processed
+                  </span>
+                ) : isFulfilled ? (
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1">
+                    <Check className="w-3 h-3" />
+                    Product Fulfilled
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 animate-pulse">
+                    Action Required (Unfulfilled)
+                  </span>
+                )}
+              </div>
+
+              {/* Fulfilled Product Delivery Card */}
+              {isFulfilled && meta.delivery && (
+                <div className="rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 p-3 space-y-2 text-xs">
+                  <p className="text-[10.5px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+                    Delivered Product Credentials
+                  </p>
+                  {meta.delivery.activationLink && (
+                    <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-white dark:bg-slate-950 border border-emerald-200 dark:border-emerald-900">
+                      <span className="font-mono text-[11px] text-emerald-700 dark:text-emerald-300 truncate select-all">
+                        {meta.delivery.activationLink}
+                      </span>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <a
+                          href={meta.delivery.activationLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
+                          title="Open Link"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                        <button
+                          onClick={() => copyToClipboard(meta.delivery.activationLink, setCopiedLink)}
+                          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
+                          title="Copy Link"
+                        >
+                          {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {meta.delivery.code && (
+                    <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-white dark:bg-slate-950 border border-emerald-200 dark:border-emerald-900">
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-semibold block">Activation Code</span>
+                        <span className="font-mono font-bold text-xs text-slate-900 dark:text-white select-all">
+                          {meta.delivery.code}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard(meta.delivery.code, setCopiedCode)}
+                        className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
+                        title="Copy Code"
+                      >
+                        {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  )}
+                  {meta.delivery.credentials && (
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-slate-950 border border-emerald-200 dark:border-emerald-900 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-slate-400 uppercase font-semibold">Account / License Details</span>
+                        <button
+                          onClick={() => copyToClipboard(meta.delivery.credentials, setCopiedCreds)}
+                          className="text-[10px] font-mono text-emerald-600 hover:underline flex items-center gap-1"
+                        >
+                          {copiedCreds ? 'Copied' : 'Copy'}
+                        </button>
+                      </div>
+                      <pre className="font-mono text-[10.5px] text-slate-800 dark:text-slate-200 whitespace-pre-wrap select-all leading-relaxed">
+                        {meta.delivery.credentials}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Action Buttons Toolbar */}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                {/* 1. Reissue with AI Plug / Provider */}
+                {!isRefunded && (
+                  <button
+                    onClick={handleReissueAuto}
+                    disabled={!!actionLoading}
+                    className="flex-1 min-w-[170px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-xs transition-all shadow-md shadow-orange-500/20 disabled:opacity-50 active:scale-[0.99]"
+                  >
+                    {actionLoading === 'reissue_auto' ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin stroke-[2.5]" />
+                        <span>Fulfilling via API...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-3.5 h-3.5 stroke-[2.5]" />
+                        <span>{isFulfilled ? 'Re-Fulfill with AI Plug' : '⚡ Reissue via AI Plug'}</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* 2. Manual Fulfillment */}
+                {!isRefunded && (
+                  <button
+                    onClick={() => setShowManualForm(!showManualForm)}
+                    disabled={!!actionLoading}
+                    className="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-white/15 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-xs transition-all flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    <Key className="w-3.5 h-3.5 text-brand-orange" />
+                    <span>{showManualForm ? 'Close Manual' : '🔑 Manual Fulfill'}</span>
+                  </button>
+                )}
+
+                {/* 3. Cancel & Refund Customer */}
+                {!isRefunded && (
+                  <button
+                    onClick={handleCancelAndRefund}
+                    disabled={!!actionLoading}
+                    className="px-4 py-2.5 rounded-xl border border-rose-300 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-300 font-bold text-xs transition-all flex items-center gap-1.5 disabled:opacity-50 active:scale-[0.99]"
+                  >
+                    {actionLoading === 'cancel_refund' ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Refunding...</span>
+                      </>
+                    ) : (
+                      <>
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Cancel & Refund {formatNaira(amount)}</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+
+              {/* Manual Fulfillment Form Drawer */}
+              {showManualForm && (
+                <form
+                  onSubmit={handleManualFulfill}
+                  className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950 p-3.5 space-y-3 animate-in fade-in slide-in-from-top-2 duration-150 text-xs"
+                >
+                  <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-white/5">
+                    <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <Key className="w-3.5 h-3.5 text-brand-orange" />
+                      Manual Delivery & Credentials Injection
+                    </span>
+                    <span className="text-[10px] text-slate-400">Emails directly to {customerEmail}</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">
+                      Activation Link / URL
+                    </label>
+                    <input
+                      type="url"
+                      value={manualLink}
+                      onChange={(e) => setManualLink(e.target.value)}
+                      placeholder="https://g.co/geminilink or activation portal URL"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900 font-mono text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-orange"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">
+                        Activation Code / Key
+                      </label>
+                      <input
+                        type="text"
+                        value={manualCode}
+                        onChange={(e) => setManualCode(e.target.value)}
+                        placeholder="ACT-XXXX-YYYY"
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900 font-mono text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-orange"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">
+                        Account / Password (if applicable)
+                      </label>
+                      <input
+                        type="text"
+                        value={manualCreds}
+                        onChange={(e) => setManualCreds(e.target.value)}
+                        placeholder="Account: user@domain.com | Pass: ****"
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900 font-mono text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-orange"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">
+                      Activation Instructions
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={manualInstructions}
+                      onChange={(e) => setManualInstructions(e.target.value)}
+                      placeholder="Instructions for the user to activate (optional)"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-orange resize-none"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setShowManualForm(false)}
+                      className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 font-medium text-xs"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={actionLoading === 'manual_fulfill' || (!manualLink && !manualCode && !manualCreds)}
+                      className="px-4 py-1.5 rounded-lg bg-brand-orange hover:bg-orange-600 text-white font-bold text-xs transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      {actionLoading === 'manual_fulfill' ? (
+                        <>
+                          <RefreshCw className="w-3 h-3 animate-spin" />
+                          <span>Delivering...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3 h-3" />
+                          <span>Deliver to Customer</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* CRITICAL: Provider Diagnostics & Failure Analysis */}
           {failureReason && (
             <div className="rounded-2xl border-2 border-rose-500/40 bg-rose-50 dark:bg-rose-950/30 p-4 space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -460,43 +903,24 @@ export function AdminTransactionModal({
                   <p className="leading-snug text-[11.5px]">{issueAction}</p>
                 </div>
               )}
-
-              {resolutionUrl && (
-                <div className="pt-1 flex items-center gap-2 text-xs">
-                  <span className="text-slate-500 dark:text-slate-400 font-medium">Resolution Portal:</span>
-                  <a
-                    href={resolutionUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 font-mono font-medium text-brand-orange hover:underline break-all"
-                  >
-                    {resolutionUrl}
-                    <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-                  </a>
-                </div>
-              )}
             </div>
           )}
 
-          {/* Section 1: Financial Ledger & Settlement Flow */}
+          {/* Section 1: Financial Ledger Core */}
           <div>
             <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
               <Coins className="w-3.5 h-3.5 text-brand-orange" />
-              {isRefund
-                ? 'Financial Reversal & Balance Reimbursement'
-                : isCredit
-                ? 'Customer Wallet Funding Settlement'
-                : 'Financial Settlement & Platform Margin'}
+              Financial Ledger & Spread Economics
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/5">
+            <div className="grid grid-cols-3 gap-3 p-4 rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/40">
               {isRefund ? (
                 <>
                   <div>
-                    <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium">Reimbursed to Customer</p>
+                    <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium">Refund Amount</p>
                     <p className="text-lg font-black font-mono text-purple-600 dark:text-purple-400 mt-0.5">
                       +{formatNaira(amount)}
                     </p>
-                    <p className="text-[9.5px] text-slate-400">Customer Wallet Credit</p>
+                    <p className="text-[9.5px] text-slate-400">Wallet Credit Reversal</p>
                   </div>
 
                   <div>
@@ -598,60 +1022,40 @@ export function AdminTransactionModal({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1 border-b border-slate-200/60 dark:border-white/5">
                   <span className="text-slate-500 dark:text-slate-400 font-medium">Original Order Ref (Failed)</span>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-rose-600 dark:text-rose-400 select-all">
+                    <span className="font-mono font-bold text-purple-600 dark:text-purple-400">
                       {originalOrderRef}
                     </span>
                     <button
-                      onClick={() => copyToClipboard(originalOrderRef, setCopiedProviderRef)}
-                      className="p-1 rounded text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                      onClick={() => copyToClipboard(originalOrderRef, setCopiedRef)}
+                      className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors text-slate-400"
                       title="Copy Original Order Ref"
                     >
-                      {copiedProviderRef ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-500" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}
+                      {copiedRef ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
                   </div>
                 </div>
-              ) : (
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1 border-b border-slate-200/60 dark:border-white/5">
-                  <span className="text-slate-500 dark:text-slate-400 font-medium">
-                    {isCredit ? 'Settlement Reference' : 'Provider Reference / Order ID'}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-amber-600 dark:text-brand-orange select-all">
-                      {providerRef}
-                    </span>
-                    <button
-                      onClick={() => copyToClipboard(providerRef, setCopiedProviderRef)}
-                      className="p-1 rounded text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                      title="Copy Provider Reference"
-                    >
-                      {copiedProviderRef ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-500" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              )}
+              ) : null}
 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1 border-b border-slate-200/60 dark:border-white/5">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">
-                  {isRefund ? 'Reversal Ledger Reference' : 'Internal Reference (Ledger)'}
+                  {isRefund ? 'Refund Reversal Reference' : 'Provider Reference / Order ID'}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-slate-800 dark:text-slate-200 select-all">
-                    {tx.reference}
+                  <span
+                    className={`font-mono font-bold ${
+                      isRefund
+                        ? 'text-purple-600 dark:text-purple-400'
+                        : 'text-brand-orange dark:text-amber-400'
+                    }`}
+                  >
+                    {providerRef}
                   </span>
                   <button
-                    onClick={() => copyToClipboard(tx.reference, setCopiedRef)}
-                    className="p-1 rounded text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                    title="Copy Reference"
+                    onClick={() => copyToClipboard(providerRef, setCopiedProviderRef)}
+                    className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors text-slate-400"
+                    title="Copy Provider Reference"
                   >
-                    {copiedRef ? (
+                    {copiedProviderRef ? (
                       <Check className="w-3.5 h-3.5 text-emerald-500" />
                     ) : (
                       <Copy className="w-3.5 h-3.5" />
@@ -661,65 +1065,75 @@ export function AdminTransactionModal({
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1 border-b border-slate-200/60 dark:border-white/5">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Internal Reference (Ledger)</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold text-slate-900 dark:text-white">
+                    {activeTx.reference}
+                  </span>
+                  <button
+                    onClick={() => copyToClipboard(activeTx.reference, setCopiedRef)}
+                    className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors text-slate-400"
+                    title="Copy Internal Reference"
+                  >
+                    {copiedRef ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1 border-b border-slate-200/60 dark:border-white/5">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">Execution Timestamp</span>
-                <span className="font-mono text-slate-700 dark:text-slate-300">
-                  {formatDate(tx.created_at)}
+                <span className="font-medium text-slate-700 dark:text-slate-300">
+                  {formatDate(activeTx.created_at)}
                 </span>
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">Unfiltered Description</span>
-                <span className="font-normal text-slate-800 dark:text-slate-200 max-w-sm sm:text-right break-words select-all">
-                  {tx.description || tx.category}
+                <span className="font-medium text-slate-900 dark:text-white text-right break-words max-w-sm">
+                  {activeTx.description}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Section 3: Customer Information */}
+          {/* Section 3: Customer & Associated Account */}
           <div>
             <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5">
               <User className="w-3.5 h-3.5 text-brand-orange" />
               Customer & Associated Account
             </h4>
-            <div className="rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/40 p-4 space-y-2.5 text-xs">
-              <div className="flex justify-between items-center py-1 border-b border-slate-200/60 dark:border-white/5">
-                <span className="text-slate-500 dark:text-slate-400">Account Name</span>
-                <span className="font-bold text-slate-900 dark:text-white">
-                  {customerName}
-                </span>
+            <div className="rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/40 p-4 space-y-3 text-xs">
+              <div className="flex items-center justify-between py-1 border-b border-slate-200/60 dark:border-white/5">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Account Name</span>
+                <span className="font-bold text-slate-900 dark:text-white">{customerName}</span>
               </div>
-              <div className="flex justify-between items-center py-1 border-b border-slate-200/60 dark:border-white/5">
-                <span className="text-slate-500 dark:text-slate-400">Email Address</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-mono font-medium text-slate-800 dark:text-slate-200 select-all">
-                    {customerEmail}
-                  </span>
+
+              <div className="flex items-center justify-between py-1 border-b border-slate-200/60 dark:border-white/5">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Email Address</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-slate-700 dark:text-slate-300">{customerEmail}</span>
                   {customerEmail !== 'Not Available' && (
                     <button
                       onClick={() => copyToClipboard(customerEmail, setCopiedEmail)}
-                      className="p-1 rounded text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                      title="Copy Customer Email"
+                      className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors text-slate-400"
                     >
-                      {copiedEmail ? (
-                        <Check className="w-3 h-3 text-emerald-500" />
-                      ) : (
-                        <Copy className="w-3 h-3" />
-                      )}
+                      {copiedEmail ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
                   )}
                 </div>
               </div>
+
               {customerPhone && (
-                <div className="flex justify-between items-center py-1 border-b border-slate-200/60 dark:border-white/5">
-                  <span className="text-slate-500 dark:text-slate-400">Linked Phone</span>
-                  <span className="font-mono text-slate-800 dark:text-slate-200">{customerPhone}</span>
+                <div className="flex items-center justify-between py-1 border-b border-slate-200/60 dark:border-white/5">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Phone Number</span>
+                  <span className="font-mono text-slate-700 dark:text-slate-300">{customerPhone}</span>
                 </div>
               )}
-              <div className="flex justify-between items-center py-1">
+
+              <div className="flex items-center justify-between py-1">
                 <span className="text-slate-500 dark:text-slate-400">Wallet UUID</span>
                 <span className="font-mono text-[10px] text-slate-500 dark:text-slate-400 select-all truncate max-w-[220px]">
-                  {tx.wallet_id}
+                  {activeTx.wallet_id}
                 </span>
               </div>
             </div>
@@ -772,7 +1186,7 @@ export function AdminTransactionModal({
               <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10">
                 <div className="bg-slate-950 px-4 py-2 border-b border-white/10 flex items-center justify-between text-[10px] font-mono text-slate-400">
                   <span>SOURCE_OF_TRUTH_LOG_RECORD</span>
-                  <span className="text-emerald-400 font-bold">STATUS: {tx.status?.toUpperCase()}</span>
+                  <span className="text-emerald-400 font-bold">STATUS: {activeTx.status?.toUpperCase()}</span>
                 </div>
                 <pre className="p-4 bg-slate-950 text-emerald-400 text-[10.5px] font-mono overflow-x-auto max-h-72 select-all leading-relaxed">
                   {JSON.stringify(fullDiagnosticTelemetry, null, 2)}

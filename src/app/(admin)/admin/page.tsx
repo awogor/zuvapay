@@ -972,6 +972,10 @@ export default function AdminDashboardPage() {
         tx={selectedAuditTx}
         user={selectedAuditTx ? getTxUser(selectedAuditTx.wallet_id, selectedAuditTx) : null}
         onClose={() => setSelectedAuditTx(null)}
+        onUpdate={(updatedTx) => {
+          setSelectedAuditTx(updatedTx);
+          loadAdminData();
+        }}
       />
 
       {/* Gongoz Wholesale Catalog & Pricing Modal */}
