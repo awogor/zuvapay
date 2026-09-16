@@ -140,6 +140,8 @@ export async function POST(request: NextRequest) {
         payerName,
         accountNumber,
         accountRef,
+        fee: data.fee || null,
+        fee_bearer: 'customer',
       },
     });
 

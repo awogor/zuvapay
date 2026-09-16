@@ -122,7 +122,9 @@ export async function GET(request: NextRequest) {
       metadata: {
         gateway: 'korapay',
         method: 'checkout',
-        fee: chargeData.fee,
+        fee: chargeData.fee || 0,
+        fee_bearer: 'customer',
+        total_paid: chargeData.amount_paid || depositAmount,
         payerName,
         sessionId: chargeData.session_id,
         customerEmail: chargeData.customer?.email,

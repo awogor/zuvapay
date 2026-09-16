@@ -251,15 +251,57 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
                 ))}
               </div>
 
+              {/* Korapay Fee & Settlement Breakdown */}
+              {parseFloat(amount) >= 100 && (
+                <div className="p-3.5 rounded-2xl bg-orange-50/60 dark:bg-slate-950/60 border border-brand-orange/25 dark:border-white/10 space-y-2 text-xs animate-in fade-in duration-150">
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                    <span className="font-medium">Wallet Credit Amount</span>
+                    <span className="font-mono font-bold text-slate-900 dark:text-white">
+                      {formatNaira(parseFloat(amount))}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                    <span className="flex items-center gap-1 font-medium">
+                      <span>Gateway Fee (1.5%)</span>
+                      <span className="text-[10px] text-brand-orange font-semibold">(Korapay)</span>
+                    </span>
+                    <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
+                      +{formatNaira(Math.min(2000, Math.round(parseFloat(amount) * 0.015 * 100) / 100))}
+                    </span>
+                  </div>
+                  <div className="pt-2 border-t border-slate-200/80 dark:border-white/10 flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-slate-900 dark:text-white block">Total to Pay</span>
+                      <span className="text-[10px] text-slate-400">Includes gateway processing charge</span>
+                    </div>
+                    <span className="font-mono font-black text-base text-brand-orange">
+                      {formatNaira(
+                        parseFloat(amount) +
+                          Math.min(2000, Math.round(parseFloat(amount) * 0.015 * 100) / 100)
+                      )}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* Action */}
               <div className="pt-2">
                 <button
                   onClick={handleDeposit}
-                  disabled={loading}
+                  disabled={loading || isNaN(parseFloat(amount)) || parseFloat(amount) < 100}
                   className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-brand-orange via-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-sm transition-all shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 active:scale-[0.99] disabled:opacity-50"
                 >
                   <CreditCard className="w-4 h-4" />
-                  {loading ? 'Opening Checkout...' : 'Pay with Card / Bank Transfer'}
+                  {loading
+                    ? 'Opening Checkout...'
+                    : `Pay ${
+                        parseFloat(amount) >= 100
+                          ? formatNaira(
+                              parseFloat(amount) +
+                                Math.min(2000, Math.round(parseFloat(amount) * 0.015 * 100) / 100)
+                            )
+                          : ''
+                      } with Card / Transfer`}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>

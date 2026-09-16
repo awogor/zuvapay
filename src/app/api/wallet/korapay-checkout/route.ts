@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
           narration: `ZuvaPay Wallet Deposit - ${userName}`,
           redirect_url: redirectUrl || `${appUrl}/dashboard?payment=success&ref=${reference}`,
           channels: ['card', 'bank_transfer', 'pay_with_bank'],
+          merchant_bears_cost: false,
           metadata: {
             user_id: userId,
             purpose: 'wallet_funding',
