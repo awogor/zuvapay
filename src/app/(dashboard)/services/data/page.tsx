@@ -272,9 +272,6 @@ export default function DataBundlePage() {
         </div>
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Internet Data Bundles</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Instant automated SME, Corporate Gifting, and Direct Data activation
-          </p>
         </div>
       </div>
 

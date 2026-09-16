@@ -229,10 +229,10 @@ export function BeneficiaryModal({
     : 'Saved Beneficiaries';
 
   const subtitle = isPower
-    ? 'Auto-saved meters from your recent electricity payments (30-day retention)'
+    ? 'Recent electricity meters'
     : isTv
-    ? 'Auto-saved IUC numbers from your recent TV subscriptions (30-day retention)'
-    : 'Auto-saved from your recent purchases (30-day retention)';
+    ? 'Recent TV smartcards'
+    : 'Recent recipients';
 
   const searchPlaceholder = isPower
     ? 'Search by meter number, Disco, or customer name...'

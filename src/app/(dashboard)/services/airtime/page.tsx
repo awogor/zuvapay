@@ -201,9 +201,6 @@ export default function AirtimePage() {
         </div>
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Buy Airtime</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Instant automated recharge for all Nigerian telecommunication networks
-          </p>
         </div>
       </div>
 

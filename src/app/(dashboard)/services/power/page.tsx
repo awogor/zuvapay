@@ -383,9 +383,6 @@ export default function ElectricityPage() {
         </div>
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Electricity Bill Payment</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Instant token generation and validation for all 11 Nigerian Electricity Discos
-          </p>
         </div>
       </div>
 
@@ -547,8 +544,8 @@ export default function ElectricityPage() {
             label="Meter Account Type"
             placeholder="Select Meter Type"
             items={[
-              { id: 'prepaid', name: 'Prepaid (Token Generation)', subtitle: 'Instant 20-digit recharge token' },
-              { id: 'postpaid', name: 'Postpaid (Monthly Bill Payment)', subtitle: 'Direct account credit against monthly bill' },
+              { id: 'prepaid', name: 'Prepaid Meter' },
+              { id: 'postpaid', name: 'Postpaid Meter' },
             ]}
             selectedId={meterType}
             onSelect={(item) => setMeterType(item.id as 'prepaid' | 'postpaid')}
@@ -560,7 +557,7 @@ export default function ElectricityPage() {
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Meter / Account Number
+                Meter No.
               </label>
               <div className="flex items-center gap-2">
                 {customerName && (
@@ -584,7 +581,7 @@ export default function ElectricityPage() {
                 type="text"
                 value={meterNumber}
                 onChange={(e) => setMeterNumber(e.target.value)}
-                placeholder="Enter 11 or 13 digit meter number"
+                placeholder="Enter meter number"
                 required
                 className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white font-mono text-sm focus:outline-none focus:border-emerald-500 pr-28"
               />
