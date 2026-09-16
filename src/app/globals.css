@@ -31,6 +31,7 @@ body {
   background: var(--background);
   font-family: 'Satoshi', 'Outfit', system-ui, -apple-system, sans-serif;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
