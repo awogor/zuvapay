@@ -226,7 +226,10 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(5000);
 
-    const { data: dbTxs } = await query;
+    const { data: dbTxs, error: queryErr } = await query;
+    if (queryErr) {
+      console.error('[FINANCIAL_REPORTS_QUERY_ERROR]', queryErr);
+    }
     const mergedTxs = dbTxs || [];
 
     const filteredTxs = mergedTxs.filter((tx: any) => {
@@ -236,8 +239,13 @@ export async function GET(request: NextRequest) {
       const cat = (tx.category || '').toLowerCase();
       if (categoryFilter !== 'all' && cat !== categoryFilter) return false;
 
+      return true;
     });
 
+    let totalVolume = 0;
+    let totalTransactionsCount = 0;
+    let totalDepositVolume = 0;
+    let totalDepositCount = 0;
     let totalGrossSales = 0;
     let totalWholesaleCost = 0;
     let totalCompletedOrders = 0;
@@ -261,12 +269,21 @@ export async function GET(request: NextRequest) {
         const key = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         timeSeriesMap.set(key, { label: `Day ${day}`, periodKey: key, sales: 0, cost: 0, profit: 0, ordersCount: 0 });
       }
-    } else if (period === '7d') {
-      for (let i = 6; i >= 0; i--) {
+    } else if (period === '7d' || period === '30d') {
+      const numDays = period === '7d' ? 7 : 30;
+      for (let i = numDays - 1; i >= 0; i--) {
         const d = new Date(now.getTime() - i * 86400 * 1000);
         const key = d.toISOString().split('T')[0];
         const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
         timeSeriesMap.set(key, { label: dayLabel, periodKey: key, sales: 0, cost: 0, profit: 0, ordersCount: 0 });
+      }
+    } else if (period === 'today' || period === 'yesterday') {
+      const targetDate = period === 'today' ? now : new Date(now.getTime() - 86400 * 1000);
+      const datePrefix = targetDate.toISOString().split('T')[0];
+      for (let h = 0; h < 24; h++) {
+        const key = `${datePrefix}T${String(h).padStart(2, '0')}`;
+        const label = `${String(h).padStart(2, '0')}:00`;
+        timeSeriesMap.set(key, { label, periodKey: key, sales: 0, cost: 0, profit: 0, ordersCount: 0 });
       }
     }
 
@@ -292,7 +309,21 @@ export async function GET(request: NextRequest) {
     });
 
     filteredTxs.forEach((tx: any) => {
-      const amount = parseFloat(tx.amount || 0);
+      const amount = Math.abs(parseFloat(tx.amount || 0));
+      totalVolume += amount;
+      totalTransactionsCount += 1;
+
+      const isDeposit =
+        tx.type === 'credit' &&
+        (tx.category === 'deposit' ||
+          (tx.description || '').toLowerCase().includes('deposit') ||
+          (tx.description || '').toLowerCase().includes('funded'));
+
+      if (isDeposit) {
+        totalDepositVolume += amount;
+        totalDepositCount += 1;
+      }
+
       const isRefund =
         tx.category === 'refund' ||
         tx.reference?.startsWith('KP-REF') ||
@@ -345,13 +376,21 @@ export async function GET(request: NextRequest) {
 
       const txDate = new Date(tx.created_at);
       let timeKey = txDate.toISOString().split('T')[0];
-      if (period === 'year') {
+      if (period === 'year' || period === 'all') {
         timeKey = `${txDate.getFullYear()}-${String(txDate.getMonth() + 1).padStart(2, '0')}`;
+      } else if (period === 'today' || period === 'yesterday') {
+        timeKey = `${txDate.toISOString().split('T')[0]}T${String(txDate.getHours()).padStart(2, '0')}`;
       }
 
       if (!timeSeriesMap.has(timeKey)) {
+        let label = timeKey;
+        if (period === 'all' || period === 'year') {
+          label = txDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        } else if (period === 'today' || period === 'yesterday') {
+          label = `${String(txDate.getHours()).padStart(2, '0')}:00`;
+        }
         timeSeriesMap.set(timeKey, {
-          label: timeKey,
+          label,
           periodKey: timeKey,
           sales: 0,
           cost: 0,
@@ -465,7 +504,9 @@ export async function GET(request: NextRequest) {
       marginPercent: c.grossSales > 0 ? Math.round((c.netProfit / c.grossSales) * 100) : 0,
     })).sort((a, b) => b.grossSales - a.grossSales);
 
-    const timeSeries = Array.from(timeSeriesMap.values());
+    const timeSeries = Array.from(timeSeriesMap.values()).sort((a, b) =>
+      a.periodKey.localeCompare(b.periodKey)
+    );
 
     return NextResponse.json({
       success: true,
@@ -477,6 +518,10 @@ export async function GET(request: NextRequest) {
         end: endTime.toISOString(),
       },
       summary: {
+        totalVolume,
+        totalTransactionsCount,
+        totalDepositVolume,
+        totalDepositCount,
         totalGrossSales,
         totalWholesaleCost,
         totalNetProfit,

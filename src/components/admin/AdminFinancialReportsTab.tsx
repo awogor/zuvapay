@@ -27,6 +27,7 @@ import {
   Layers,
   BarChart3,
   Search,
+  Activity,
 } from 'lucide-react';
 import { ProviderSummary, CategorySummary, TimeSeriesPoint } from '@/app/api/admin/financial-reports/route';
 
@@ -55,6 +56,10 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<{
     summary: {
+      totalVolume?: number;
+      totalTransactionsCount?: number;
+      totalDepositVolume?: number;
+      totalDepositCount?: number;
       totalGrossSales: number;
       totalWholesaleCost: number;
       totalNetProfit: number;
@@ -375,8 +380,29 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
         </div>
       </div>
 
-      {/* 4 Big Executive Financial Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 5 Big Executive Financial Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        {/* Total Transaction Volume */}
+        <div className="p-5 rounded-3xl bg-gradient-to-br from-brand-orange/10 via-white to-amber-500/10 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 border-2 border-brand-orange/40 shadow-sm space-y-2">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-brand-orange" />
+              Total Volume
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-brand-orange/15 text-brand-orange flex items-center justify-center">
+              <Activity className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+            {formatNaira(data?.summary.totalVolume || 0)}
+          </p>
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-slate-500 dark:text-slate-400">
+              {data?.summary.totalTransactionsCount || 0} Total {data?.summary.totalTransactionsCount === 1 ? 'Tx' : 'Txs'}
+            </span>
+            <span className="text-brand-orange font-bold">Gross Turnover</span>
+          </div>
+        </div>
         {/* Total Sales */}
         <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
