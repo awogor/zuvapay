@@ -210,7 +210,7 @@ export function ReceiptModal() {
                     )}
                   </div>
                   <div className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                    <div className="font-mono text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-widest break-all select-all">
+                    <div className="font-mono text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal sm:tracking-wide select-all whitespace-nowrap overflow-x-auto text-center py-0.5">
                       {parsedTokens.tokens[0].token}
                     </div>
                   </div>
@@ -286,8 +286,8 @@ export function ReceiptModal() {
                             )}
                           </div>
 
-                          <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200/70 dark:border-slate-800">
-                            <span className="font-mono text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-widest break-all select-all">
+                          <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200/70 dark:border-slate-800 min-w-0">
+                            <span className="font-mono text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal select-all whitespace-nowrap overflow-x-auto">
                               {tok.token}
                             </span>
                             <button

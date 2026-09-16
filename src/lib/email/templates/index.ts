@@ -486,7 +486,7 @@ export function renderElectricityTokenEmail({
       <div style="font-size: 11px; font-weight: 700; color: ${headerColor}; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;">
         ${icon} ${title}
       </div>
-      <div class="token-digits" style="font-size: 15px; font-weight: 800; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; color: #0F172A; letter-spacing: 1.2px; padding: 4px 0; white-space: nowrap;">
+      <div class="token-digits" style="font-size: 14px; font-weight: 800; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; color: #0F172A; letter-spacing: 0.2px; padding: 4px 0; white-space: nowrap;">
         ${tok.token}
       </div>
       <div style="font-size: 11.5px; color: ${isBonus ? '#713F12' : '#64748B'}; margin-top: 6px; line-height: 16px;">
@@ -509,7 +509,7 @@ export function renderElectricityTokenEmail({
     const cleanDigits = (singleToken || '').replace(/\D/g, '');
     const formattedToken =
       cleanDigits.length === 20
-        ? cleanDigits.match(/.{1,4}/g)?.join(' - ') || singleToken
+        ? cleanDigits.match(/.{1,4}/g)?.join('-') || singleToken
         : singleToken;
 
     tokensBoxesHtml = `
@@ -517,7 +517,7 @@ export function renderElectricityTokenEmail({
       <div style="font-size: 11px; font-weight: 700; color: #C2410C; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;">
         ⚡ 20-Digit Meter Token
       </div>
-      <div class="token-digits" style="font-size: 15px; font-weight: 800; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; color: #0F172A; letter-spacing: 1.2px; padding: 4px 0; white-space: nowrap;">
+      <div class="token-digits" style="font-size: 14px; font-weight: 800; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; color: #0F172A; letter-spacing: 0.2px; padding: 4px 0; white-space: nowrap;">
         ${formattedToken}
       </div>
       <div style="font-size: 11.5px; color: #64748B; margin-top: 6px; line-height: 16px;">

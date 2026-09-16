@@ -26,16 +26,17 @@ export interface ParsedTokensResult {
 }
 
 /**
- * Formats a 20-digit string into standard 4-digit chunks: "XXXX - XXXX - XXXX - XXXX - XXXX"
+ * Formats a 20-digit string into standard compact 4-digit chunks: "XXXX-XXXX-XXXX-XXXX-XXXX"
+ * No extra gaps to ensure it stays on a single line on mobile screens.
  */
 export function format20DigitToken(raw: string): string {
   if (!raw) return '';
   const digits = raw.replace(/\D/g, '');
   if (digits.length === 20) {
-    return digits.match(/.{1,4}/g)?.join(' - ') || raw;
+    return digits.match(/.{1,4}/g)?.join('-') || raw;
   }
-  // If already contains hyphens or spaces, clean and normalize
-  const cleaned = raw.replace(/\s+/g, ' ').trim();
+  // If already contains hyphens or spaces, clean and normalize to single compact hyphens
+  const cleaned = raw.replace(/\s*-\s*/g, '-').replace(/\s+/g, '-').trim();
   return cleaned;
 }
 

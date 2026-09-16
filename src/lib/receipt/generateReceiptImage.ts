@@ -458,9 +458,9 @@ export async function generateReceiptImageBlob(
       }
       ctx.fillText(headerText, cardWidth / 2, currentY + 20);
 
-      // Monospace token digits (small, compact 15px font so it never wraps)
+      // Monospace token digits (compact 14px font so it never wraps)
       ctx.fillStyle = '#0F172A';
-      ctx.font = '800 15px "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace';
+      ctx.font = '800 14px "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace';
       ctx.fillText(tok.token, cardWidth / 2, currentY + 44);
 
       // Helper text
