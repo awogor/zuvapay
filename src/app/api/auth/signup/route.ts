@@ -90,9 +90,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const verificationUrl =
-      linkData?.properties?.action_link ||
-      `${origin}/auth/callback?token_hash=${linkData?.properties?.hashed_token}&type=signup&next=/dashboard`;
+    const tokenHash = linkData?.properties?.hashed_token;
+
+    // Direct ZuvaPay branded URL: No Supabase domain exposed, zero localhost redirect
+    const verificationUrl = tokenHash
+      ? `${origin}/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&type=signup&next=/dashboard`
+      : `${origin}/login?verified=true`;
 
     // 4. Dispatch branded ZuvaPay verification email via custom SMTP
     await sendTransactionalEmail({

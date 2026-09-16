@@ -747,6 +747,39 @@ export function renderAdminLowBalanceEmail({
 }
 
 /**
+ * 8. Sanitize Zuva Auth URL
+ */
+export function sanitizeZuvaAuthUrl(url: string, defaultType: 'recovery' | 'signup', defaultNext: string): string {
+  if (!url) {
+    return `https://zuvapay.com/auth/callback?type=${defaultType}&next=${encodeURIComponent(defaultNext)}`;
+  }
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes('supabase.co')) {
+      const token = parsed.searchParams.get('token') || parsed.searchParams.get('token_hash');
+      const type = parsed.searchParams.get('type') || defaultType;
+      let next = defaultNext;
+      const redirectTo = parsed.searchParams.get('redirect_to');
+      if (redirectTo) {
+        try {
+          const redirectParsed = new URL(redirectTo);
+          const nextParam = redirectParsed.searchParams.get('next');
+          if (nextParam) next = nextParam;
+        } catch {}
+      }
+      if (token) {
+        return `https://zuvapay.com/auth/callback?token_hash=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}&next=${encodeURIComponent(next)}`;
+      }
+    }
+  } catch {}
+
+  return url
+    .replace(/https?:\/\/localhost(:\d+)?/gi, 'https://zuvapay.com')
+    .replace(/https?:\/\/127\.0\.0\.1(:\d+)?/gi, 'https://zuvapay.com');
+}
+
+/**
  * 9. Custom Email Verification Template
  */
 export function renderEmailVerificationEmail({
@@ -760,9 +793,7 @@ export function renderEmailVerificationEmail({
   verifyUrl: string;
   token?: string;
 }): { subject: string; html: string } {
-  const safeVerifyUrl = (verifyUrl || `${getEmailAppUrl()}/auth/callback?type=signup&next=/dashboard`)
-    .replace(/https?:\/\/localhost(:\d+)?/gi, 'https://zuvapay.com')
-    .replace(/https?:\/\/127\.0\.0\.1(:\d+)?/gi, 'https://zuvapay.com');
+  const safeVerifyUrl = sanitizeZuvaAuthUrl(verifyUrl, 'signup', '/dashboard');
 
   const contentHtml = `
     <div style="margin-bottom: 20px;">
@@ -831,9 +862,7 @@ export function renderPasswordResetEmail({
   resetUrl: string;
   ipAddress?: string;
 }): { subject: string; html: string } {
-  const safeResetUrl = (resetUrl || `${getEmailAppUrl()}/reset-password`)
-    .replace(/https?:\/\/localhost(:\d+)?/gi, 'https://zuvapay.com')
-    .replace(/https?:\/\/127\.0\.0\.1(:\d+)?/gi, 'https://zuvapay.com');
+  const safeResetUrl = sanitizeZuvaAuthUrl(resetUrl, 'recovery', '/reset-password');
 
   const contentHtml = `
     <div style="margin-bottom: 20px;">

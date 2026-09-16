@@ -57,9 +57,12 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const resetUrl =
-      data?.properties?.action_link ||
-      `${origin}/auth/callback?token_hash=${data?.properties?.hashed_token}&type=recovery&next=/reset-password`;
+    const tokenHash = data?.properties?.hashed_token;
+
+    // Direct ZuvaPay branded URL: No Supabase domain exposed, zero localhost redirect
+    const resetUrl = tokenHash
+      ? `${origin}/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&type=recovery&next=/reset-password`
+      : `${origin}/reset-password`;
 
     const forwardedFor = request.headers.get('x-forwarded-for');
     const ipAddress = forwardedFor

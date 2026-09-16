@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import './globals.css';
 import { ThemeProvider } from '@/context/ThemeContext';
@@ -10,6 +10,15 @@ import { SupportProvider } from '@/components/modals/SupportModal';
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://zuvapay.com';
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-1PQWBFSLXP';
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#FF6B00' },
+    { media: '(prefers-color-scheme: dark)', color: '#FF6B00' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -95,6 +104,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="light" suppressHydrationWarning>
       <head>
+        <meta name="theme-color" content="#FF6B00" />
+        <meta name="msapplication-navbutton-color" content="#FF6B00" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
