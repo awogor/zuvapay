@@ -61,15 +61,21 @@ html[data-theme='light'] .border-white\/20 {
 }
 
 /* Form controls in light mode */
-html.light input:not([type="checkbox"]):not([type="radio"]),
-html[data-theme='light'] input:not([type="checkbox"]):not([type="radio"]),
-html.light select,
-html[data-theme='light'] select,
-html.light textarea,
-html[data-theme='light'] textarea {
+html.light input:not([type="checkbox"]):not([type="radio"]):not(.bg-transparent),
+html[data-theme='light'] input:not([type="checkbox"]):not([type="radio"]):not(.bg-transparent),
+html.light select:not(.bg-transparent),
+html[data-theme='light'] select:not(.bg-transparent),
+html.light textarea:not(.bg-transparent),
+html[data-theme='light'] textarea:not(.bg-transparent) {
   background-color: #FFFFFF !important;
   color: #0F172A !important;
   border-color: #E2E8F0 !important;
+}
+
+html.light input.bg-transparent,
+html[data-theme='light'] input.bg-transparent {
+  background-color: transparent !important;
+  border-color: transparent !important;
 }
 
 html.light input::placeholder,

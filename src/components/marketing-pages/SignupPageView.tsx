@@ -110,35 +110,35 @@ export function SignupPageView() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center py-6 px-4 sm:py-12 bg-white sm:bg-[#FFF9F3] sm:bg-gradient-to-br sm:from-[#FFF5EC] sm:via-[#FFF9F4] sm:to-[#FFF0E2] relative overflow-y-auto selection:bg-brand-orange selection:text-white">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 sm:py-8 bg-white sm:bg-[#FFF9F3] sm:bg-gradient-to-br sm:from-[#FFF5EC] sm:via-[#FFF9F4] sm:to-[#FFF0E2] relative overflow-y-auto selection:bg-brand-orange selection:text-white">
       {/* Background ambient solar glow orbs - visible on desktop */}
       <div className="hidden sm:block absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-[#FF6B00]/10 blur-[100px] pointer-events-none" />
       <div className="hidden sm:block absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 h-96 w-96 rounded-full bg-[#F59E0B]/12 blur-[100px] pointer-events-none" />
       <div className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[480px] w-[480px] rounded-full bg-[#FFF0E0]/60 blur-[120px] pointer-events-none" />
 
-      {/* Form Container */}
-      <div className="relative z-10 w-full max-w-md rounded-3xl border-0 sm:border sm:border-slate-200/90 bg-white p-4 sm:p-8 sm:shadow-[0_20px_50px_-12px_rgba(255,107,0,0.12),0_8px_24px_-8px_rgba(15,23,42,0.06)] sm:ring-1 sm:ring-slate-900/5 my-auto">
+      {/* Form Container - Centered on desktop */}
+      <div className="relative z-10 w-full max-w-[440px] rounded-3xl border-0 sm:border sm:border-slate-200/90 bg-white p-4 sm:p-6 sm:shadow-[0_20px_50px_-12px_rgba(255,107,0,0.12),0_8px_24px_-8px_rgba(15,23,42,0.06)] sm:ring-1 sm:ring-slate-900/5 my-auto">
         
         {/* Clickable Logo Mark centered directly above Heading */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-4">
           <Link
             href="/"
-            className="inline-block transition-transform active:scale-95 group mb-3"
+            className="inline-block transition-transform active:scale-95 group mb-2"
             title="Back to Home"
           >
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-orange via-amber-500 to-amber-400 flex items-center justify-center font-black text-xl text-slate-950 shadow-md shadow-orange-500/25 group-hover:scale-105 transition-transform duration-200 mx-auto ring-2 ring-orange-500/20">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-brand-orange via-amber-500 to-amber-400 flex items-center justify-center font-black text-lg sm:text-xl text-slate-950 shadow-md shadow-orange-500/25 group-hover:scale-105 transition-transform duration-200 mx-auto ring-2 ring-orange-500/20">
               ZP
             </div>
           </Link>
-          <h1 className="text-2xl sm:text-2xl font-black tracking-tight text-slate-900">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
             Create an Account on <span className="text-brand-orange">ZuvaPay</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
             Fast, reliable everyday digital payments
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3.5">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {/* Title and First Name row */}
           <div className="grid grid-cols-3 gap-2.5">
             <div className="col-span-1">
