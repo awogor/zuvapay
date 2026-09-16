@@ -122,6 +122,7 @@ export async function POST(request: NextRequest) {
           reference: refundReference,
           reason: cleanReason,
           newBalance: rpcData.new_balance,
+          isCancelled: true,
         },
       }).catch((emailErr) => console.warn('[ADMIN_REFUND_EMAIL_FAILED]', emailErr.message));
     }

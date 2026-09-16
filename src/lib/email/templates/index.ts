@@ -269,6 +269,7 @@ export function renderRefundEmail({
   reference,
   reason,
   newBalance,
+  isCancelled = false,
 }: {
   name: string;
   serviceName: string;
@@ -276,24 +277,25 @@ export function renderRefundEmail({
   reference: string;
   reason?: string;
   newBalance?: number;
+  isCancelled?: boolean;
 }): { subject: string; html: string } {
   const contentHtml = `
     <div style="margin-bottom: 20px;">
       <h1 style="margin: 0 0 4px 0; font-size: 20px; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">
-        Refund Processed
+        ${isCancelled ? 'Order Cancelled &amp; Refunded' : 'Refund Processed'}
       </h1>
       <div style="font-size: 28px; font-weight: 800; color: #2563EB; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-top: 6px;">
         +₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
       </div>
-      <p style="margin: 8px 0 0 0; font-size: 13px; color: #64748B;">
-        Your order could not be completed by the carrier gateway. Funds have been returned to your wallet.
+      <p style="margin: 8px 0 0 0; font-size: 13px; color: #64748B; line-height: 20px;">
+        Your order for <strong style="color: #0F172A;">${serviceName}</strong> ${isCancelled ? 'has been cancelled and refunded.' : 'could not be fulfilled.'} 100% of the funds have been safely returned to your wallet.
       </p>
     </div>
 
-    <!-- Refund Table -->
+    <!-- Refund Details Table -->
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px; font-size: 13px;">
       <tr>
-        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Item</td>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Order / Item</td>
         <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-weight: 700; color: #0F172A;">${serviceName}</td>
       </tr>
       <tr>
@@ -302,7 +304,7 @@ export function renderRefundEmail({
       </tr>
       <tr>
         <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Reason</td>
-        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B; font-size: 12px;">${reason || 'Carrier gateway timeout'}</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B; font-size: 12px;">${reason || (isCancelled ? 'Admin order cancellation' : 'Service unfulfilled / refunded')}</td>
       </tr>
       <tr>
         <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-size: 12px; color: #64748B;">Original Reference</td>
@@ -318,13 +320,19 @@ export function renderRefundEmail({
           : ''
       }
     </table>
+
+    <div style="margin: 0 0 10px 0;">
+      <a href="${getEmailAppUrl()}/dashboard" style="display: inline-block; padding: 12px 24px; background-color: #0F172A; color: #FFFFFF; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px;">
+        View Wallet in Dashboard &rarr;
+      </a>
+    </div>
   `;
 
   return {
-    subject: `Refund Confirmation: ₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })} - ZuvaPay`,
+    subject: `${isCancelled ? 'Order Cancelled & Refunded' : 'Refund Confirmation'}: ₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })} - ZuvaPay`,
     html: renderBaseEmailLayout({
       previewText: `Your order for ${serviceName} was refunded. ₦${amount.toLocaleString('en-NG')} credited to your wallet.`,
-      headerBadge: 'REFUND PROCESSED',
+      headerBadge: isCancelled ? 'ORDER CANCELLED & REFUNDED' : 'REFUND PROCESSED',
       badgeType: 'info',
       contentHtml,
     }),
@@ -934,6 +942,7 @@ export function renderMarketplaceDeliveryEmail({
   amount,
   reference,
   date,
+  isReissue = false,
   delivery,
 }: {
   name: string;
@@ -942,6 +951,7 @@ export function renderMarketplaceDeliveryEmail({
   amount?: number;
   reference: string;
   date?: string;
+  isReissue?: boolean;
   delivery: {
     activationLink?: string | null;
     code?: string | null;
@@ -958,12 +968,21 @@ export function renderMarketplaceDeliveryEmail({
   const contentHtml = `
     <div style="margin-bottom: 20px;">
       <h1 style="margin: 0 0 4px 0; font-size: 20px; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">
-        Your Digital Order is Ready
+        ${isReissue ? 'Your Reissued Order is Ready' : 'Your Digital Order is Ready'}
       </h1>
       <p style="margin: 0; font-size: 13px; color: #64748B;">
-        Your order for <strong>${productName}</strong> has been fulfilled.
+        Your order for <strong>${productName}</strong> ${isReissue ? 'has been successfully reissued.' : 'has been fulfilled.'}
       </p>
     </div>
+
+    ${
+      isReissue
+        ? `
+    <div style="background-color: #FEF3C7; border: 1px solid #FDE68A; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #92400E; line-height: 20px;">
+      <strong>Order Reissued:</strong> Your order has been reviewed and successfully reissued by ZuvaPay Support. Your fresh access credentials are ready below.
+    </div>`
+        : ''
+    }
 
     <!-- Product Access Box -->
     <div class="token-box" style="background-color: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 16px; margin-bottom: 22px;">
@@ -1040,10 +1059,10 @@ export function renderMarketplaceDeliveryEmail({
   `;
 
   return {
-    subject: `Your digital order: ${productName} - ZuvaPay`,
+    subject: `${isReissue ? 'Order Reissued' : 'Your digital order'}: ${productName} - ZuvaPay`,
     html: renderBaseEmailLayout({
-      previewText: `Your digital order for ${productName} is ready. Order Ref: ${reference}.`,
-      headerBadge: '✔ ORDER READY',
+      previewText: `Your digital order for ${productName} ${isReissue ? 'has been reissued' : 'is ready'}. Order Ref: ${reference}.`,
+      headerBadge: isReissue ? '✔ ORDER REISSUED' : '✔ ORDER READY',
       badgeType: 'success',
       contentHtml,
     }),

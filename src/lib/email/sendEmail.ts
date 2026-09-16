@@ -105,12 +105,13 @@ export async function sendTransactionalEmail(
 
     case 'refund_alert':
       rendered = renderRefundEmail({
-        name: data.name || 'Valued Customer',
-        serviceName: data.serviceName || 'Utility Service',
+        name: data.name || data.recipientName || 'Valued Customer',
+        serviceName: data.serviceName || data.productName || 'Utility Service',
         amount: Number(data.amount) || 0,
         reference: data.reference || `ZP-REF-${Date.now()}`,
         reason: data.reason,
         newBalance: data.newBalance !== undefined ? Number(data.newBalance) : undefined,
+        isCancelled: Boolean(data.isCancelled),
       });
       break;
 
@@ -168,13 +169,19 @@ export async function sendTransactionalEmail(
 
     case 'marketplace_delivery':
       rendered = renderMarketplaceDeliveryEmail({
-        name: data.name || 'Valued Customer',
+        name: data.name || data.recipientName || 'Valued Customer',
         productName: data.productName || 'Digital Good / Software License',
         quantity: Number(data.quantity) || 1,
         amount: data.amount ? Number(data.amount) : undefined,
         reference: data.reference || `ZP-MAR-${Date.now()}`,
         date: data.date,
-        delivery: data.delivery || {},
+        isReissue: Boolean(data.isReissue),
+        delivery: data.delivery || {
+          activationLink: data.activationLink,
+          code: data.code,
+          credentials: data.credentials,
+          instructions: data.instructions,
+        },
       });
       break;
 

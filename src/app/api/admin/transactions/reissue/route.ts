@@ -114,6 +114,7 @@ export async function POST(request: NextRequest) {
             credentials: parsedManual.credentials || undefined,
             quantity: tx.metadata?.quantity || 1,
             warranty: 'Manual Admin Fulfillment & Active Warranty',
+            isReissue: true,
           },
         }).catch((err) => console.warn('[ADMIN_MANUAL_DELIVERY_EMAIL_FAILED]', err.message));
       }
@@ -240,6 +241,7 @@ export async function POST(request: NextRequest) {
             credentials: parsedDelivery.credentials || undefined,
             quantity,
             warranty: '48h Instant Activation & Replacement Guarantee',
+            isReissue: true,
           },
         }).catch((emailErr) => {
           console.warn('[REISSUE_DELIVERY_EMAIL_FAILED]', emailErr.message);
