@@ -41,7 +41,7 @@ export function ForgotPasswordPageView() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-[#FFF9F3] bg-gradient-to-br from-[#FFF5EC] via-[#FFF9F4] to-[#FFF0E2] relative overflow-hidden selection:bg-zuva-solar selection:text-white">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center py-8 sm:py-10 px-4 bg-[#FFF9F3] bg-gradient-to-br from-[#FFF5EC] via-[#FFF9F4] to-[#FFF0E2] relative overflow-y-auto sm:overflow-hidden selection:bg-zuva-solar selection:text-white">
       {/* Background ambient solar glow orbs */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-[#FF6B00]/10 blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 h-96 w-96 rounded-full bg-[#F59E0B]/12 blur-[100px] pointer-events-none" />
@@ -80,11 +80,13 @@ export function ForgotPasswordPageView() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3.5">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 mb-1">
                 Account Email
               </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <div className="flex items-center gap-2.5 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200 focus-within:border-brand-orange focus-within:bg-white focus-within:ring-2 focus-within:ring-orange-500/15 transition-all shadow-sm">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-4 h-4 text-brand-orange" />
+                </div>
                 <input
                   type="email"
                   value={email}
@@ -93,7 +95,7 @@ export function ForgotPasswordPageView() {
                   required
                   autoCapitalize="none"
                   autoCorrect="off"
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-zuva-solar focus:ring-2 focus:ring-orange-500/10 text-xs font-medium transition-all"
+                  className="w-full bg-transparent text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none py-1 pr-2.5"
                 />
               </div>
             </div>

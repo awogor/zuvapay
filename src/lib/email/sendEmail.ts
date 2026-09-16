@@ -58,7 +58,6 @@ export async function sendTransactionalEmail(
       rendered = renderWelcomeEmail({
         name: data.name || 'Valued Customer',
         email: to,
-        virtualAccount: data.virtualAccount,
       });
       break;
 
@@ -135,6 +134,9 @@ export async function sendTransactionalEmail(
         customerAddress: data.customerAddress,
         token: data.token || '0000-0000-0000-0000-0000',
         units: data.units,
+        bonusToken: data.bonusToken,
+        bonusUnits: data.bonusUnits,
+        tokens: data.tokens,
         amount: Number(data.amount) || 0,
         reference: data.reference || `ZP-PWR-${Date.now()}`,
         operatorReference: data.operatorReference,

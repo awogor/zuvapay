@@ -42,6 +42,7 @@ export default function AirtimePage() {
       const match = NETWORKS.find((n) => n.id.toLowerCase() === netStr);
       if (match) {
         setNetwork(match.id);
+        setBypassValidation(true);
       }
     }
   };

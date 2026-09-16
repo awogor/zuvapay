@@ -630,70 +630,25 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const { data, error } = await supabase.rpc('refund_wallet_for_bill', {
-        p_wallet_id: wallet.id,
-        p_amount: amount,
-        p_category: 'refund',
-        p_description: description,
-        p_reference: refundReference,
-        p_metadata: {
-          original_reference: originalReference,
-          refund_reason: cleanReason,
-        },
+      const res = await fetch('/api/wallet/refund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          title,
+          reason: cleanReason,
+          originalReference,
+        }),
       });
 
-      if (error) {
-        // Fallback direct table update
-        const newBalance = wallet.balance + amount;
-        await supabase
-          .from('wallets')
-          .update({ balance: newBalance, updated_at: new Date().toISOString() })
-          .eq('id', wallet.id);
-
-        const { data: createdTx } = await supabase
-          .from('transactions')
-          .insert({
-            wallet_id: wallet.id,
-            amount,
-            type: 'credit',
-            category: 'refund',
-            description,
-            reference: refundReference,
-            status: 'completed',
-          })
-          .select()
-          .single();
-
-        setWallet((prev) => (prev ? { ...prev, balance: newBalance } : null));
-        if (createdTx) {
-          setTransactions((prev) => [
-            { ...createdTx, amount: parseFloat(createdTx.amount) },
-            ...prev,
-          ]);
-        }
-        return { success: true };
+      const resData = await res.json().catch(() => null);
+      if (!res.ok || !resData?.success) {
+        return { success: false, error: resData?.error || 'Refund execution failed' };
       }
 
-      // Mark the original debit transaction as failed/reversed in Supabase and state
-      if (originalReference) {
-        try {
-          await supabase
-            .from('transactions')
-            .update({
-              status: 'failed',
-              metadata: {
-                refunded: true,
-                refund_reason: cleanReason,
-                refund_reference: refundReference,
-              },
-            })
-            .eq('reference', originalReference);
-        } catch (updateErr: any) {
-          console.warn('[refundBill] Could not update original tx status:', updateErr?.message);
-        }
+      if (typeof resData.newBalance === 'number') {
+        setWallet((prev) => (prev ? { ...prev, balance: resData.newBalance } : null));
       }
-
-      setWallet((prev) => (prev ? { ...prev, balance: data.new_balance } : null));
       await refreshWallet();
       return { success: true };
     } catch (err: any) {

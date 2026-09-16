@@ -269,13 +269,69 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { itemId, quantity = 1, reference, customerEmail } = body;
+    const { itemId, quantity = 1, reference, customerEmail, amount } = body;
 
     if (!itemId || !reference) {
       return NextResponse.json(
         { success: false, error: 'Missing required parameters (itemId, reference)' },
         { status: 400 }
       );
+    }
+
+    const adminSupabase = createAdminClient();
+    const isMock = process.env.NEXT_PUBLIC_MOCK_DATA === 'true';
+
+    // Anti-exploit guard: Verify debit transaction in database
+    let verifiedTx: any = null;
+    if (!isMock) {
+      const { data: tx, error: txErr } = await adminSupabase
+        .from('transactions')
+        .select('*, wallets!inner(user_id)')
+        .eq('reference', reference)
+        .maybeSingle();
+
+      if (txErr || !tx) {
+        return NextResponse.json(
+          { success: false, error: 'Debit transaction reference not found or unverified' },
+          { status: 400 }
+        );
+      }
+
+      if (tx.wallets?.user_id !== user.id) {
+        return NextResponse.json(
+          { success: false, error: 'Unauthorized transaction reference' },
+          { status: 403 }
+        );
+      }
+
+      if (tx.type !== 'debit' || tx.status !== 'completed') {
+        return NextResponse.json(
+          { success: false, error: 'Transaction is not a verified completed debit' },
+          { status: 400 }
+        );
+      }
+
+      if (tx.category !== 'logs' && tx.category !== 'digital_service') {
+        return NextResponse.json(
+          { success: false, error: 'Transaction category mismatch for logs order' },
+          { status: 400 }
+        );
+      }
+
+      if (amount && Number(tx.amount) < Number(amount)) {
+        return NextResponse.json(
+          { success: false, error: 'Debit transaction amount is insufficient for logs order' },
+          { status: 400 }
+        );
+      }
+
+      if (tx.metadata?.fulfillment_status === 'fulfilled') {
+        return NextResponse.json(
+          { success: false, error: 'This transaction has already been fulfilled' },
+          { status: 409 }
+        );
+      }
+      verifiedTx = tx;
     }
 
     // Call live Fadded Reseller API POST /order
@@ -324,6 +380,8 @@ export async function POST(request: NextRequest) {
         const mergedMetadata = {
           ...(existingTx?.metadata || {}),
           supplierOrderId,
+          fulfillment_status: 'fulfilled',
+          fulfilled_at: new Date().toISOString(),
           delivery: parsedDelivery,
         };
 
@@ -412,6 +470,8 @@ export async function POST(request: NextRequest) {
       const mergedMetadata = {
         ...(existingTx?.metadata || {}),
         supplierOrderId: `FAD-${Date.now()}`,
+        fulfillment_status: 'fulfilled',
+        fulfilled_at: new Date().toISOString(),
         delivery: mockDelivery,
       };
 

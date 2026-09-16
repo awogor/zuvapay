@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { verifySmtpConnection } from '@/lib/email/transporter';
 import { sendTransactionalEmail } from '@/lib/email/sendEmail';
 import {
@@ -17,13 +18,40 @@ import {
   getEmailAppUrl,
 } from '@/lib/email/templates';
 
+async function checkAdminAuth() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { authorized: false, response: NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 }) };
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (!profile || profile.role !== 'admin') {
+    return { authorized: false, response: NextResponse.json({ success: false, error: 'Unauthorized. Admin privileges required.' }, { status: 403 }) };
+  }
+
+  return { authorized: true, user };
+}
+
 export async function GET() {
+  const auth = await checkAdminAuth();
+  if (!auth.authorized) return auth.response;
+
   // Test SMTP connection and return configuration status
   const connection = await verifySmtpConnection();
   return NextResponse.json(connection);
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await checkAdminAuth();
+  if (!auth.authorized) return auth.response;
+
   try {
     const body = await request.json();
     const { action = 'send_test', targetEmail, templateType = 'welcome', sampleData = {} } = body;
@@ -38,11 +66,6 @@ export async function POST(request: NextRequest) {
           rendered = renderWelcomeEmail({
             name,
             email: targetEmail || 'david@zuvapay.com',
-            virtualAccount: sampleData.virtualAccount || {
-              bankName: 'Moniepoint Microfinance Bank',
-              accountNumber: '8102938192',
-              accountName: 'ZuvaPay / David Adeleke',
-            },
           });
           break;
 

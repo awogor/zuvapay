@@ -159,14 +159,11 @@ export function PinSetupModal({ isOpen, onSuccess }: PinSetupModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xl animate-in fade-in duration-300">
-      <div className="relative w-full max-w-md rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/95 p-6 sm:p-8 shadow-2xl backdrop-blur-2xl text-center overflow-hidden">
-        {/* Glow ambient background */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-24 bg-brand-orange/20 blur-3xl pointer-events-none" />
-
-        {/* Shield Icon */}
-        <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-orange to-amber-500 p-0.5 shadow-xl shadow-orange-500/20 mb-4 flex items-center justify-center text-slate-950">
-          <KeyRound className="w-7 h-7 stroke-[2.5]" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-2xl text-center overflow-hidden">
+        {/* Key Icon */}
+        <div className="mx-auto w-12 h-12 rounded-xl bg-brand-orange/10 border border-brand-orange/20 text-brand-orange mb-4 flex items-center justify-center">
+          <KeyRound className="w-6 h-6 stroke-[2.5]" />
         </div>
 
         {/* Title & Description */}

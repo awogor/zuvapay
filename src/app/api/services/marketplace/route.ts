@@ -155,15 +155,71 @@ export async function POST(request: NextRequest) {
       amount,
     } = body;
 
-    if (!productId) {
+    if (!productId || !reference) {
       return NextResponse.json(
-        { success: false, error: 'Product ID is required.' },
+        { success: false, error: 'Missing required parameters (productId, reference).' },
         { status: 400 }
       );
     }
 
+    const adminSupabase = createAdminClient();
+    const isMock = process.env.NEXT_PUBLIC_MOCK_DATA === 'true';
+
+    // Anti-exploit guard: Verify debit transaction in database
+    let verifiedTx: any = null;
+    if (!isMock) {
+      const { data: tx, error: txErr } = await adminSupabase
+        .from('transactions')
+        .select('*, wallets!inner(user_id)')
+        .eq('reference', reference)
+        .maybeSingle();
+
+      if (txErr || !tx) {
+        return NextResponse.json(
+          { success: false, error: 'Debit transaction reference not found or unverified' },
+          { status: 400 }
+        );
+      }
+
+      if (tx.wallets?.user_id !== user.id) {
+        return NextResponse.json(
+          { success: false, error: 'Unauthorized transaction reference' },
+          { status: 403 }
+        );
+      }
+
+      if (tx.type !== 'debit' || tx.status !== 'completed') {
+        return NextResponse.json(
+          { success: false, error: 'Transaction is not a verified completed debit' },
+          { status: 400 }
+        );
+      }
+
+      if (tx.category !== 'marketplace' && tx.category !== 'digital_service') {
+        return NextResponse.json(
+          { success: false, error: 'Transaction category mismatch for marketplace order' },
+          { status: 400 }
+        );
+      }
+
+      if (amount && Number(tx.amount) < Number(amount)) {
+        return NextResponse.json(
+          { success: false, error: 'Debit transaction amount is insufficient for marketplace order' },
+          { status: 400 }
+        );
+      }
+
+      if (tx.metadata?.fulfillment_status === 'fulfilled') {
+        return NextResponse.json(
+          { success: false, error: 'This transaction has already been fulfilled' },
+          { status: 409 }
+        );
+      }
+      verifiedTx = tx;
+    }
+
     const qty = Math.max(1, Number(quantity) || 1);
-    const orderIdempotencyKey = reference || `kp_order_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const orderIdempotencyKey = reference;
 
     // Call AI Plug Order API
     const aiPlugRes = await createAIPlugOrder({
@@ -204,6 +260,8 @@ export async function POST(request: NextRequest) {
         const mergedMetadata = {
           ...(existingTx?.metadata || {}),
           supplierOrderId: mockOrder.id,
+          fulfillment_status: 'fulfilled',
+          fulfilled_at: new Date().toISOString(),
           delivery: mockOrder.deliveryDetails,
         };
 
@@ -322,6 +380,8 @@ export async function POST(request: NextRequest) {
       const mergedMetadata = {
         ...(existingTx?.metadata || {}),
         supplierOrderId: supplierOrderId || undefined,
+        fulfillment_status: 'fulfilled',
+        fulfilled_at: new Date().toISOString(),
         delivery: parsedDelivery,
       };
 

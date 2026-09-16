@@ -82,18 +82,15 @@ export function SwapModal({ isOpen, onClose }: SwapModalProps) {
       }}
     >
       <div className="relative w-full max-w-md max-h-[88dvh] sm:max-h-[90dvh] flex flex-col overflow-hidden rounded-t-[28px] sm:rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200">
-        {/* Top brand accent bar */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-brand-orange via-amber-500 to-brand-blue flex-shrink-0" />
-
         {/* Mobile Drag Indicator */}
         <div className="sm:hidden pt-2.5 pb-1 flex justify-center flex-shrink-0 bg-transparent">
           <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
         </div>
 
         {/* Header */}
-        <div className="flex-shrink-0 flex items-center justify-between px-5 sm:px-6 pt-3 sm:pt-4 pb-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/80">
+        <div className="flex-shrink-0 flex items-center justify-between px-5 sm:px-6 pt-3 sm:pt-4 pb-3 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-brand-orange/10 border border-brand-orange/20 text-brand-orange shadow-xs">
+            <div className="p-2 rounded-xl bg-brand-orange/10 border border-brand-orange/20 text-brand-orange">
               <RefreshCw className="w-5 h-5" />
             </div>
             <div>

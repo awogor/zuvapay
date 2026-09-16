@@ -61,7 +61,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast, success, error, info }}>
       {children}
-      <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-md w-full px-4 pointer-events-none">
+      <div className="fixed bottom-20 sm:bottom-5 right-0 sm:right-5 z-[9999] flex flex-col gap-2 max-w-md w-full px-4 pointer-events-none">
         {toasts.map((t) => {
           const bgColors = {
             success: 'bg-emerald-950/95 border-emerald-500/50 text-emerald-200',

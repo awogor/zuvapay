@@ -6,6 +6,7 @@ import { useToast } from '@/components/common/Toast';
 import { formatNaira } from '@/lib/utils';
 import { Tv, UserCheck, AlertCircle, ArrowRight, ShieldCheck, ChevronDown, PlusCircle } from 'lucide-react';
 import CustomSearchDropdown, { type DropdownItem } from '@/components/common/CustomSearchDropdown';
+import { BeneficiaryModal } from '@/components/modals/BeneficiaryModal';
 
 const PROVIDERS = [
   { id: 'gotv', name: 'GOtv Nigeria' },
@@ -23,11 +24,27 @@ export default function CableTvPage() {
   const [selectedBouquetId, setSelectedBouquetId] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingBouquets, setLoadingBouquets] = useState(false);
+  const [showBeneficiaryModal, setShowBeneficiaryModal] = useState(false);
 
   // Validation state
   const [validating, setValidating] = useState(false);
   const [customerName, setCustomerName] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  const handleSelectBeneficiary = (b: {
+    phone: string;
+    network: string;
+    customerName?: string;
+  }) => {
+    setIucNumber(b.phone);
+    if (b.network) {
+      setProvider(b.network.toLowerCase());
+    }
+    if (b.customerName) {
+      setCustomerName(b.customerName);
+      setValidationError(null);
+    }
+  };
 
   // Fetch bouquets when provider changes
   useEffect(() => {
@@ -190,6 +207,18 @@ export default function CableTvPage() {
       // 4. Success
       success('TV Subscription Active!', `${selectedBouquet.name} activated on smartcard ${iucNumber}.`);
 
+      // Auto-save IUC / smartcard as beneficiary (30-day auto-retention)
+      fetch('/api/user/beneficiaries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: iucNumber,
+          network: provider,
+          service_type: 'tv',
+          customer_name: customerName || undefined,
+        }),
+      }).catch(() => {});
+
       // Reset form so the page is immediately fresh for the next transaction
       setIucNumber('');
       setSelectedBouquetId('');
@@ -275,9 +304,27 @@ export default function CableTvPage() {
 
           {/* IUC / Smartcard Input */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              Smartcard / IUC Number
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Smartcard / IUC Number
+              </label>
+              <div className="flex items-center gap-2">
+                {customerName && (
+                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <UserCheck className="w-3.5 h-3.5" />
+                    Verified
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowBeneficiaryModal(true)}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 py-0.5 px-2 rounded-lg hover:bg-sky-500/10 transition-all active:scale-95"
+                >
+                  <Tv className="w-3.5 h-3.5" />
+                  <span>Saved Smartcards</span>
+                </button>
+              </div>
+            </div>
             <div className="relative">
               <input
                 type="text"
@@ -359,6 +406,13 @@ export default function CableTvPage() {
           <span>Automated Refund: Immediate 100% wallet reversal if activation fails</span>
         </div>
       </div>
+
+      <BeneficiaryModal
+        isOpen={showBeneficiaryModal}
+        onClose={() => setShowBeneficiaryModal(false)}
+        onSelect={handleSelectBeneficiary}
+        serviceType="tv"
+      />
     </div>
   );
 }

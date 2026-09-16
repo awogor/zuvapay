@@ -120,10 +120,8 @@ export async function getDynamicSMSQuote(options: {
     if (liveData && liveData.cost > 0) {
       // Standard Grizzly accounts return prices in Russian Rubles (RUB)
       // Conversion ~95 RUB per USD
-      if (liveData.cost > 3) {
-        liveUsdCost = liveData.cost / 95;
-      } else {
-        liveUsdCost = liveData.cost;
+      if (liveData.cost > 0) {
+        liveUsdCost = Number((liveData.cost / 95).toFixed(4));
       }
     }
   } catch (err) {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useWallet } from '@/context/WalletContext';
 import { useToast } from '@/components/common/Toast';
 import { formatNaira } from '@/lib/utils';
@@ -21,6 +21,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import CustomSearchDropdown from '@/components/common/CustomSearchDropdown';
+import { BeneficiaryModal } from '@/components/modals/BeneficiaryModal';
+import { parseElectricityTokens, ParsedTokensResult } from '@/lib/electricity/tokenParser';
 
 const DISCOS = [
   { id: 'ikeja', name: 'Ikeja Electric (IKEDC)' },
@@ -55,13 +57,38 @@ export default function ElectricityPage() {
   // Generated Token state
   const [generatedToken, setGeneratedToken] = useState<string | null>(null);
   const [tokenUnits, setTokenUnits] = useState<string | null>(null);
+  const [parsedTokensData, setParsedTokensData] = useState<ParsedTokensResult | null>(null);
   const [copiedToken, setCopiedToken] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [tokenEmailSentTo, setTokenEmailSentTo] = useState<string | null>(null);
   const [tokenMetadata, setTokenMetadata] = useState<any>(null);
   const [forwardEmail, setForwardEmail] = useState('');
   const [forwarding, setForwarding] = useState(false);
   const [showForwardForm, setShowForwardForm] = useState(false);
   const [isValidated, setIsValidated] = useState(false);
+  const [showBeneficiaryModal, setShowBeneficiaryModal] = useState(false);
+  const isBeneficiarySelectionRef = useRef(false);
+
+  const handleSelectBeneficiary = (b: {
+    phone: string;
+    network: string;
+    customerName?: string;
+    meterType?: string;
+  }) => {
+    isBeneficiarySelectionRef.current = true;
+    setMeterNumber(b.phone);
+    if (b.network) {
+      setDisco(b.network.toLowerCase());
+    }
+    if (b.meterType && (b.meterType === 'prepaid' || b.meterType === 'postpaid')) {
+      setMeterType(b.meterType as 'prepaid' | 'postpaid');
+    }
+    if (b.customerName) {
+      setCustomerName(b.customerName);
+      setIsValidated(true);
+      setValidationError(null);
+    }
+  };
 
   // Explicit Meter Validation function
   const handleValidateMeter = async () => {
@@ -109,8 +136,12 @@ export default function ElectricityPage() {
     }
   };
 
-  // Reset verification state when disco, meter number, or meter type changes
+  // Reset verification state when disco, meter number, or meter type changes manually
   useEffect(() => {
+    if (isBeneficiarySelectionRef.current) {
+      isBeneficiarySelectionRef.current = false;
+      return;
+    }
     setCustomerName(null);
     setCustomerAddress(null);
     setValidationError(null);
@@ -214,6 +245,8 @@ export default function ElectricityPage() {
       }
 
       // 4. Success: set token and email metadata
+      const parsed = parseElectricityTokens(data);
+      setParsedTokensData(parsed);
       setGeneratedToken(data.token);
       setTokenUnits(data.units || null);
       setTokenEmailSentTo(data.emailSentTo || null);
@@ -225,12 +258,28 @@ export default function ElectricityPage() {
         customerName: data.customerName || customerName,
         customerAddress: data.customerAddress || customerAddress,
         token: data.token,
+        bonusToken: data.bonusToken || parsed.bonusToken,
+        bonusUnits: data.bonusUnits || parsed.bonusUnits,
+        tokens: data.tokens || parsed.tokens,
         units: data.units || undefined,
         reference,
         operatorReference: data.operatorReference,
       });
 
       success('Electricity Paid!', `Token generated for meter ${meterNumber}. Email alert dispatched.`);
+
+      // Auto-save meter number as beneficiary (30-day auto-retention)
+      fetch('/api/user/beneficiaries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: meterNumber,
+          network: disco,
+          service_type: 'power',
+          customer_name: data.customerName || customerName || undefined,
+          meter_type: meterType,
+        }),
+      }).catch(() => {});
 
       // Reset input form fields so a new recharge can be initiated cleanly
       setMeterNumber('');
@@ -246,6 +295,9 @@ export default function ElectricityPage() {
             ...debitResult.transaction.metadata,
             provider: 'strowallet',
             token: data.token,
+            bonus_token: data.bonusToken || parsed.bonusToken,
+            bonus_units: data.bonusUnits || parsed.bonusUnits,
+            tokens: data.tokens || parsed.tokens,
             ...(data.units ? { units: data.units } : {}),
             meterAddress: data.customerAddress || customerAddress || undefined,
             operatorReference: data.operatorReference, // Kept in backend metadata for admin telemetry, hidden in customer receipt
@@ -300,11 +352,26 @@ export default function ElectricityPage() {
     }
   };
 
-  const copyToken = () => {
-    if (generatedToken) {
-      navigator.clipboard.writeText(generatedToken.replace(/-/g, ''));
+  const copySpecificToken = (tokenStr: string, index?: number) => {
+    if (tokenStr) {
+      navigator.clipboard.writeText(tokenStr.replace(/\s+/g, ''));
+      if (index !== undefined) {
+        setCopiedIndex(index);
+        setTimeout(() => setCopiedIndex(null), 2000);
+      } else {
+        setCopiedToken(true);
+        setTimeout(() => setCopiedToken(false), 2000);
+      }
+      info('Copied', 'Token copied to clipboard');
+    }
+  };
+
+  const copyAllTokens = () => {
+    if (parsedTokensData?.allTokensText) {
+      navigator.clipboard.writeText(parsedTokensData.allTokensText);
       setCopiedToken(true);
       setTimeout(() => setCopiedToken(false), 2000);
+      info('Copied All', 'All tokens copied to clipboard');
     }
   };
 
@@ -324,28 +391,96 @@ export default function ElectricityPage() {
 
       {/* Generated Token Banner */}
       {generatedToken && (
-        <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 dark:from-emerald-950/80 dark:to-slate-900 border border-emerald-500/30 shadow-2xl space-y-3 animate-in zoom-in-95">
+        <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 dark:from-emerald-950/80 dark:to-slate-900 border border-emerald-500/30 shadow-2xl space-y-4 animate-in zoom-in-95">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4" />
-              Prepaid Meter Token Generated
+              {parsedTokensData?.isMultiToken ? 'Prepaid Meter Tokens Generated' : 'Prepaid Meter Token Generated'}
             </span>
-            {tokenUnits && (
+            {parsedTokensData?.isMultiToken ? (
+              <button
+                type="button"
+                onClick={copyAllTokens}
+                className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+              >
+                {copiedToken ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedToken ? 'All Copied' : 'Copy All Tokens'}
+              </button>
+            ) : tokenUnits ? (
               <span className="text-xs font-mono text-slate-600 dark:text-slate-300 font-semibold">{tokenUnits}</span>
-            )}
+            ) : null}
           </div>
-          <div className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-950/80 border border-emerald-500/20 dark:border-white/10">
-            <span className="font-mono text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-300 tracking-widest">
-              {generatedToken}
-            </span>
-            <button
-              onClick={copyToken}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold transition-all"
-            >
-              {copiedToken ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              {copiedToken ? 'Copied' : 'Copy'}
-            </button>
-          </div>
+
+          {/* Tokens Display */}
+          {parsedTokensData?.isMultiToken ? (
+            <div className="space-y-3">
+              {parsedTokensData.tokens.map((tok, idx) => {
+                const isBonus = tok.type === 'bonus';
+                const isKct = tok.type === 'kct1' || tok.type === 'kct2';
+                return (
+                  <div
+                    key={idx}
+                    className={`p-3.5 sm:p-4 rounded-2xl border ${
+                      isBonus
+                        ? 'bg-amber-500/10 dark:bg-amber-950/40 border-amber-500/30'
+                        : isKct
+                        ? 'bg-slate-500/10 dark:bg-slate-900 border-slate-500/30'
+                        : 'bg-white dark:bg-slate-950 border-emerald-500/20 dark:border-emerald-500/30'
+                    } space-y-2`}
+                  >
+                    <div className="flex items-center justify-between text-xs">
+                      <span className={`font-bold flex items-center gap-1.5 ${
+                        isBonus ? 'text-amber-700 dark:text-amber-400' : isKct ? 'text-slate-600 dark:text-slate-300' : 'text-emerald-600 dark:text-emerald-400'
+                      }`}>
+                        {isBonus ? '🎁' : isKct ? '🔑' : '⚡'}
+                        {tok.label}
+                      </span>
+                      {tok.units && (
+                        <span className="font-semibold text-emerald-600 dark:text-emerald-400 font-mono text-[11px]">
+                          {tok.units}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                      <span className="font-mono text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-wider break-all select-all">
+                        {tok.token}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => copySpecificToken(tok.token, idx)}
+                        className={`self-end sm:self-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex-shrink-0 ${
+                          isBonus
+                            ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-700 dark:text-amber-300'
+                            : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                        }`}
+                      >
+                        {copiedIndex === idx ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                        {copiedIndex === idx ? 'Copied' : 'Copy'}
+                      </button>
+                    </div>
+                    {tok.subtitle && (
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        {tok.subtitle}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-slate-950 border border-emerald-500/20 dark:border-emerald-500/30">
+              <span className="font-mono text-base sm:text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-300 tracking-wider sm:tracking-widest break-all select-all">
+                {generatedToken}
+              </span>
+              <button
+                onClick={() => copySpecificToken(generatedToken)}
+                className="self-end sm:self-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold transition-all flex-shrink-0"
+              >
+                {copiedToken ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copiedToken ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+          )}
 
           {/* Email Delivery Alert Notice & Forward Form */}
           <div className="pt-2 border-t border-emerald-500/20 space-y-2">
@@ -427,12 +562,22 @@ export default function ElectricityPage() {
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                 Meter / Account Number
               </label>
-              {customerName && (
-                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                  <UserCheck className="w-3.5 h-3.5" />
-                  Verified
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {customerName && (
+                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <UserCheck className="w-3.5 h-3.5" />
+                    Verified
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowBeneficiaryModal(true)}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 py-0.5 px-2 rounded-lg hover:bg-emerald-500/10 transition-all active:scale-95"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>Saved Meters</span>
+                </button>
+              </div>
             </div>
             <div className="relative flex items-center">
               <input
@@ -538,6 +683,13 @@ export default function ElectricityPage() {
           <span>Automated Refund: Immediate 100% wallet reversal if token fails</span>
         </div>
       </div>
+
+      <BeneficiaryModal
+        isOpen={showBeneficiaryModal}
+        onClose={() => setShowBeneficiaryModal(false)}
+        onSelect={handleSelectBeneficiary}
+        serviceType="power"
+      />
     </div>
   );
 }

@@ -99,19 +99,6 @@ export function SignupPageView() {
         success('Account Created', 'Please check your email to verify your account.');
         router.push('/login?registered=true');
       } else {
-        // Send branded welcome onboarding email
-        fetch('/api/email/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to: formData.email,
-            templateType: 'welcome',
-            data: {
-              name: `${formData.firstName} ${formData.lastName}`.trim(),
-            },
-          }),
-        }).catch(() => {});
-
         success('Welcome to ZuvaPay!', 'Your account has been created.');
         router.push('/dashboard');
       }
@@ -123,7 +110,7 @@ export function SignupPageView() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-[#FFF9F3] bg-gradient-to-br from-[#FFF5EC] via-[#FFF9F4] to-[#FFF0E2] relative overflow-hidden selection:bg-zuva-solar selection:text-white">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center py-8 sm:py-10 px-4 bg-[#FFF9F3] bg-gradient-to-br from-[#FFF5EC] via-[#FFF9F4] to-[#FFF0E2] relative overflow-y-auto selection:bg-zuva-solar selection:text-white">
       {/* Background ambient solar glow orbs */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-[#FF6B00]/10 blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 h-96 w-96 rounded-full bg-[#F59E0B]/12 blur-[100px] pointer-events-none" />

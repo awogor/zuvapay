@@ -12,39 +12,127 @@ import {
   ShieldCheck,
   Loader2,
   ArrowRight,
+  Zap,
+  Tv,
 } from 'lucide-react';
 import { BeneficiaryItem } from '@/app/api/user/beneficiaries/route';
 
 interface BeneficiaryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (beneficiary: { phone: string; network: string }) => void;
-  serviceType?: 'airtime' | 'data';
+  onSelect: (beneficiary: {
+    phone: string;
+    network: string;
+    customerName?: string;
+    meterType?: string;
+  }) => void;
+  serviceType?: 'airtime' | 'data' | 'power' | 'tv';
 }
 
-function getNetworkBadgeStyle(network: string) {
+function getNetworkBadge(network: string, serviceType: string) {
   const norm = (network || '').toLowerCase();
+
+  if (serviceType === 'tv') {
+    if (norm.includes('dstv')) {
+      return {
+        label: 'DSTV',
+        style: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
+      };
+    }
+    if (norm.includes('gotv')) {
+      return {
+        label: 'GOTV',
+        style: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+      };
+    }
+    if (norm.includes('startimes')) {
+      return {
+        label: 'STARTIMES',
+        style: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+      };
+    }
+    return {
+      label: network.toUpperCase(),
+      style: 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
+    };
+  }
+
+  if (serviceType === 'power') {
+    const discoMap: Record<string, string> = {
+      ikeja: 'IKEDC',
+      eko: 'EKEDC',
+      abuja: 'AEDC',
+      kano: 'KEDCO',
+      enugu: 'EEDC',
+      portharcourt: 'PHED',
+      ibadan: 'IBEDC',
+      kaduna: 'KAEDCO',
+      jos: 'JED',
+      benin: 'BEDC',
+      yola: 'YEDC',
+    };
+    const label = discoMap[norm] || network.toUpperCase();
+    return {
+      label,
+      style: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+    };
+  }
+
+  // Telco (airtime / data)
   if (norm.includes('mtn')) {
-    return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
+    return {
+      label: 'MTN',
+      style: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+    };
   }
   if (norm.includes('airtel')) {
-    return 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20';
+    return {
+      label: 'AIRTEL',
+      style: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
+    };
   }
   if (norm.includes('glo')) {
-    return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
+    return {
+      label: 'GLO',
+      style: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+    };
   }
   if (norm.includes('9mobile') || norm.includes('etisalat')) {
-    return 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20';
+    return {
+      label: '9MOBILE',
+      style: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20',
+    };
   }
-  return 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20';
+  return {
+    label: network.toUpperCase(),
+    style: 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20',
+  };
 }
 
-function formatPhoneDisplay(phone: string) {
-  const cleaned = phone.replace(/\D/g, '');
+function formatNumberDisplay(num: string, serviceType: string) {
+  const cleaned = (num || '').replace(/\D/g, '');
+  if (serviceType === 'power') {
+    if (cleaned.length === 11) {
+      return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 8)} ${cleaned.slice(8)}`;
+    }
+    if (cleaned.length === 13) {
+      return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 8)} ${cleaned.slice(8, 12)} ${cleaned.slice(12)}`;
+    }
+    return num;
+  }
+  if (serviceType === 'tv') {
+    if (cleaned.length === 10) {
+      return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(7)}`;
+    }
+    if (cleaned.length === 11) {
+      return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(7)}`;
+    }
+    return num;
+  }
   if (cleaned.length === 11) {
     return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(7)}`;
   }
-  return phone;
+  return num;
 }
 
 function getDaysRemaining(lastUsedIso: string) {
@@ -121,35 +209,83 @@ export function BeneficiaryModal({
     const q = searchQuery.toLowerCase().trim();
     if (!q) return true;
     const cleanQ = q.replace(/\D/g, '');
-    const cleanPhone = b.phone.replace(/\D/g, '');
+    const cleanPhone = (b.phone || '').replace(/\D/g, '');
     return (
       (cleanQ.length > 0 && cleanPhone.includes(cleanQ)) ||
-      b.phone.toLowerCase().includes(q) ||
-      b.network.toLowerCase().includes(q) ||
-      (b.nickname && b.nickname.toLowerCase().includes(q))
+      (b.phone && b.phone.toLowerCase().includes(q)) ||
+      (b.network && b.network.toLowerCase().includes(q)) ||
+      (b.nickname && b.nickname.toLowerCase().includes(q)) ||
+      (b.customer_name && b.customer_name.toLowerCase().includes(q))
     );
   });
 
+  const isPower = serviceType === 'power';
+  const isTv = serviceType === 'tv';
+
+  const title = isPower
+    ? 'Saved Electricity Meters'
+    : isTv
+    ? 'Saved Cable Smartcards / IUC'
+    : 'Saved Beneficiaries';
+
+  const subtitle = isPower
+    ? 'Auto-saved meters from your recent electricity payments (30-day retention)'
+    : isTv
+    ? 'Auto-saved IUC numbers from your recent TV subscriptions (30-day retention)'
+    : 'Auto-saved from your recent purchases (30-day retention)';
+
+  const searchPlaceholder = isPower
+    ? 'Search by meter number, Disco, or customer name...'
+    : isTv
+    ? 'Search by smartcard/IUC number, provider, or name...'
+    : 'Search by phone number or network...';
+
+  const emptyTitle = isPower
+    ? 'No electricity meters saved yet'
+    : isTv
+    ? 'No smartcards saved yet'
+    : 'No beneficiaries saved yet';
+
+  const emptyDesc = isPower
+    ? 'Whenever you pay for electricity, the meter number will be automatically saved here for 30 days.'
+    : isTv
+    ? 'Whenever you subscribe to Cable TV, the smartcard/IUC will be automatically saved here for 30 days.'
+    : 'Whenever you purchase airtime or data, the recipient number will be automatically saved here for 30 days.';
+
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-md max-h-[85dvh] flex flex-col rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-md max-h-[85dvh] flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-brand-orange/10 border border-brand-orange/20 text-brand-orange flex items-center justify-center">
-              <Users className="w-4 h-4" />
+            <div
+              className={`w-9 h-9 rounded-xl border flex items-center justify-center ${
+                isPower
+                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'
+                  : isTv
+                  ? 'bg-sky-500/10 border-sky-500/20 text-sky-500'
+                  : 'bg-brand-orange/10 border-brand-orange/20 text-brand-orange'
+              }`}
+            >
+              {isPower ? (
+                <Zap className="w-4 h-4" />
+              ) : isTv ? (
+                <Tv className="w-4 h-4" />
+              ) : (
+                <Users className="w-4 h-4" />
+              )}
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                Saved Beneficiaries
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-tight">
+                {title}
               </h3>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Auto-saved from your recent purchases (30-day retention)
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                {subtitle}
               </p>
             </div>
           </div>
@@ -169,7 +305,7 @@ export function BeneficiaryModal({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by phone number or network..."
+              placeholder={searchPlaceholder}
               className="w-full pl-9 pr-8 py-2 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-brand-orange"
             />
             {searchQuery && (
@@ -188,20 +324,26 @@ export function BeneficiaryModal({
           {loading ? (
             <div className="py-12 flex flex-col items-center justify-center gap-2 text-slate-400 text-xs">
               <Loader2 className="w-5 h-5 animate-spin text-brand-orange" />
-              <span>Loading saved numbers...</span>
+              <span>Loading saved items...</span>
             </div>
           ) : filtered.length === 0 ? (
             <div className="py-10 px-4 text-center space-y-2">
               <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
-                <Smartphone className="w-6 h-6" />
+                {isPower ? (
+                  <Zap className="w-6 h-6" />
+                ) : isTv ? (
+                  <Tv className="w-6 h-6" />
+                ) : (
+                  <Smartphone className="w-6 h-6" />
+                )}
               </div>
               <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                {searchQuery ? 'No matching beneficiaries' : 'No beneficiaries saved yet'}
+                {searchQuery ? 'No matching items found' : emptyTitle}
               </p>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
                 {searchQuery
-                  ? 'Try searching with a different phone number.'
-                  : 'Whenever you purchase airtime or data, the recipient number will be automatically saved here for 30 days.'}
+                  ? 'Try searching with a different number or name.'
+                  : emptyDesc}
               </p>
             </div>
           ) : (
@@ -209,36 +351,48 @@ export function BeneficiaryModal({
               const daysLeft = getDaysRemaining(item.last_used_at);
               const relativeUsed = formatRelativeTime(item.last_used_at);
               const isDeleting = deletingId === (item.id || item.phone);
+              const badge = getNetworkBadge(item.network, item.service_type || serviceType);
+              const displayName = item.customer_name || item.nickname;
 
               return (
                 <div
                   key={item.id || item.phone}
                   onClick={() => {
-                    onSelect({ phone: item.phone, network: item.network });
+                    onSelect({
+                      phone: item.phone,
+                      network: item.network,
+                      customerName: displayName || undefined,
+                      meterType: item.meter_type || undefined,
+                    });
                     onClose();
                   }}
-                  className="group flex items-center justify-between p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-brand-orange/40 hover:bg-brand-orange/5 dark:hover:bg-brand-orange/5 transition-all cursor-pointer shadow-sm"
+                  className="group flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-brand-orange/40 hover:bg-brand-orange/5 dark:hover:bg-brand-orange/5 transition-all cursor-pointer shadow-sm"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border flex-shrink-0 ${getNetworkBadgeStyle(
-                        item.network
-                      )}`}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border flex-shrink-0 ${badge.style}`}
                     >
-                      {item.network}
+                      {badge.label}
                     </div>
 
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-mono text-sm font-bold text-slate-900 dark:text-white tracking-wide">
-                          {formatPhoneDisplay(item.phone)}
+                          {formatNumberDisplay(item.phone, item.service_type || serviceType)}
                         </span>
-                        {item.nickname && (
-                          <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate font-medium">
-                            ({item.nickname})
+                        {item.meter_type && (
+                          <span className="px-1.5 py-0.2 rounded text-[9px] uppercase font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                            {item.meter_type}
                           </span>
                         )}
                       </div>
+
+                      {displayName && (
+                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">
+                          {displayName}
+                        </div>
+                      )}
+
                       <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />

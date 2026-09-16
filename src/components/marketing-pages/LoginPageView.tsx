@@ -92,7 +92,7 @@ function LoginFormContent() {
   };
 
   return (
-    <div className="min-h-screen sm:h-screen sm:overflow-hidden w-full flex flex-col justify-center items-center p-4 sm:p-6 bg-[#FFF9F3] bg-gradient-to-br from-[#FFF5EC] via-[#FFF9F4] to-[#FFF0E2] relative overflow-hidden selection:bg-brand-orange selection:text-white">
+    <div className="min-h-screen w-full flex flex-col justify-center items-center py-8 sm:py-10 px-4 bg-[#FFF9F3] bg-gradient-to-br from-[#FFF5EC] via-[#FFF9F4] to-[#FFF0E2] relative overflow-y-auto selection:bg-brand-orange selection:text-white">
       {/* Background ambient solar glow orbs */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-[#FF6B00]/10 blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 h-96 w-96 rounded-full bg-[#F59E0B]/12 blur-[100px] pointer-events-none" />
@@ -107,47 +107,47 @@ function LoginFormContent() {
         <span>Home</span>
       </Link>
 
-      {/* Main Login Card - Thick, modern, stable viewport fit on desktop */}
-      <div className="relative z-10 w-full max-w-[430px] rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-[0_20px_50px_-12px_rgba(255,107,0,0.12),0_8px_24px_-8px_rgba(15,23,42,0.06)] ring-1 ring-slate-900/5 my-auto">
+      {/* Main Login Card - Compact, sleek, responsive */}
+      <div className="relative z-10 w-full max-w-[400px] rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white p-4.5 sm:p-6 shadow-[0_20px_50px_-12px_rgba(255,107,0,0.12),0_8px_24px_-8px_rgba(15,23,42,0.06)] ring-1 ring-slate-900/5 my-auto">
         {/* Header with popping brand logo and black heading */}
-        <div className="text-center mb-3.5 sm:mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-orange to-amber-500 flex items-center justify-center font-black text-xl text-slate-950 shadow-md shadow-orange-500/25 mx-auto mb-2 ring-4 ring-orange-500/10">
+        <div className="text-center mb-3 sm:mb-3.5">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-orange to-amber-500 flex items-center justify-center font-black text-lg text-slate-950 shadow-md shadow-orange-500/20 mx-auto mb-1.5 ring-2 ring-orange-500/15">
             ZP
           </div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
+          <h1 className="text-lg sm:text-xl font-black tracking-tight text-slate-900">
             Welcome Back
           </h1>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">
+          <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
             Enter your details to continue to your dashboard
           </p>
         </div>
 
-        <div className="space-y-3 sm:space-y-3.5">
+        <div className="space-y-3">
           {isMockMode && (
-            <div className="p-2.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
+            <div className="p-2 rounded-xl bg-amber-50 border border-amber-200/80 text-xs text-amber-900 flex items-center justify-between">
               <span className="text-[11px] font-medium text-amber-800">Demo User: @davidadeleke</span>
               <button
                 onClick={handleQuickDemo}
                 type="button"
-                className="px-2.5 py-1 rounded-xl bg-brand-orange text-slate-950 font-bold text-[11px] shadow-sm hover:opacity-90"
+                className="px-2 py-0.5 rounded-lg bg-brand-orange text-slate-950 font-bold text-[11px] shadow-sm hover:opacity-90"
               >
                 1-Click Demo
               </button>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-3.5">
-            {/* Username / Email Field - Thick with icon pill */}
+          <form onSubmit={handleSubmit} className="space-y-3">
+            {/* Username / Email Field - With brand icon background */}
             <div>
-              <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1">
+              <label className="block text-xs font-bold text-slate-700 mb-1">
                 Username or Email
               </label>
-              <div className="flex items-center gap-2.5 p-1 sm:p-1.5 rounded-2xl bg-slate-50/90 border border-slate-200/90 focus-within:border-brand-orange focus-within:bg-white focus-within:ring-4 focus-within:ring-orange-500/10 transition-all shadow-sm">
-                <div className="w-10 h-10 rounded-xl bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-2.5 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200 focus-within:border-brand-orange focus-within:bg-white focus-within:ring-2 focus-within:ring-orange-500/15 transition-all shadow-sm">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0">
                   {identifier.startsWith('@') ? (
-                    <AtSign className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <AtSign className="w-4 h-4 text-brand-orange" />
                   ) : (
-                    <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Mail className="w-4 h-4 text-brand-orange" />
                   )}
                 </div>
                 <input
@@ -158,15 +158,15 @@ function LoginFormContent() {
                   required
                   autoCapitalize="none"
                   autoCorrect="off"
-                  className="w-full bg-transparent text-sm sm:text-base font-semibold text-slate-900 placeholder-slate-400 focus:outline-none py-1.5 pr-3"
+                  className="w-full bg-transparent text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none py-1 pr-2.5"
                 />
               </div>
             </div>
 
-            {/* Password Field - Thick with icon pill & Forgot password on top */}
+            {/* Password Field - With brand icon background & Forgot password on top */}
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label className="block text-xs sm:text-sm font-bold text-slate-800">
+                <label className="block text-xs font-bold text-slate-700">
                   Password
                 </label>
                 <Link
@@ -176,9 +176,9 @@ function LoginFormContent() {
                   Forgot password?
                 </Link>
               </div>
-              <div className="flex items-center gap-2.5 p-1 sm:p-1.5 rounded-2xl bg-slate-50/90 border border-slate-200/90 focus-within:border-brand-orange focus-within:bg-white focus-within:ring-4 focus-within:ring-orange-500/10 transition-all shadow-sm">
-                <div className="w-10 h-10 rounded-xl bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0">
-                  <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+              <div className="flex items-center gap-2.5 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200 focus-within:border-brand-orange focus-within:bg-white focus-within:ring-2 focus-within:ring-orange-500/15 transition-all shadow-sm">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0">
+                  <Lock className="w-4 h-4 text-brand-orange" />
                 </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -186,12 +186,12 @@ function LoginFormContent() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   required
-                  className="w-full bg-transparent text-sm sm:text-base font-semibold text-slate-900 placeholder-slate-400 focus:outline-none py-1.5"
+                  className="w-full bg-transparent text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none py-1"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="p-2 text-slate-400 hover:text-slate-700 transition-colors flex-shrink-0"
+                  className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors flex-shrink-0 mr-1"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -199,11 +199,11 @@ function LoginFormContent() {
               </div>
             </div>
 
-            {/* Thick Submit Button */}
+            {/* Sleek Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-12 sm:h-13 py-3 rounded-2xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-sm sm:text-base transition-all shadow-lg shadow-orange-500/25 disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.99] mt-1.5"
+              className="w-full h-11 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-xs sm:text-sm transition-all shadow-md shadow-orange-500/20 disabled:opacity-50 flex items-center justify-center gap-1.5 active:scale-[0.99] mt-1"
             >
               <span>{loading ? 'Signing in...' : 'Log In'}</span>
               <ArrowRight className="w-4 h-4 stroke-[2.5]" />
@@ -211,18 +211,18 @@ function LoginFormContent() {
           </form>
 
           {/* Security Notice Pill */}
-          <div className="p-2.5 sm:p-3 rounded-2xl bg-orange-500/5 border border-orange-500/15 text-slate-700 text-xs flex items-center gap-2.5">
+          <div className="p-2 sm:p-2.5 rounded-xl bg-orange-500/5 border border-orange-500/15 text-slate-700 text-xs flex items-center gap-2.5">
             <div className="w-6 h-6 rounded-lg bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0">
               <Lock className="w-3 h-3 stroke-[2.5]" />
             </div>
             <span className="text-[11px] font-medium text-slate-600 leading-snug">
-              Your account is protected with 256-bit financial encryption.
+              Protected by 256-bit financial encryption
             </span>
           </div>
         </div>
 
         {/* Register Footer Link */}
-        <div className="pt-3 sm:pt-3.5 text-center text-xs sm:text-sm text-slate-600 border-t border-slate-100 mt-3 sm:mt-3.5">
+        <div className="pt-3 text-center text-xs text-slate-600 border-t border-slate-100 mt-3">
           Don't have an account?{' '}
           <Link href="/signup" className="font-black text-brand-orange hover:underline">
             Register

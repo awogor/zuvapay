@@ -1,4 +1,5 @@
 import { renderBaseEmailLayout } from './baseLayout';
+import { parseElectricityTokens } from '@/lib/electricity/tokenParser';
 
 /**
  * Safely resolves the public domain for all customer-facing emails.
@@ -32,51 +33,80 @@ export type EmailTemplateType =
 export function renderWelcomeEmail({
   name,
   email,
-  virtualAccount,
 }: {
   name: string;
   email: string;
-  virtualAccount?: { bankName: string; accountNumber: string; accountName: string };
+  virtualAccount?: any;
 }): { subject: string; html: string } {
   const contentHtml = `
     <h1 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">
-      Welcome to ZuvaPay, ${name}
+      Welcome to ZuvaPay, ${name}! &#127881;
     </h1>
+    <p style="margin: 0 0 12px 0; font-size: 14px; line-height: 22px; color: #475569;">
+      Your ZuvaPay account has been successfully activated.
+    </p>
     <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 22px; color: #475569;">
-      Your account is active. ZuvaPay gives you fast, reliable access to telecom data bundles, electricity tokens, cable TV renewals, and digital utilities.
+      We're excited to have you on board. ZuvaPay gives you a faster, smarter way to handle everyday digital payments&mdash;from affordable data and airtime to electricity bills, cable TV renewals, and other essential utilities.
     </p>
 
-    <!-- Services Overview -->
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px; font-size: 13px;">
+    <div style="font-size: 14px; font-weight: 700; color: #0F172A; margin-bottom: 10px;">
+      Here's what you can do
+    </div>
+
+    <!-- Services Overview with Colored Bullet Points -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 22px; font-size: 13px;">
       <tr>
-        <td style="padding: 10px 0; border-bottom: 1px solid #F1F5F9; color: #334155; line-height: 20px;">
-          <strong>Data &amp; Airtime:</strong> Instant wholesale SME &amp; gifting bundles across MTN, Airtel, Glo, and 9mobile.
+        <td valign="top" style="padding: 8px 10px 8px 0; width: 14px; vertical-align: top; color: #FF6B00; font-size: 18px; line-height: 20px; font-weight: 900;">
+          &bull;
+        </td>
+        <td style="padding: 8px 0; border-bottom: 1px solid #F1F5F9; color: #334155; line-height: 20px;">
+          <strong style="color: #0F172A;">Data &amp; Airtime:</strong> Buy SME, VTU, corporate, and gifting bundles across MTN, Airtel, Glo, and 9mobile.
         </td>
       </tr>
       <tr>
-        <td style="padding: 10px 0; border-bottom: 1px solid #F1F5F9; color: #334155; line-height: 20px;">
-          <strong>Electricity:</strong> Instant 20-digit prepaid meter tokens and postpaid settlements for all Discos.
+        <td valign="top" style="padding: 8px 10px 8px 0; width: 14px; vertical-align: top; color: #FF6B00; font-size: 18px; line-height: 20px; font-weight: 900;">
+          &bull;
+        </td>
+        <td style="padding: 8px 0; border-bottom: 1px solid #F1F5F9; color: #334155; line-height: 20px;">
+          <strong style="color: #0F172A;">Electricity Bills:</strong> Generate instant prepaid meter tokens and pay postpaid bills for all Nigerian DisCos.
         </td>
       </tr>
       <tr>
-        <td style="padding: 10px 0; border-bottom: 1px solid #F1F5F9; color: #334155; line-height: 20px;">
-          <strong>Cable &amp; Subscriptions:</strong> Instant renewals for DStv, GOtv, StarTimes, and software tools.
+        <td valign="top" style="padding: 8px 10px 8px 0; width: 14px; vertical-align: top; color: #FF6B00; font-size: 18px; line-height: 20px; font-weight: 900;">
+          &bull;
+        </td>
+        <td style="padding: 8px 0; border-bottom: 1px solid #F1F5F9; color: #334155; line-height: 20px;">
+          <strong style="color: #0F172A;">Cable TV &amp; Subscriptions:</strong> Renew DStv, GOtv, StarTimes, and other supported digital services in seconds.
+        </td>
+      </tr>
+      <tr>
+        <td valign="top" style="padding: 8px 10px 8px 0; width: 14px; vertical-align: top; color: #FF6B00; font-size: 18px; line-height: 20px; font-weight: 900;">
+          &bull;
+        </td>
+        <td style="padding: 8px 0; border-bottom: 1px solid #F1F5F9; color: #334155; line-height: 20px;">
+          <strong style="color: #0F172A;">Secure Wallet:</strong> Fund your ZuvaPay wallet and enjoy fast, reliable transactions anytime.
         </td>
       </tr>
     </table>
 
+    <p style="margin: 0 0 22px 0; font-size: 14px; line-height: 22px; color: #475569;">
+      Ready to begin? Log in to your dashboard and experience seamless digital payments with ZuvaPay.
+    </p>
+
     <!-- Action Button -->
-    <div style="margin: 24px 0 20px 0;">
-      <a href="${getEmailAppUrl()}/dashboard" style="display: inline-block; padding: 11px 24px; background-color: #FF6B00; color: #FFFFFF; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px;">
+    <div style="margin: 0 0 10px 0;">
+      <a href="${getEmailAppUrl()}/dashboard" style="display: inline-block; padding: 12px 26px; background-color: #FF6B00; color: #FFFFFF; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px;">
         Go to Dashboard &rarr;
       </a>
     </div>
   `;
 
   return {
-    subject: `Welcome to ZuvaPay, ${name}`,
+    subject: `Welcome to ZuvaPay, ${name} - Your account is active`,
     html: renderBaseEmailLayout({
-      previewText: `Welcome to ZuvaPay! Your account is active and ready to use.`,
+      previewText: `Welcome to ZuvaPay! Your account has been successfully activated.`,
+      headerBadge: '✔ ACCOUNT ACTIVE',
+      badgeType: 'success',
       contentHtml,
     }),
   };
@@ -141,6 +171,8 @@ export function renderWalletCreditEmail({
     subject: `Wallet Credited: ₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })} - ZuvaPay`,
     html: renderBaseEmailLayout({
       previewText: `₦${amount.toLocaleString('en-NG')} credited to your ZuvaPay wallet. New Balance: ₦${newBalance.toLocaleString('en-NG')}.`,
+      headerBadge: '✔ WALLET CREDITED',
+      badgeType: 'success',
       contentHtml,
     }),
   };
@@ -220,6 +252,8 @@ export function renderServiceReceiptEmail({
     subject: `Receipt for ${serviceName} - ZuvaPay`,
     html: renderBaseEmailLayout({
       previewText: `Your ${serviceName} order of ₦${amount.toLocaleString('en-NG')} was fulfilled successfully.`,
+      headerBadge: '✔ ORDER COMPLETED',
+      badgeType: 'success',
       contentHtml,
     }),
   };
@@ -290,6 +324,8 @@ export function renderRefundEmail({
     subject: `Refund Confirmation: ₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })} - ZuvaPay`,
     html: renderBaseEmailLayout({
       previewText: `Your order for ${serviceName} was refunded. ₦${amount.toLocaleString('en-NG')} credited to your wallet.`,
+      headerBadge: 'REFUND PROCESSED',
+      badgeType: 'info',
       contentHtml,
     }),
   };
@@ -360,6 +396,8 @@ export function renderSecurityPinEmail({
     subject: `Security Alert: ${actionType} - ZuvaPay`,
     html: renderBaseEmailLayout({
       previewText: `Security alert: ${actionType} was recorded on your ZuvaPay account.`,
+      headerBadge: '⚠️ SECURITY ALERT',
+      badgeType: 'warning',
       contentHtml,
     }),
   };
@@ -377,6 +415,9 @@ export function renderElectricityTokenEmail({
   customerAddress,
   token,
   units,
+  bonusToken,
+  bonusUnits,
+  tokens,
   amount,
   reference,
   operatorReference,
@@ -390,49 +431,114 @@ export function renderElectricityTokenEmail({
   customerAddress?: string;
   token: string;
   units?: string;
+  bonusToken?: string;
+  bonusUnits?: string;
+  tokens?: any[];
   amount: number;
   reference: string;
   operatorReference?: string;
   date?: string;
 }): { subject: string; html: string } {
-  // Format token cleanly: "6032 - 5848 - 1710 - 4711 - 0091"
-  const cleanDigits = (token || '').replace(/\D/g, '');
-  const formattedToken =
-    cleanDigits.length === 20
-      ? cleanDigits.match(/.{1,4}/g)?.join(' - ') || token
-      : token;
+  const parsed = parseElectricityTokens({
+    token,
+    units,
+    bonus_token: bonusToken,
+    bonus_units: bonusUnits,
+    tokens,
+  });
+
+  let tokensBoxesHtml = '';
+
+  if (parsed.isMultiToken) {
+    tokensBoxesHtml = parsed.tokens
+      .map((tok, idx) => {
+        const isBonus = tok.type === 'bonus';
+        const isKct = tok.type === 'kct1' || tok.type === 'kct2';
+
+        const bg = isBonus ? '#FEFCE8' : (isKct ? '#F8FAFC' : '#FFF7ED');
+        const border = isBonus ? '#FEF08A' : (isKct ? '#CBD5E1' : '#FED7AA');
+        const headerColor = isBonus ? '#854D0E' : (isKct ? '#475569' : '#C2410C');
+        const icon = isBonus ? '🎁' : (isKct ? '🔑' : '⚡');
+        const numPrefix = `${idx + 1}. `;
+
+        let title = tok.label;
+        if (tok.type === 'main') title = `${numPrefix}Main Purchased Token`;
+        else if (tok.type === 'bonus') title = `${numPrefix}BSST Bonus Token${tok.units ? ` (${tok.units})` : ' (Free Gift Units)'}`;
+        else if (tok.type === 'kct1') title = `${numPrefix}Key Change Token 1 (KCT1)`;
+        else if (tok.type === 'kct2') title = `${numPrefix}Key Change Token 2 (KCT2)`;
+
+        const helper = isBonus
+          ? 'Free electricity bonus units credited by DisCo. Enter into meter after main token.'
+          : isKct
+          ? (tok.subtitle || 'Key into meter keypad to reconfigure meter.')
+          : 'Key these 20 digits into your meter CIU keypad, then press the <strong>Enter</strong> key.';
+
+        return `
+    <div class="token-box" style="background-color: ${bg}; border: 1px solid ${border}; border-radius: 10px; padding: 16px 14px; text-align: center; margin-bottom: 14px;">
+      <div style="font-size: 11px; font-weight: 700; color: ${headerColor}; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;">
+        ${icon} ${title}
+      </div>
+      <div class="token-digits" style="font-size: 15px; font-weight: 800; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; color: #0F172A; letter-spacing: 1.2px; padding: 4px 0; white-space: nowrap;">
+        ${tok.token}
+      </div>
+      <div style="font-size: 11.5px; color: ${isBonus ? '#713F12' : '#64748B'}; margin-top: 6px; line-height: 16px;">
+        ${helper}
+      </div>
+      ${
+        tok.units
+          ? `
+      <div style="margin-top: 8px; font-size: 12px; font-weight: 700; color: ${isBonus ? '#15803D' : '#059669'};">
+        ${isBonus ? 'Bonus Subsidy' : 'Units Credited'}: ${tok.units}
+      </div>`
+          : ''
+      }
+    </div>`;
+      })
+      .join('');
+  } else {
+    // Single token fallback
+    const singleToken = parsed.tokens[0]?.token || token;
+    const cleanDigits = (singleToken || '').replace(/\D/g, '');
+    const formattedToken =
+      cleanDigits.length === 20
+        ? cleanDigits.match(/.{1,4}/g)?.join(' - ') || singleToken
+        : singleToken;
+
+    tokensBoxesHtml = `
+    <div class="token-box" style="background-color: #FFF7ED; border: 1px solid #FED7AA; border-radius: 10px; padding: 16px 14px; text-align: center; margin-bottom: 22px;">
+      <div style="font-size: 11px; font-weight: 700; color: #C2410C; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;">
+        ⚡ 20-Digit Meter Token
+      </div>
+      <div class="token-digits" style="font-size: 15px; font-weight: 800; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; color: #0F172A; letter-spacing: 1.2px; padding: 4px 0; white-space: nowrap;">
+        ${formattedToken}
+      </div>
+      <div style="font-size: 11.5px; color: #64748B; margin-top: 6px; line-height: 16px;">
+        Key these 20 digits into your meter CIU keypad, then press the <strong>Enter</strong> key.
+      </div>
+      ${
+        units
+          ? `
+      <div style="margin-top: 8px; font-size: 12px; font-weight: 700; color: #059669;">
+        Units Credited: ${units}
+      </div>`
+          : ''
+      }
+    </div>`;
+  }
 
   const contentHtml = `
     <!-- Header -->
     <div style="margin-bottom: 20px;">
       <h1 style="margin: 0 0 6px 0; font-size: 20px; font-weight: 800; color: #0F172A; letter-spacing: -0.3px;">
-        Your ${disco} Electricity Token
+        ${parsed.isMultiToken ? `Your ${disco} Electricity Tokens` : `Your ${disco} Electricity Token`}
       </h1>
       <p style="margin: 0; font-size: 13px; color: #64748B;">
         Prepaid meter recharge for <strong>${meterNumber}</strong> (${disco})
       </p>
     </div>
 
-    <!-- Token Box: Responsive & Never breaks awkwardly on mobile -->
-    <div class="token-box" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 20px 16px; text-align: center; margin-bottom: 24px;">
-      <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
-        20-Digit Meter Token
-      </div>
-      <div class="token-digits" style="font-size: 18px; font-weight: 800; font-family: 'Courier New', Courier, monospace; color: #0F172A; letter-spacing: 1.5px; padding: 4px 0; white-space: nowrap;">
-        ${formattedToken}
-      </div>
-      <div style="font-size: 12px; color: #64748B; margin-top: 8px;">
-        Key these 20 digits into your meter CIU keypad, then press the <strong>Enter</strong> key.
-      </div>
-      ${
-        units
-          ? `
-      <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #059669;">
-        Units Credited: ${units}
-      </div>`
-          : ''
-      }
-    </div>
+    <!-- Token Box(es) -->
+    ${tokensBoxesHtml}
 
     <!-- Recharge Summary -->
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 20px; font-size: 13px;">
@@ -454,6 +560,15 @@ export function renderElectricityTokenEmail({
       <tr>
         <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Premise Address</td>
         <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #334155; font-size: 12px; max-width: 240px;">${customerAddress}</td>
+      </tr>`
+          : ''
+      }
+      ${
+        parsed.bonusToken
+          ? `
+      <tr>
+        <td style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; color: #64748B;">Bonus Token</td>
+        <td align="right" style="padding: 9px 0; border-bottom: 1px solid #F1F5F9; font-family: monospace; font-size: 12px; font-weight: 700; color: #15803D;">${parsed.bonusToken}${parsed.bonusUnits ? ` (${parsed.bonusUnits})` : ''}</td>
       </tr>`
           : ''
       }
@@ -482,9 +597,15 @@ export function renderElectricityTokenEmail({
   `;
 
   return {
-    subject: `Your ${disco} Electricity Token - ZuvaPay`,
+    subject: parsed.isMultiToken
+      ? `Your ${disco} Electricity Tokens (Includes Bonus Units) - ZuvaPay`
+      : `Your ${disco} Electricity Token - ZuvaPay`,
     html: renderBaseEmailLayout({
-      previewText: `Your ${disco} meter recharge token is ready for meter ${meterNumber}. Amount: ₦${amount.toLocaleString('en-NG')}.`,
+      previewText: parsed.isMultiToken
+        ? `Your ${disco} prepaid recharge tokens (including bonus units) are ready for meter ${meterNumber}. Amount: ₦${amount.toLocaleString('en-NG')}.`
+        : `Your ${disco} meter recharge token is ready for meter ${meterNumber}. Amount: ₦${amount.toLocaleString('en-NG')}.`,
+      headerBadge: parsed.isMultiToken ? '⚡ TOKENS GENERATED' : '⚡ TOKEN GENERATED',
+      badgeType: 'success',
       contentHtml,
     }),
   };
@@ -530,6 +651,8 @@ export function renderAdminBroadcastEmail({
     subject: `${headline} - ZuvaPay`,
     html: renderBaseEmailLayout({
       previewText: headline,
+      headerBadge: 'ANNOUNCEMENT',
+      badgeType: 'default',
       contentHtml,
     }),
   };
@@ -616,6 +739,8 @@ export function renderAdminLowBalanceEmail({
     subject: `Action Required: Low ${providerName} Balance - ZuvaPay`,
     html: renderBaseEmailLayout({
       previewText: `Action required: Low balance on ${providerName}. Customer order failed and was refunded.`,
+      headerBadge: 'ACTION REQUIRED',
+      badgeType: 'warning',
       contentHtml,
     }),
   };
@@ -659,11 +784,11 @@ export function renderEmailVerificationEmail({
     ${
       token
         ? `
-    <div class="token-box" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 16px; text-align: center; margin: 20px 0;">
-      <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+    <div class="token-box" style="background-color: #FFF7ED; border: 1px solid #FED7AA; border-radius: 8px; padding: 14px 16px; text-align: center; margin: 18px 0;">
+      <div style="font-size: 11px; font-weight: 700; color: #C2410C; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px;">
         Verification Code
       </div>
-      <div class="token-digits" style="font-size: 22px; font-weight: 800; font-family: monospace; letter-spacing: 4px; color: #0F172A;">
+      <div class="token-digits" style="font-size: 16px; font-weight: 800; font-family: 'SFMono-Regular', Consolas, monospace; letter-spacing: 3px; color: #0F172A;">
         ${token}
       </div>
     </div>`
@@ -685,6 +810,8 @@ export function renderEmailVerificationEmail({
     subject: `Verify your email address - ZuvaPay`,
     html: renderBaseEmailLayout({
       previewText: `Verify your email address to activate your ZuvaPay account.`,
+      headerBadge: 'VERIFY EMAIL',
+      badgeType: 'default',
       contentHtml,
     }),
   };
@@ -761,6 +888,8 @@ export function renderPasswordResetEmail({
     subject: `Reset your password - ZuvaPay`,
     html: renderBaseEmailLayout({
       previewText: `Reset your ZuvaPay password. This link will expire in 7 minutes.`,
+      headerBadge: 'PASSWORD RESET',
+      badgeType: 'warning',
       contentHtml,
     }),
   };
@@ -808,17 +937,17 @@ export function renderMarketplaceDeliveryEmail({
     </div>
 
     <!-- Product Access Box -->
-    <div class="token-box" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 18px; margin-bottom: 24px;">
-      <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+    <div class="token-box" style="background-color: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 16px; margin-bottom: 22px;">
+      <div style="font-size: 11px; font-weight: 700; color: #15803D; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px;">
         ${activationLink ? 'Access / License' : 'Access Code'}
       </div>
-      <div style="font-size: 15px; font-weight: 800; font-family: monospace; color: #0F172A; word-break: break-all; margin-bottom: 8px;">
+      <div style="font-size: 14px; font-weight: 700; font-family: 'SFMono-Regular', Consolas, monospace; color: #0F172A; word-break: break-all; margin-bottom: 8px;">
         ${code || activationLink || 'See instructions below'}
       </div>
       ${
         credentials && credentials !== code && credentials !== activationLink
           ? `
-      <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #E2E8F0; font-size: 12px; font-family: monospace; color: #475569; white-space: pre-wrap; word-break: break-all;">
+      <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #BBF7D0; font-size: 12px; font-family: monospace; color: #166534; white-space: pre-wrap; word-break: break-all;">
         ${credentials}
       </div>`
           : ''
@@ -885,6 +1014,8 @@ export function renderMarketplaceDeliveryEmail({
     subject: `Your digital order: ${productName} - ZuvaPay`,
     html: renderBaseEmailLayout({
       previewText: `Your digital order for ${productName} is ready. Order Ref: ${reference}.`,
+      headerBadge: '✔ ORDER READY',
+      badgeType: 'success',
       contentHtml,
     }),
   };

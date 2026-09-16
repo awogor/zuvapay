@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { subscribeCableTv, getCableTvPlans } from '@/lib/vendors/strowallet';
 import { GONGOZ_CABLE_PLANS } from '@/lib/data/gongozCatalog';
 import { getPricingConfig, computeRetailPrice } from '@/lib/pricing/pricingStore';
@@ -100,7 +100,73 @@ export async function POST(request: NextRequest) {
     const bouquetName = bouquet?.name || body.bouquetName || 'Cable Bouquet';
     const variationCode = body.variationCode || bouquetId;
     const userPhone = phone || user.phone || user.user_metadata?.phone || user.user_metadata?.phone_number || '08012345678';
-    const finalAmount = amount || bouquet?.price || 1000;
+
+    let expectedPrice = bouquet?.price || 1000;
+    if (bouquet) {
+      const pricingConfig = await getPricingConfig();
+      const globalRule = pricingConfig.gongoz.cable.globalRule;
+      const override = pricingConfig.gongoz.cable.overrides[bouquet.id];
+      const { retailPrice } = computeRetailPrice(bouquet.price, globalRule, override);
+      expectedPrice = retailPrice;
+    }
+    const finalAmount = expectedPrice;
+
+    const adminSupabase = createAdminClient();
+    const isMock = process.env.NEXT_PUBLIC_MOCK_DATA === 'true';
+
+    // Anti-exploit guard: Verify debit transaction in database
+    let verifiedTx: any = null;
+    if (!isMock) {
+      if (!reference) {
+        return NextResponse.json(
+          { success: false, error: 'Missing transaction debit reference' },
+          { status: 400 }
+        );
+      }
+
+      const { data: tx, error: txErr } = await adminSupabase
+        .from('transactions')
+        .select('*, wallets!inner(user_id)')
+        .eq('reference', reference)
+        .maybeSingle();
+
+      if (txErr || !tx) {
+        return NextResponse.json(
+          { success: false, error: 'Debit transaction reference not found or unverified' },
+          { status: 400 }
+        );
+      }
+
+      if (tx.wallets?.user_id !== user.id) {
+        return NextResponse.json(
+          { success: false, error: 'Unauthorized transaction reference' },
+          { status: 403 }
+        );
+      }
+
+      if (tx.type !== 'debit' || tx.status !== 'completed') {
+        return NextResponse.json(
+          { success: false, error: 'Transaction is not a verified completed debit' },
+          { status: 400 }
+        );
+      }
+
+      if (finalAmount && Number(tx.amount) < Number(finalAmount)) {
+        return NextResponse.json(
+          { success: false, error: 'Transaction debit amount is less than cable bouquet price' },
+          { status: 400 }
+        );
+      }
+
+      if (tx.metadata?.fulfillment_status === 'fulfilled') {
+        return NextResponse.json(
+          { success: false, error: 'Transaction reference has already been fulfilled' },
+          { status: 409 }
+        );
+      }
+
+      verifiedTx = tx;
+    }
 
     // Call StroWallet API: POST /api/cable-subscription/request
     const stroRes = await subscribeCableTv({
@@ -127,9 +193,28 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      const operatorReference = data?.response?.transactions?.transactionId || data?.reference || `STRO-CAB-${Date.now()}`;
+
+      if (!isMock && verifiedTx && reference) {
+        await adminSupabase
+          .from('transactions')
+          .update({
+            metadata: {
+              ...(verifiedTx.metadata || {}),
+              fulfillment_status: 'fulfilled',
+              operatorReference,
+              provider: 'strowallet',
+              bouquetName,
+              iucNumber,
+              fulfilled_at: new Date().toISOString(),
+            },
+          })
+          .eq('reference', reference);
+      }
+
       return NextResponse.json({
         success: true,
-        operatorReference: data?.response?.transactions?.transactionId || data?.reference || `STRO-CAB-${Date.now()}`,
+        operatorReference,
         provider,
         iucNumber,
         bouquetName,

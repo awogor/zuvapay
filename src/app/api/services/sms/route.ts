@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { getNumber, getStatus, setStatus, getBalance, getPrices } from '@/lib/vendors/grizzly';
 import {
   getSMSPoolBalance,
@@ -468,7 +468,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { action, serviceId, countryCode, orderId, reference, server: rawServer } = body;
+    const { action, serviceId, countryCode, orderId, reference, server: rawServer, amount } = body;
     const server = (rawServer || 'server1').toLowerCase();
 
     // 1. BUY / RENT NUMBER
@@ -479,6 +479,68 @@ export async function POST(request: NextRequest) {
           { success: false, error: serviceCheck.message },
           { status: 503 }
         );
+      }
+
+      if (!reference) {
+        return NextResponse.json(
+          { success: false, error: 'Transaction reference is required' },
+          { status: 400 }
+        );
+      }
+
+      const adminSupabase = createAdminClient();
+      const isMock = process.env.NEXT_PUBLIC_MOCK_DATA === 'true';
+
+      let verifiedTx: any = null;
+      if (!isMock) {
+        const { data: tx, error: txErr } = await adminSupabase
+          .from('transactions')
+          .select('*, wallets!inner(user_id)')
+          .eq('reference', reference)
+          .maybeSingle();
+
+        if (txErr || !tx) {
+          return NextResponse.json(
+            { success: false, error: 'Debit transaction reference not found or unverified' },
+            { status: 400 }
+          );
+        }
+
+        if (tx.wallets?.user_id !== user.id) {
+          return NextResponse.json(
+            { success: false, error: 'Unauthorized transaction reference' },
+            { status: 403 }
+          );
+        }
+
+        if (tx.type !== 'debit' || tx.status !== 'completed') {
+          return NextResponse.json(
+            { success: false, error: 'Transaction is not a verified completed debit' },
+            { status: 400 }
+          );
+        }
+
+        if (tx.category !== 'sms' && tx.category !== 'digital_service') {
+          return NextResponse.json(
+            { success: false, error: 'Transaction category mismatch for SMS order' },
+            { status: 400 }
+          );
+        }
+
+        if (amount && Number(tx.amount) < Number(amount)) {
+          return NextResponse.json(
+            { success: false, error: 'Debit transaction amount is insufficient for SMS order' },
+            { status: 400 }
+          );
+        }
+
+        if (tx.metadata?.fulfillment_status === 'fulfilled') {
+          return NextResponse.json(
+            { success: false, error: 'This transaction has already been fulfilled' },
+            { status: 409 }
+          );
+        }
+        verifiedTx = tx;
       }
 
       // ----------------------------------------------------
@@ -537,6 +599,22 @@ export async function POST(request: NextRequest) {
 
         if (!smspoolRes.isMock) {
           if (smspoolRes.success && smspoolRes.orderId && smspoolRes.phoneNumber) {
+            if (!isMock && verifiedTx) {
+              await adminSupabase
+                .from('transactions')
+                .update({
+                  metadata: {
+                    ...(verifiedTx.metadata || {}),
+                    fulfillment_status: 'fulfilled',
+                    fulfilled_at: new Date().toISOString(),
+                    orderId: smspoolRes.orderId,
+                    phoneNumber: smspoolRes.phoneNumber,
+                    server: 'server2',
+                  },
+                })
+                .eq('reference', reference);
+            }
+
             return NextResponse.json({
               success: true,
               orderId: smspoolRes.orderId,
@@ -577,11 +655,6 @@ export async function POST(request: NextRequest) {
             {
               success: false,
               error: clientMessage,
-              adminTrace: {
-                vendor: 'SMSPool',
-                rawError: smspoolRes.error,
-                timestamp: new Date().toISOString(),
-              },
             },
             { status: 502 }
           );
@@ -591,6 +664,23 @@ export async function POST(request: NextRequest) {
         await new Promise((res) => setTimeout(res, 400));
         const simId = `SMP-${country.id}-${Date.now()}`;
         const randomDigits = Math.floor(1000000000 + Math.random() * 9000000000);
+
+        if (!isMock && verifiedTx) {
+          await adminSupabase
+            .from('transactions')
+            .update({
+              metadata: {
+                ...(verifiedTx.metadata || {}),
+                fulfillment_status: 'fulfilled',
+                fulfilled_at: new Date().toISOString(),
+                orderId: simId,
+                phoneNumber: `+1${randomDigits}`,
+                server: 'server2',
+              },
+            })
+            .eq('reference', reference);
+        }
+
         return NextResponse.json({
           success: true,
           orderId: simId,
@@ -641,6 +731,22 @@ export async function POST(request: NextRequest) {
 
       if (!grizzlyRes.isMock) {
         if (grizzlyRes.success && grizzlyRes.activationId && grizzlyRes.phoneNumber) {
+          if (!isMock && verifiedTx) {
+            await adminSupabase
+              .from('transactions')
+              .update({
+                metadata: {
+                  ...(verifiedTx.metadata || {}),
+                  fulfillment_status: 'fulfilled',
+                  fulfilled_at: new Date().toISOString(),
+                  orderId: grizzlyRes.activationId,
+                  phoneNumber: `+${grizzlyRes.phoneNumber}`,
+                  server: 'server1',
+                },
+              })
+              .eq('reference', reference);
+          }
+
           return NextResponse.json({
             success: true,
             orderId: grizzlyRes.activationId,
@@ -677,11 +783,6 @@ export async function POST(request: NextRequest) {
           {
             success: false,
             error: clientMessage,
-            adminTrace: {
-              vendor: 'GrizzlySMS',
-              rawError: grizzlyRes.error,
-              timestamp: new Date().toISOString(),
-            },
           },
           { status: 502 }
         );
@@ -705,6 +806,22 @@ export async function POST(request: NextRequest) {
       const phonePrefix =
         country.code === 'usa' ? '+1' : country.code === 'uk' ? '+44' : '+234';
       const phoneNumber = `${phonePrefix}${randomDigits}`;
+
+      if (!isMock && verifiedTx) {
+        await adminSupabase
+          .from('transactions')
+          .update({
+            metadata: {
+              ...(verifiedTx.metadata || {}),
+              fulfillment_status: 'fulfilled',
+              fulfilled_at: new Date().toISOString(),
+              orderId: simulatedOrderId,
+              phoneNumber,
+              server: 'server1',
+            },
+          })
+          .eq('reference', reference);
+      }
 
       return NextResponse.json({
         success: true,

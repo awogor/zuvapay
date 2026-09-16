@@ -181,33 +181,26 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-lg max-h-[88dvh] sm:max-h-[90dvh] flex flex-col overflow-hidden rounded-t-[28px] sm:rounded-3xl border border-slate-200/90 dark:border-white/10 bg-gradient-to-b from-orange-500/[0.04] via-amber-500/[0.02] to-white dark:bg-slate-900 shadow-2xl animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200">
-        {/* Ambient brand color gradient glow */}
-        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-brand-orange/12 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-amber-400/12 blur-3xl pointer-events-none" />
-
-        {/* Top brand accent bar */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-brand-orange via-amber-500 to-orange-400 flex-shrink-0" />
-
+      <div className="relative w-full max-w-lg max-h-[88dvh] sm:max-h-[90dvh] flex flex-col overflow-hidden rounded-t-[28px] sm:rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200">
         {/* Mobile Drag Indicator */}
         <div className="sm:hidden pt-2.5 pb-1 flex justify-center flex-shrink-0 bg-transparent">
           <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
         </div>
 
         {/* Header - Fixed at Top */}
-        <div className="flex-shrink-0 flex items-center justify-between px-5 sm:px-6 pt-3 sm:pt-4 pb-3 border-b border-slate-200/80 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm relative z-10">
+        <div className="flex-shrink-0 flex items-center justify-between px-5 sm:px-6 pt-3 sm:pt-4 pb-3 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-gradient-to-tr from-brand-orange/15 to-amber-500/10 border border-brand-orange/25 text-brand-orange shadow-xs">
+            <div className="p-2 rounded-xl bg-brand-orange/10 border border-brand-orange/20 text-brand-orange">
               <CreditCard className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">Fund Wallet</h3>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">Instant deposit via Card & Bank Transfer</p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Instant deposit via Card &amp; Bank Transfer</p>
             </div>
           </div>
           <button
@@ -219,10 +212,10 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto overscroll-contain relative z-10">
+        <div className="flex-1 overflow-y-auto overscroll-contain bg-white dark:bg-slate-900">
           <div className="p-6 space-y-5">
             <div className="space-y-4">
-              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-amber-50/60 via-orange-50/25 to-white dark:bg-slate-950 border border-amber-200/60 dark:border-white/10 shadow-xs space-y-2.5">
+              <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2.5">
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                   Amount to Fund (₦)
                 </label>

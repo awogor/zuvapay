@@ -32,12 +32,12 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json().catch(() => ({}));
 
-    // Bind targetUserId to authenticated user to prevent malicious injection or spoofing
-    const targetUserId = user?.id || (body.status === 'failed' && typeof body.userId === 'string' ? body.userId : null);
-
-    if (!targetUserId) {
-      return NextResponse.json({ success: false, error: 'User ID required' }, { status: 400 });
+    // Require authentication to prevent spoofing audit history of other accounts
+    if (!user) {
+      return NextResponse.json({ success: true, message: 'Anonymous attempt recorded' });
     }
+
+    const targetUserId = user.id;
 
     // Extract Client Network Info
     const ipAddress =

@@ -165,6 +165,26 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Look up real catalog plan to prevent price manipulation
+      let expectedPrice: number | null = null;
+      const matchedGongozPlan = GONGOZ_DATA_PLANS.find((p) => p.id === planId);
+      if (matchedGongozPlan) {
+        const pricingConfig = await getPricingConfig();
+        const globalRule = pricingConfig.gongoz.data.globalRule;
+        const override = pricingConfig.gongoz.data.overrides[matchedGongozPlan.id];
+        const { retailPrice } = computeRetailPrice(matchedGongozPlan.price, globalRule, override);
+        expectedPrice = retailPrice;
+      }
+
+      const minRequiredAmount = expectedPrice !== null ? expectedPrice : (amount ? parseFloat(amount) : null);
+
+      if (minRequiredAmount !== null && Number(tx.amount) < minRequiredAmount) {
+        return NextResponse.json(
+          { success: false, error: 'Debit transaction amount is insufficient for this data plan' },
+          { status: 400 }
+        );
+      }
+
       if (tx.metadata?.fulfillment_status === 'fulfilled') {
         return NextResponse.json(
           { success: false, error: 'Transaction reference has already been fulfilled' },

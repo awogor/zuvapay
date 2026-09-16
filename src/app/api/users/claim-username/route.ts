@@ -24,15 +24,15 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+    if (!user) {
+      return NextResponse.json({ error: 'You must be signed in to claim a username.' }, { status: 401 });
+    }
+
     const body = await request.json().catch(() => ({}));
     const rawUsername = (body.username || '').trim();
     const cleanUsername = rawUsername.toLowerCase().replace(/^@/, '');
 
-    const targetUserId = user?.id || body.userId;
-
-    if (!targetUserId) {
-      return NextResponse.json({ error: 'You must be signed in to claim a username.' }, { status: 401 });
-    }
+    const targetUserId = user.id;
 
     if (!cleanUsername) {
       return NextResponse.json({ error: 'Username is required.' }, { status: 400 });

@@ -12,6 +12,8 @@ export interface BeneficiaryItem {
   network: string;
   service_type: string;
   nickname?: string | null;
+  customer_name?: string | null;
+  meter_type?: string | null;
   last_used_at: string;
   created_at?: string;
 }
@@ -30,7 +32,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const serviceType = searchParams.get('service_type'); // e.g. 'airtime', 'data'
+    const serviceType = searchParams.get('service_type'); // e.g. 'airtime', 'data', 'power', 'tv'
 
     const cutoffDate = new Date(Date.now() - RETENTION_MS).toISOString();
     const adminSupabase = createAdminClient();
@@ -110,20 +112,68 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { phone, network, service_type = 'airtime', nickname } = body;
+    const {
+      phone,
+      network,
+      service_type = 'airtime',
+      nickname,
+      customer_name,
+      customerName,
+      meter_type,
+      meterType,
+    } = body;
 
-    let cleanPhone = phone.replace(/\D/g, '');
-    if (cleanPhone.startsWith('234') && cleanPhone.length > 10) {
-      cleanPhone = '0' + cleanPhone.slice(3);
-    }
-    cleanPhone = cleanPhone.slice(0, 11);
+    const resolvedCustomerName = customer_name || customerName || nickname || null;
+    const resolvedMeterType = meter_type || meterType || null;
 
-    if (!cleanPhone || cleanPhone.length < 11) {
-      return NextResponse.json({ success: false, error: 'Valid 11-digit phone number is required' }, { status: 400 });
-    }
+    let cleanAccount = String(phone || '').replace(/\D/g, '');
 
-    if (!network || typeof network !== 'string') {
-      return NextResponse.json({ success: false, error: 'Telco network is required' }, { status: 400 });
+    if (service_type === 'power') {
+      if (!cleanAccount || cleanAccount.length < 6) {
+        return NextResponse.json(
+          { success: false, error: 'Valid meter number is required (at least 6 digits)' },
+          { status: 400 }
+        );
+      }
+      if (!network || typeof network !== 'string') {
+        return NextResponse.json(
+          { success: false, error: 'Electricity Disco provider is required' },
+          { status: 400 }
+        );
+      }
+    } else if (service_type === 'tv') {
+      if (!cleanAccount || cleanAccount.length < 6) {
+        return NextResponse.json(
+          { success: false, error: 'Valid smartcard / IUC number is required (at least 6 digits)' },
+          { status: 400 }
+        );
+      }
+      if (!network || typeof network !== 'string') {
+        return NextResponse.json(
+          { success: false, error: 'Cable TV provider is required' },
+          { status: 400 }
+        );
+      }
+    } else {
+      // airtime, data, general
+      if (cleanAccount.startsWith('234') && cleanAccount.length > 10) {
+        cleanAccount = '0' + cleanAccount.slice(3);
+      }
+      cleanAccount = cleanAccount.slice(0, 11);
+
+      if (!cleanAccount || cleanAccount.length < 11) {
+        return NextResponse.json(
+          { success: false, error: 'Valid 11-digit phone number is required' },
+          { status: 400 }
+        );
+      }
+
+      if (!network || typeof network !== 'string') {
+        return NextResponse.json(
+          { success: false, error: 'Telco network is required' },
+          { status: 400 }
+        );
+      }
     }
 
     const cleanNetwork = network.trim();
@@ -138,10 +188,10 @@ export async function POST(request: NextRequest) {
         .upsert(
           {
             user_id: user.id,
-            phone: cleanPhone,
+            phone: cleanAccount,
             network: cleanNetwork,
             service_type,
-            nickname: nickname?.trim() || null,
+            nickname: resolvedCustomerName,
             last_used_at: nowIso,
           },
           { onConflict: 'user_id,phone' }
@@ -154,22 +204,24 @@ export async function POST(request: NextRequest) {
       // Table may not exist yet
     }
 
-    // 2. Synchronize with user_metadata (guaranteed to succeed and persist)
+    // 2. Synchronize with user_metadata (guaranteed to persist)
     try {
       const existingList: BeneficiaryItem[] = user.user_metadata?.recent_beneficiaries || [];
       const cutoff = Date.now() - RETENTION_MS;
 
       // Filter out duplicates and prune expired items (> 30 days)
       const filtered = existingList.filter(
-        (item) => item.phone !== cleanPhone && new Date(item.last_used_at).getTime() > cutoff
+        (item) => item.phone !== cleanAccount && new Date(item.last_used_at).getTime() > cutoff
       );
 
       const newItem: BeneficiaryItem = {
         id: `meta-${Date.now()}`,
-        phone: cleanPhone,
+        phone: cleanAccount,
         network: cleanNetwork,
         service_type,
-        nickname: nickname?.trim() || null,
+        nickname: resolvedCustomerName,
+        customer_name: resolvedCustomerName,
+        meter_type: resolvedMeterType,
         last_used_at: nowIso,
       };
 

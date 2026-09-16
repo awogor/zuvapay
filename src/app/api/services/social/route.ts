@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { addOrder, getOrderStatus, getMultipleOrdersStatus, getBalance, getServices, MomoServiceItem } from '@/lib/vendors/momo';
 import { getPricingConfig, computeRetailPrice } from '@/lib/pricing/pricingStore';
 import { checkServiceAvailability } from '@/lib/services/serviceStatusStore';
@@ -425,8 +425,17 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // 2. Check vendor balance
+  // 2. Check vendor balance (Admin only)
   if (action === 'balance') {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
+    }
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
+    if (!profile || profile.role !== 'admin') {
+      return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 });
+    }
     const balRes = await getBalance();
     return NextResponse.json(balRes);
   }
@@ -460,7 +469,70 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { serviceId, link, quantity, comments, reference } = body;
+    const { serviceId, link, quantity, comments, reference, amount } = body;
+
+    if (!reference) {
+      return NextResponse.json(
+        { success: false, error: 'Transaction reference is required' },
+        { status: 400 }
+      );
+    }
+
+    const adminSupabase = createAdminClient();
+    const isMock = process.env.NEXT_PUBLIC_MOCK_DATA === 'true';
+
+    // Anti-exploit guard: Verify debit transaction in database
+    let verifiedTx: any = null;
+    if (!isMock) {
+      const { data: tx, error: txErr } = await adminSupabase
+        .from('transactions')
+        .select('*, wallets!inner(user_id)')
+        .eq('reference', reference)
+        .maybeSingle();
+
+      if (txErr || !tx) {
+        return NextResponse.json(
+          { success: false, error: 'Debit transaction reference not found or unverified' },
+          { status: 400 }
+        );
+      }
+
+      if (tx.wallets?.user_id !== user.id) {
+        return NextResponse.json(
+          { success: false, error: 'Unauthorized transaction reference' },
+          { status: 403 }
+        );
+      }
+
+      if (tx.type !== 'debit' || tx.status !== 'completed') {
+        return NextResponse.json(
+          { success: false, error: 'Transaction is not a verified completed debit' },
+          { status: 400 }
+        );
+      }
+
+      if (tx.category !== 'social' && tx.category !== 'digital_service') {
+        return NextResponse.json(
+          { success: false, error: 'Transaction category mismatch for social order' },
+          { status: 400 }
+        );
+      }
+
+      if (amount && Number(tx.amount) < Number(amount)) {
+        return NextResponse.json(
+          { success: false, error: 'Debit transaction amount is insufficient for social order' },
+          { status: 400 }
+        );
+      }
+
+      if (tx.metadata?.fulfillment_status === 'fulfilled') {
+        return NextResponse.json(
+          { success: false, error: 'This transaction has already been fulfilled' },
+          { status: 409 }
+        );
+      }
+      verifiedTx = tx;
+    }
 
     const allServices = await fetchLiveMomoCatalog();
     const service = allServices.find((s: any) => s.serviceId === Number(serviceId));
@@ -548,14 +620,23 @@ export async function POST(request: NextRequest) {
           {
             success: false,
             error: 'The provider could not fulfill this service request at this time. Your wallet has been refunded.',
-            adminTrace: {
-              vendor: 'MomoPanel',
-              rawError: momoRes.error,
-              timestamp: new Date().toISOString(),
-            },
           },
           { status: 502 }
         );
+      }
+
+      if (!isMock && verifiedTx) {
+        await adminSupabase
+          .from('transactions')
+          .update({
+            metadata: {
+              ...(verifiedTx.metadata || {}),
+              fulfillment_status: 'fulfilled',
+              fulfilled_at: new Date().toISOString(),
+              supplierOrderId: momoRes.orderId,
+            },
+          })
+          .eq('reference', reference);
       }
 
       return NextResponse.json({
@@ -582,9 +663,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const simOrderId = `KP-${Date.now()}`;
+    if (!isMock && verifiedTx) {
+      await adminSupabase
+        .from('transactions')
+        .update({
+          metadata: {
+            ...(verifiedTx.metadata || {}),
+            fulfillment_status: 'fulfilled',
+            fulfilled_at: new Date().toISOString(),
+            supplierOrderId: simOrderId,
+          },
+        })
+        .eq('reference', reference);
+    }
+
     return NextResponse.json({
       success: true,
-      orderId: `KP-${Date.now()}`,
+      orderId: simOrderId,
       serviceName: service.name,
       quantity,
       link,
