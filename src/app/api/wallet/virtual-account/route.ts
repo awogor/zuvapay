@@ -68,8 +68,17 @@ export async function GET(request: NextRequest) {
 
     if (billstackRes.status && billstackRes.data?.account?.length) {
       const acc = billstackRes.data.account[0];
+
+      const { data: userWallet } = await supabase
+        .from('wallets')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('currency', 'NGN')
+        .maybeSingle();
+
       const virtualAccountData = {
         user_id: user.id,
+        wallet_id: userWallet?.id,
         bank_name: acc.bank_name || '9PSB Bank',
         bank_code: '9PSB',
         account_number: acc.account_number,
@@ -214,8 +223,16 @@ export async function POST(request: NextRequest) {
         ? 'SafeHaven MFB'
         : '9PSB Bank';
 
+    const { data: userWallet } = await supabase
+      .from('wallets')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('currency', 'NGN')
+      .maybeSingle();
+
     const virtualAccountData = {
       user_id: user.id,
+      wallet_id: userWallet?.id,
       bank_name: acc.bank_name || defaultBankName,
       bank_code: selectedBank,
       account_number: acc.account_number,
