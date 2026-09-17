@@ -23,13 +23,59 @@ export async function GET(request: NextRequest) {
       console.warn('Error fetching virtual accounts:', error.message);
     }
 
-    if (existingAccounts && existingAccounts.length > 0) {
+    let allAccounts = existingAccounts ? [...existingAccounts] : [];
+
+    // Merge from user_metadata if available
+    const metaAccounts = user.user_metadata?.virtual_accounts;
+    if (Array.isArray(metaAccounts)) {
+      for (const mAcc of metaAccounts) {
+        if (!mAcc?.account_number) continue;
+        const exists = allAccounts.some((a) => a.account_number === mAcc.account_number);
+        if (!exists) allAccounts.push(mAcc);
+      }
+    }
+
+    // Merge from deposit transactions if user received funding via PalmPay or Providus
+    try {
+      const { data: depositTxs } = await supabase
+        .from('transactions')
+        .select('description, metadata')
+        .eq('category', 'deposit')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (depositTxs) {
+        for (const tx of depositTxs) {
+          const meta = tx.metadata || {};
+          const desc = tx.description || '';
+          const isPalm = (meta.bankName || '').toUpperCase().includes('PALM') || desc.includes('PalmPay');
+          const isProvidus = (meta.bankName || '').toUpperCase().includes('PROVIDUS') || desc.includes('Providus');
+          const accNum = meta.accountNumber || desc.match(/\((\d{10})\)/)?.[1];
+          if (accNum && (isPalm || isProvidus)) {
+            const bankCode = isPalm ? 'PALMPAY' : 'PROVIDUS';
+            const exists = allAccounts.some((a) => a.account_number === accNum || a.bank_code === bankCode);
+            if (!exists) {
+              allAccounts.push({
+                user_id: user.id,
+                bank_name: isPalm ? 'PalmPay' : 'Providus Bank',
+                bank_code: bankCode,
+                account_number: accNum,
+                account_name: meta.payerName || 'ZuvaPay Customer',
+                status: 'active',
+              });
+            }
+          }
+        }
+      }
+    } catch {}
+
+    if (allAccounts.length > 0) {
       // Find 9PSB primary or first available
       const primary =
-        existingAccounts.find((a) => a.bank_code === '9PSB') || existingAccounts[0];
+        allAccounts.find((a) => a.bank_code === '9PSB') || allAccounts[0];
       return NextResponse.json({
         success: true,
-        accounts: existingAccounts,
+        accounts: allAccounts,
         account: primary,
       });
     }

@@ -119,14 +119,14 @@ export function SignupPageView() {
   };
 
   return (
-    <div className="h-[100dvh] min-h-[100dvh] max-h-[100dvh] w-full flex flex-col justify-center items-center px-4 py-2 sm:p-0 bg-white sm:bg-[#FFF9F3] sm:bg-gradient-to-br sm:from-[#FFF5EC] sm:via-[#FFF9F4] sm:to-[#FFF0E2] relative overflow-y-auto sm:overflow-hidden selection:bg-brand-orange selection:text-white">
+    <div className="min-h-screen min-h-[100dvh] w-full flex flex-col justify-center items-center px-4 py-8 sm:py-12 bg-white sm:bg-[#FFF9F3] sm:bg-gradient-to-br sm:from-[#FFF5EC] sm:via-[#FFF9F4] sm:to-[#FFF0E2] relative overflow-y-auto overflow-x-hidden selection:bg-brand-orange selection:text-white">
       {/* Background ambient solar glow orbs - visible on desktop */}
       <div className="hidden sm:block absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-[#FF6B00]/10 blur-[100px] pointer-events-none" />
       <div className="hidden sm:block absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 h-96 w-96 rounded-full bg-[#F59E0B]/12 blur-[100px] pointer-events-none" />
       <div className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[480px] w-[480px] rounded-full bg-[#FFF0E0]/60 blur-[120px] pointer-events-none" />
 
-      {/* Form Container - Stays exactly in the middle with zero scrolling */}
-      <div className="relative z-10 w-full max-w-[440px] rounded-3xl border-0 sm:border sm:border-slate-200/90 bg-white p-3 sm:p-5 sm:shadow-[0_20px_50px_-12px_rgba(255,107,0,0.12),0_8px_24px_-8px_rgba(15,23,42,0.06)] sm:ring-1 sm:ring-slate-900/5">
+      {/* Form Container - Freely scrollable with full bottom visibility */}
+      <div className="relative z-10 w-full max-w-[450px] rounded-3xl border-0 sm:border sm:border-slate-200/90 bg-white p-4 sm:p-6 sm:shadow-[0_20px_50px_-12px_rgba(255,107,0,0.12),0_8px_24px_-8px_rgba(15,23,42,0.06)] sm:ring-1 sm:ring-slate-900/5 my-auto">
         
         {/* Clickable Logo Mark centered directly above Heading */}
         <div className="text-center mb-3">

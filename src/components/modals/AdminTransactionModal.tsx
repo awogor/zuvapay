@@ -168,7 +168,45 @@ export function AdminTransactionModal({
   const planId = String(meta.planId || meta.plan_id || '').toLowerCase();
   const planType = String(meta.planType || meta.type || '').toLowerCase();
 
-  let resolvedProviderId: 'strowallet' | 'gongoz' | 'smspool' | 'grizzly' | 'momo' | 'fadded' | 'korapay' | 'aiplug' | 'internal' = 'internal';
+  // Dynamic deposit & funding detection
+  const isKorapayCheckout =
+    meta.method === 'checkout' ||
+    Boolean(activeTx.reference?.includes('-CHG-')) ||
+    Boolean(activeTx.reference?.startsWith('KP-CHG')) ||
+    Boolean(meta.sessionId) ||
+    Boolean(meta.session_id) ||
+    ((meta.gateway === 'korapay' || rawProvider.includes('korapay') || descLower.includes('via korapay')) &&
+      !meta.accountNumber &&
+      !opRef.startsWith('KP-VBA') &&
+      !descLower.includes('virtual account'));
+
+  const isBillstackDeposit =
+    meta.gateway === 'billstack' ||
+    rawProvider.includes('billstack') ||
+    Boolean(activeTx.reference?.startsWith('BS-')) ||
+    Boolean(activeTx.reference?.startsWith('WIAXY-')) ||
+    Boolean(meta.billstack_ref) ||
+    descLower.includes('billstack') ||
+    (activeTx.category === 'deposit' && Boolean(meta.bankName) && !descLower.includes('korapay'));
+
+  const isKorapayVba =
+    meta.method === 'virtual_account' ||
+    opRef.startsWith('KP-VBA') ||
+    Boolean(activeTx.reference?.startsWith('KP-VBA')) ||
+    Boolean(activeTx.reference?.startsWith('KORA-')) ||
+    Boolean(meta.accountNumber) ||
+    descLower.includes('virtual account') ||
+    descLower.includes('vba');
+
+  const isAdminAdjustment =
+    Boolean(activeTx.reference?.startsWith('ADJ-')) ||
+    Boolean(activeTx.reference?.startsWith('MANUAL-')) ||
+    descLower.includes('manual adjustment') ||
+    descLower.includes('admin credit') ||
+    meta.action === 'credit' ||
+    Boolean(meta.adjusted_by);
+
+  let resolvedProviderId: 'strowallet' | 'gongoz' | 'smspool' | 'grizzly' | 'momo' | 'fadded' | 'korapay' | 'aiplug' | 'billstack' | 'internal' = 'internal';
   let providerName = '';
 
   // Priority 1: Check upstream response operator reference prefix & explicit vendor metadata
@@ -200,9 +238,26 @@ export function AdminTransactionModal({
   } else if (opRef.startsWith('FAD-') || rawProvider.includes('fadded') || activeTx.category === 'logs') {
     resolvedProviderId = 'fadded';
     providerName = 'Fadded Inventory Provider';
-  } else if (rawProvider.includes('korapay') || activeTx.category === 'deposit' || opRef.startsWith('KP-VBA') || opRef.startsWith('KORA-')) {
-    resolvedProviderId = 'korapay';
-    providerName = 'Korapay Dedicated Virtual Account';
+  } else if (activeTx.category === 'deposit' || (isCredit && !isRefund)) {
+    if (isAdminAdjustment) {
+      resolvedProviderId = 'internal';
+      providerName = 'Admin Operations Desk';
+    } else if (isBillstackDeposit) {
+      resolvedProviderId = 'billstack';
+      providerName = meta.bankName ? `Billstack (${meta.bankName})` : 'Billstack Dedicated Virtual Account';
+    } else if (isKorapayCheckout) {
+      resolvedProviderId = 'korapay';
+      providerName = 'Korapay Online Checkout';
+    } else if (isKorapayVba) {
+      resolvedProviderId = 'korapay';
+      providerName = 'Korapay Dedicated Virtual Account';
+    } else if (rawProvider.includes('korapay') || opRef.startsWith('KP-VBA') || opRef.startsWith('KORA-')) {
+      resolvedProviderId = 'korapay';
+      providerName = 'Korapay Dedicated Virtual Account';
+    } else {
+      resolvedProviderId = 'korapay';
+      providerName = 'Korapay Settlement Gateway';
+    }
   } else if (activeTx.category === 'power' || activeTx.category === 'cable' || activeTx.category === 'tv' || activeTx.category === 'virtual_card' || activeTx.category === 'card') {
     resolvedProviderId = 'strowallet';
     providerName = 'StroWallet API Gateway';
@@ -297,6 +352,12 @@ export function AdminTransactionModal({
        meta.provider_reference ||
        meta.order_id ||
        meta.orderId ||
+       meta.sessionId ||
+       meta.session_id ||
+       meta.billstack_ref ||
+       meta.transaction_ref ||
+       meta.accountRef ||
+       meta.merchant_reference ||
        meta.external_reference ||
        (resolvedProviderId === 'aiplug'
          ? (isFulfilled ? `AIP-ORD-${activeTx.reference.replace(/^(KP-MAR-|KP-)/, '')}` : 'AIPLUG-PENDING-REISSUE')
@@ -309,6 +370,39 @@ export function AdminTransactionModal({
          : resolvedProviderId === 'gongoz'
          ? `GONGOZ-DAT-${activeTx.reference.replace(/^(KP-DAT-|KP-)/, '')}`
          : `PRV-${activeTx.reference.replace(/^(KP-REF-|KP-)/, '')}`));
+
+  // 3b. Dynamic Funding Gateway Telemetry (for deposit & credit audits)
+  let fundingGatewayTitle = 'Dedicated Virtual Account';
+  let fundingGatewaySubtitle = 'Korapay Settlement';
+  let fundingFeeBearer = 'Customer';
+  let fundingFeeDetail = meta.fee ? `+${formatNaira(parseFloat(meta.fee))} Surcharge Paid` : '100% Net Settle';
+
+  if (isAdminAdjustment) {
+    fundingGatewayTitle = 'Admin Manual Adjustment';
+    fundingGatewaySubtitle = 'Internal Ledger Credit';
+    fundingFeeBearer = 'Internal Ledger';
+    fundingFeeDetail = '₦0.00 Fee (Manual Credit)';
+  } else if (isRefund) {
+    fundingGatewayTitle = 'System Auto-Refund';
+    fundingGatewaySubtitle = 'Wallet Credit Reversal';
+    fundingFeeBearer = 'Platform Settle';
+    fundingFeeDetail = '₦0.00 Fee (Reversal Neutralized)';
+  } else if (isBillstackDeposit) {
+    fundingGatewayTitle = 'Dedicated Virtual Account';
+    fundingGatewaySubtitle = meta.bankName ? `${meta.bankName} (Billstack)` : 'Billstack Settlement';
+    fundingFeeBearer = meta.fee ? `Customer (₦${meta.fee} Deducted)` : 'Customer';
+    fundingFeeDetail = meta.fee ? `₦${meta.fee} Gateway Fee Deducted` : '100% Net Settle';
+  } else if (isKorapayCheckout) {
+    fundingGatewayTitle = 'Korapay Online Checkout';
+    fundingGatewaySubtitle = 'Card / Dynamic Pay-in';
+    fundingFeeBearer = meta.fee_bearer === 'customer' ? 'Customer' : 'Merchant';
+    fundingFeeDetail = meta.fee ? `+${formatNaira(parseFloat(meta.fee))} Surcharge Paid` : '100% Net Settle';
+  } else if (isKorapayVba) {
+    fundingGatewayTitle = 'Dedicated Virtual Account';
+    fundingGatewaySubtitle = meta.bankName ? `${meta.bankName} (Korapay)` : 'Korapay Settlement';
+    fundingFeeBearer = 'Customer';
+    fundingFeeDetail = meta.fee ? `+${formatNaira(parseFloat(meta.fee))} Surcharge Paid` : '100% Net Settle';
+  }
 
   // 4. Resolve Failure Reason & True Diagnostic Telemetry
   let failureReason: string | null =
@@ -1017,18 +1111,18 @@ export function AdminTransactionModal({
                   <div>
                     <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium">Funding Gateway</p>
                     <p className="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">
-                      Dedicated Virtual Account
+                      {fundingGatewayTitle}
                     </p>
-                    <p className="text-[9.5px] text-slate-400">Korapay Settlement</p>
+                    <p className="text-[9.5px] text-slate-400">{fundingGatewaySubtitle}</p>
                   </div>
 
                   <div>
                     <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium">Gateway Fee Bearer</p>
                     <p className="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">
-                      Customer
+                      {fundingFeeBearer}
                     </p>
                     <p className="text-[9.5px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                      {meta.fee ? `+${formatNaira(parseFloat(meta.fee))} Surcharge Paid` : '100% Net Settle'}
+                      {fundingFeeDetail}
                     </p>
                   </div>
                 </>
@@ -1073,7 +1167,11 @@ export function AdminTransactionModal({
             <div className="rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/40 p-4 space-y-3 text-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1 border-b border-slate-200/60 dark:border-white/5">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">
-                  {isRefund ? 'Originating Provider (Failed / Cancelled)' : 'Fulfillment Provider'}
+                  {isRefund
+                    ? 'Originating Provider (Failed / Cancelled)'
+                    : activeTx.category === 'deposit' || isCredit
+                    ? 'Funding Channel / Provider'
+                    : 'Fulfillment Provider'}
                 </span>
                 <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                   <span
@@ -1105,7 +1203,11 @@ export function AdminTransactionModal({
 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1 border-b border-slate-200/60 dark:border-white/5">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">
-                  {isRefund ? 'Refund Reversal Reference' : 'Provider Reference / Order ID'}
+                  {isRefund
+                    ? 'Refund Reversal Reference'
+                    : activeTx.category === 'deposit' || isCredit
+                    ? 'Provider / Session Reference'
+                    : 'Provider Reference / Order ID'}
                 </span>
                 <div className="flex items-center gap-2">
                   <span
@@ -1130,6 +1232,24 @@ export function AdminTransactionModal({
                   </button>
                 </div>
               </div>
+
+              {meta.payerName && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1 border-b border-slate-200/60 dark:border-white/5">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Originating Payer / Depositor</span>
+                  <span className="font-semibold text-slate-900 dark:text-white">
+                    {meta.payerName}
+                  </span>
+                </div>
+              )}
+
+              {meta.accountNumber && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1 border-b border-slate-200/60 dark:border-white/5">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Virtual Account Credited</span>
+                  <span className="font-mono font-semibold text-slate-900 dark:text-white">
+                    {meta.bankName ? `${meta.bankName} - ` : ''}{meta.accountNumber}
+                  </span>
+                </div>
+              )}
 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-1 border-b border-slate-200/60 dark:border-white/5">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">Internal Reference (Ledger)</span>
