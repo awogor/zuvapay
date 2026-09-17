@@ -109,12 +109,14 @@ alter table public.virtual_accounts add column if not exists account_reference t
 alter table public.virtual_accounts add column if not exists unique_id text;
 alter table public.virtual_accounts add column if not exists status text default 'active';
 
+-- Allow a user to have dedicated virtual accounts across multiple banks (9PSB, Providus, PalmPay)
+alter table public.virtual_accounts drop constraint if exists virtual_accounts_user_unique;
 do $$
 begin
   if not exists (
-    select 1 from pg_constraint where conname = 'virtual_accounts_user_unique'
+    select 1 from pg_constraint where conname = 'virtual_accounts_user_bank_unique'
   ) then
-    alter table public.virtual_accounts add constraint virtual_accounts_user_unique unique (user_id);
+    alter table public.virtual_accounts add constraint virtual_accounts_user_bank_unique unique (user_id, bank_code);
   end if;
 end $$;
 
