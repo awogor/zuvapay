@@ -69,9 +69,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: false, message: 'Missing reference or amount' }, { status: 400 });
     }
 
-    const depositAmount = typeof amount === 'string' ? parseFloat(amount) : Number(amount);
-    if (isNaN(depositAmount) || depositAmount <= 0) {
+    const rawAmount = typeof amount === 'string' ? parseFloat(amount) : Number(amount);
+    if (isNaN(rawAmount) || rawAmount <= 0) {
       return NextResponse.json({ status: false, message: 'Invalid deposit amount' }, { status: 400 });
+    }
+
+    // Dedicated virtual account flat fee: ₦50 per deposit
+    const flatFee = 50;
+    const feeCharged = typeof fee === 'number' && fee > 0 ? fee : flatFee;
+
+    // Credit net amount to wallet (gross amount transferred minus ₦50 flat fee)
+    const depositAmount =
+      net_amount && Number(net_amount) > 0 && Number(net_amount) < rawAmount
+        ? Number(net_amount)
+        : Math.max(0, rawAmount - feeCharged);
+
+    if (depositAmount <= 0) {
+      console.warn(`[BILLSTACK_WEBHOOK] Deposit amount after ₦${feeCharged} fee is zero or negative: raw ${rawAmount}`);
+      return NextResponse.json(
+        { status: false, message: `Deposit amount must exceed the ₦${feeCharged} service fee` },
+        { status: 400 }
+      );
     }
 
     // Initialize Supabase admin / service client
@@ -147,7 +165,7 @@ export async function POST(request: NextRequest) {
 
     const payerName = customer?.name || 'Bank Transfer';
     const bankName = account?.bank_name || '9PSB Bank';
-    const description = `Auto-Funded via ${bankName} (${accNumber || 'Dedicated Account'})`;
+    const description = `Auto-Funded via ${bankName} (${accNumber || 'Dedicated Account'}) [₦${feeCharged} Fee Deducted]`;
 
     // 6. Atomic Deposit Crediting via RPC (with row-level lock and idempotency)
     const { data: rpcRes, error: rpcErr } = await supabase.rpc('credit_wallet_deposit', {
@@ -161,8 +179,9 @@ export async function POST(request: NextRequest) {
         accountNumber: accNumber,
         accountRef: accRef,
         bankName,
-        fee,
-        net_amount: net_amount || depositAmount,
+        gross_amount: rawAmount,
+        fee: feeCharged,
+        net_amount: depositAmount,
       },
     });
 

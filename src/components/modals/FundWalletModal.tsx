@@ -427,7 +427,7 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
                             3
                           </span>
                           <span>
-                            Your ZuvaPay wallet is automatically credited in real-time. Zero manual approvals required!
+                            Your ZuvaPay wallet is automatically credited in real-time. Standard <strong>₦50 flat fee</strong> applies per bank transfer.
                           </span>
                         </li>
                       </ul>
@@ -441,10 +441,14 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
                           <span>Sandbox Simulation Active • Supabase database writes skipped</span>
                         </span>
                       ) : (
-                        <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                          <span>0% Charges • Instant Automated Webhook Settlement</span>
-                        </span>
+                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-semibold border border-slate-200/80 dark:border-slate-700/80">
+                          <span className="inline-flex items-center gap-1 text-brand-orange font-black">
+                            <Zap className="w-3.5 h-3.5 text-brand-orange" />
+                            <span>₦50 Flat Fee</span>
+                          </span>
+                          <span className="text-slate-300 dark:text-slate-600">•</span>
+                          <span>Instant Real-Time Credit</span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -630,13 +634,13 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
+
+                <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 pt-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>256-bit Encrypted Banking Grade Gateway</span>
+                </div>
               </div>
             )}
-
-            <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 pt-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span>256-bit Encrypted Banking Grade Gateway</span>
-            </div>
           </div>
         </div>
       </div>
