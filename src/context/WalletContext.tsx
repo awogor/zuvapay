@@ -398,6 +398,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: 'Wallet not found' };
     }
 
+    // 0. Positive Amount Guard
+    if (!amount || amount <= 0 || isNaN(amount)) {
+      return { success: false, error: 'Transaction amount must be greater than zero' };
+    }
+
     // 1. Pre-flight Balance Check
     if (wallet.balance < amount) {
       return {

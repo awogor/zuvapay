@@ -62,6 +62,13 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      if (parseFloat(amount) < 50) {
+        return NextResponse.json(
+          { success: false, error: 'Minimum airtime purchase is ₦50' },
+          { status: 400 }
+        );
+      }
+
       if (Number(tx.amount) < parseFloat(amount)) {
         return NextResponse.json(
           { success: false, error: 'Transaction amount does not match airtime value' },
