@@ -1,8 +1,9 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/common/Toast';
+import { useSupport } from '@/components/modals/SupportModal';
 import {
   X,
   User,
@@ -11,7 +12,10 @@ import {
   AtSign,
   Check,
   Loader2,
-  Save,
+  Lock,
+  ShieldCheck,
+  Headphones,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface ProfileInfoModalProps {
@@ -27,14 +31,13 @@ export function ProfileInfoModal({
 }: ProfileInfoModalProps) {
   const { user, profile, updateProfile } = useAuth();
   const { success, error } = useToast();
+  const { openSupport } = useSupport();
 
   const effectiveUsername = profile?.username || user?.user_metadata?.username;
-
-  const [title, setTitle] = useState(profile?.title || 'Mr');
-  const [firstName, setFirstName] = useState(profile?.first_name || '');
-  const [lastName, setLastName] = useState(profile?.last_name || '');
-  const [phoneNumber, setPhoneNumber] = useState(profile?.phone_number || '');
-  const [loading, setLoading] = useState(false);
+  const effectiveGender =
+    profile?.gender ||
+    user?.user_metadata?.gender ||
+    (profile?.title === 'Mrs' || profile?.title === 'Miss' ? 'Female' : 'Male');
 
   // Username claim states
   const [claimHandle, setClaimHandle] = useState('');
@@ -45,15 +48,6 @@ export function ProfileInfoModal({
   } | null>(null);
   const [isClaimingHandle, setIsClaimingHandle] = useState(false);
   const claimInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (profile) {
-      if (profile.title) setTitle(profile.title);
-      if (profile.first_name) setFirstName(profile.first_name);
-      if (profile.last_name) setLastName(profile.last_name);
-      if (profile.phone_number) setPhoneNumber(profile.phone_number);
-    }
-  }, [profile]);
 
   useEffect(() => {
     if (isOpen && autoFocusClaim && claimInputRef.current) {
@@ -135,33 +129,17 @@ export function ProfileInfoModal({
     }
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await updateProfile({
-        title,
-        first_name: firstName,
-        last_name: lastName,
-        phone_number: phoneNumber,
-      });
+  const fullName = profile?.first_name
+    ? `${profile?.title ? `${profile.title} ` : ''}${profile.first_name} ${profile.last_name || ''}`.trim()
+    : user?.user_metadata?.first_name
+    ? `${user?.user_metadata?.title ? `${user.user_metadata.title} ` : ''}${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim()
+    : 'Valued Customer';
 
-      if (res.error) {
-        error('Update Failed', res.error);
-      } else {
-        success('Profile Updated', 'Your profile details have been saved.');
-        onClose();
-      }
-    } catch (err: any) {
-      error('Error', err.message || 'Failed to update profile');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const phoneNumber = profile?.phone_number || user?.user_metadata?.phone || 'Not provided';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in">
-      <div className="relative w-full max-w-lg rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg rounded-3xl border border-slate-200/80 dark:border-white/10 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/10">
           <div className="flex items-center gap-3">
@@ -170,7 +148,7 @@ export function ProfileInfoModal({
             </div>
             <div>
               <h2 className="text-base font-black text-slate-900 dark:text-white">Profile Information</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">View and update your personal details</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Verified account identity details</p>
             </div>
           </div>
           <button
@@ -182,18 +160,28 @@ export function ProfileInfoModal({
         </div>
 
         {/* Scrollable Content */}
-        <div className="p-6 space-y-6 overflow-y-auto">
+        <div className="p-6 space-y-5 overflow-y-auto">
           {/* User Avatar & Identity Header */}
           <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10">
-            <img
-              src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.email || profile?.first_name || 'KPUser')}`}
-              alt="Avatar"
-              className="w-14 h-14 rounded-full border-2 border-brand-orange/40 bg-orange-100 dark:bg-slate-800 object-cover shadow-sm flex-shrink-0"
-            />
-            <div className="min-w-0">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                {profile?.title ? `${profile.title} ` : ''}{firstName} {lastName}
-              </h3>
+            <div className="relative flex-shrink-0">
+              <img
+                src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.email || profile?.first_name || 'KPUser')}`}
+                alt="Avatar"
+                className="w-14 h-14 rounded-full border-2 border-brand-orange/40 bg-orange-100 dark:bg-slate-800 object-cover shadow-sm"
+              />
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 text-slate-950 border-2 border-white dark:border-slate-900 flex items-center justify-center shadow-sm">
+                <CheckCircle2 className="w-3 h-3 stroke-[3]" />
+              </div>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                  {fullName}
+                </h3>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold">
+                  Verified
+                </span>
+              </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user?.email}</p>
               {effectiveUsername && (
                 <span className="inline-block text-[11px] font-mono font-bold text-brand-orange mt-0.5">
@@ -202,6 +190,7 @@ export function ProfileInfoModal({
               )}
             </div>
           </div>
+
           {/* Claim Username Box if not claimed */}
           {!effectiveUsername && (
             <div className="p-4 rounded-2xl border border-brand-orange/30 bg-gradient-to-br from-amber-500/10 via-brand-orange/5 to-transparent dark:bg-slate-950/60">
@@ -215,7 +204,7 @@ export function ProfileInfoModal({
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-3">
-                Send & receive funds with your unique @username.
+                Send & receive funds with your unique @username. Once chosen, your handle is permanent.
               </p>
 
               <form onSubmit={handleClaimUsername} className="space-y-2">
@@ -254,107 +243,92 @@ export function ProfileInfoModal({
             </div>
           )}
 
-          {/* Form Fields */}
-          <form onSubmit={handleSave} className="space-y-4">
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Title
-                </label>
-                <select
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:border-brand-orange"
-                >
-                  <option value="Mr">Mr</option>
-                  <option value="Mrs">Mrs</option>
-                  <option value="Miss">Miss</option>
-                </select>
-              </div>
-              <div className="col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:border-brand-orange"
-                />
-              </div>
+          {/* Locked Identity Details */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Identity Details</span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                <Lock className="w-3 h-3 text-amber-500" />
+                Locked (Non-Editable)
+              </span>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Last Name
-              </label>
-              <input
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:border-brand-orange"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Phone Number
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="08012345678"
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:border-brand-orange"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="email"
-                  value={user?.email || ''}
-                  disabled
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 text-xs font-medium cursor-not-allowed"
-                />
-              </div>
-            </div>
-
-            {effectiveUsername && (
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  ZuvaPay Handle
-                </label>
-                <div className="relative">
-                  <AtSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-orange" />
-                  <input
-                    type="text"
-                    value={`@${effectiveUsername}`}
-                    disabled
-                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 text-brand-orange font-bold text-xs cursor-not-allowed"
-                  />
+            <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/80 dark:bg-slate-950/40 divide-y divide-slate-200/70 dark:divide-white/5 overflow-hidden">
+              {/* Full Name */}
+              <div className="p-3 sm:p-3.5 flex items-center justify-between">
+                <div>
+                  <span className="text-[10.5px] font-bold text-slate-400 uppercase tracking-wider block">Legal Name</span>
+                  <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{fullName}</span>
                 </div>
+                <Lock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
               </div>
-            )}
 
-            <div className="pt-2">
+              {/* Gender */}
+              <div className="p-3 sm:p-3.5 flex items-center justify-between">
+                <div>
+                  <span className="text-[10.5px] font-bold text-slate-400 uppercase tracking-wider block">Gender</span>
+                  <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{effectiveGender}</span>
+                </div>
+                <Lock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+              </div>
+
+              {/* Phone Number */}
+              <div className="p-3 sm:p-3.5 flex items-center justify-between">
+                <div>
+                  <span className="text-[10.5px] font-bold text-slate-400 uppercase tracking-wider block">Phone Number</span>
+                  <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white font-mono">{phoneNumber}</span>
+                </div>
+                <Lock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+              </div>
+
+              {/* Email Address */}
+              <div className="p-3 sm:p-3.5 flex items-center justify-between">
+                <div>
+                  <span className="text-[10.5px] font-bold text-slate-400 uppercase tracking-wider block">Registered Email</span>
+                  <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate block">{user?.email}</span>
+                </div>
+                <Lock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+              </div>
+
+              {/* Handle */}
+              {effectiveUsername && (
+                <div className="p-3 sm:p-3.5 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10.5px] font-bold text-slate-400 uppercase tracking-wider block">ZuvaPay Handle</span>
+                    <span className="text-xs sm:text-sm font-bold font-mono text-brand-orange">@{effectiveUsername}</span>
+                  </div>
+                  <Lock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Security & KYC Notice Card */}
+          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-300 text-xs space-y-2">
+            <div className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-400">
+              <ShieldCheck className="w-4 h-4 text-brand-orange flex-shrink-0" />
+              <span>KYC & Identity Protection Active</span>
+            </div>
+            <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
+              To safeguard your funds and maintain regulatory compliance, personal identity details (legal name, gender, phone number, and handle) cannot be modified from the app. Only your <strong>login password</strong> and <strong>transaction PIN</strong> are editable.
+            </p>
+            <div className="pt-1">
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-xs shadow-md transition-all disabled:opacity-50"
+                type="button"
+                onClick={() => {
+                  onClose();
+                  openSupport({
+                    issue: 'Request Legal Name / Phone Correction',
+                    service: 'Account Identity Management',
+                  });
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-300 font-bold text-xs transition-colors"
               >
-                <Save className="w-4 h-4" />
-                {loading ? 'Saving Changes...' : 'Save Profile Changes'}
+                <Headphones className="w-3.5 h-3.5 text-brand-orange" />
+                <span>Contact Support for Corrections</span>
               </button>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>

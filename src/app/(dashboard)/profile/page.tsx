@@ -26,9 +26,11 @@ import {
   Wallet,
   ArrowRight,
   AlertTriangle,
+  KeyRound,
 } from 'lucide-react';
 import { ProfileInfoModal } from '@/components/modals/ProfileInfoModal';
 import { PinSetupModal } from '@/components/modals/PinSetupModal';
+import { ChangePasswordModal } from '@/components/modals/ChangePasswordModal';
 import { AccountLimitModal } from '@/components/modals/AccountLimitModal';
 import { KycModal } from '@/components/modals/KycModal';
 import { BvnModal } from '@/components/modals/BvnModal';
@@ -56,6 +58,7 @@ export default function ProfilePage() {
   // Modal display states
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [showKycModal, setShowKycModal] = useState(false);
   const [showBvnModal, setShowBvnModal] = useState(false);
@@ -225,6 +228,28 @@ export default function ProfilePage() {
                 </h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                   Update your transaction PIN
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+          </button>
+
+          {/* 3. Change Password */}
+          <button
+            type="button"
+            onClick={() => setShowPasswordModal(true)}
+            className="w-full flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50 dark:hover:bg-white/5 active:bg-slate-100 dark:active:bg-white/10 transition-colors text-left group"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-11 h-11 rounded-2xl bg-amber-100/80 dark:bg-amber-950/50 text-brand-orange flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <KeyRound className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                  Change Password
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  Update your account login password
                 </p>
               </div>
             </div>
@@ -481,6 +506,13 @@ export default function ProfilePage() {
           onClose={() => setShowPinModal(false)}
           onSuccess={() => setShowPinModal(false)}
           mode={profile?.is_pin_set ? 'change' : 'create'}
+        />
+      )}
+
+      {showPasswordModal && (
+        <ChangePasswordModal
+          isOpen={showPasswordModal}
+          onClose={() => setShowPasswordModal(false)}
         />
       )}
 

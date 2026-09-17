@@ -21,6 +21,7 @@ create table if not exists public.profiles (
 alter table public.profiles add column if not exists username text;
 alter table public.profiles add column if not exists role text default 'customer' not null check (role in ('admin', 'customer'));
 alter table public.profiles add column if not exists title text;
+alter table public.profiles add column if not exists gender text check (gender in ('Male', 'Female', 'Other'));
 alter table public.profiles add column if not exists first_name text;
 alter table public.profiles add column if not exists last_name text;
 alter table public.profiles add column if not exists phone_number text;

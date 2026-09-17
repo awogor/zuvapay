@@ -14,6 +14,7 @@ export function SignupPageView() {
 
   const [formData, setFormData] = useState({
     title: 'Mr',
+    gender: 'Male',
     firstName: '',
     lastName: '',
     username: '',
@@ -58,10 +59,17 @@ export function SignupPageView() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+      if (name === 'title') {
+        if (value === 'Mr') next.gender = 'Male';
+        else if (value === 'Mrs' || value === 'Miss') next.gender = 'Female';
+      } else if (name === 'gender') {
+        if (value === 'Male' && (prev.title === 'Mrs' || prev.title === 'Miss')) next.title = 'Mr';
+        else if (value === 'Female' && prev.title === 'Mr') next.title = 'Mrs';
+      }
+      return next;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,6 +93,7 @@ export function SignupPageView() {
     try {
       const res = await signUp({
         title: formData.title,
+        gender: formData.gender,
         username: formData.username.trim(),
         email: formData.email,
         password: formData.password,
@@ -139,9 +148,9 @@ export function SignupPageView() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-2.5">
-          {/* Row 1: Title and First Name */}
-          <div className="grid grid-cols-12 gap-2">
-            <div className="col-span-4">
+          {/* Row 1: Title and Gender */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
               <label className="block text-[11px] sm:text-xs font-bold text-slate-700 mb-0.5">
                 Title
               </label>
@@ -157,7 +166,25 @@ export function SignupPageView() {
               </select>
             </div>
 
-            <div className="col-span-8">
+            <div>
+              <label className="block text-[11px] sm:text-xs font-bold text-slate-700 mb-0.5">
+                Gender
+              </label>
+              <select
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                className="w-full px-2.5 py-1.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 focus:outline-none focus:border-brand-orange focus:ring-2 focus:ring-orange-500/15 text-xs font-bold transition-all h-[38px] sm:h-[42px]"
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Row 2: First Name and Last Name */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
               <label className="block text-[11px] sm:text-xs font-bold text-slate-700 mb-0.5">
                 First Name
               </label>
@@ -177,10 +204,7 @@ export function SignupPageView() {
                 />
               </div>
             </div>
-          </div>
 
-          {/* Row 2: Last Name and Phone Number */}
-          <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-[11px] sm:text-xs font-bold text-slate-700 mb-0.5">
                 Last Name
@@ -201,26 +225,27 @@ export function SignupPageView() {
                 />
               </div>
             </div>
+          </div>
 
-            <div>
-              <label className="block text-[11px] sm:text-xs font-bold text-slate-700 mb-0.5">
-                Phone Number
-              </label>
-              <div className="flex items-center gap-2 p-1 sm:p-1.5 rounded-2xl bg-slate-50 border border-slate-200 focus-within:border-brand-orange focus-within:ring-2 focus-within:ring-orange-500/15 transition-all shadow-sm h-[38px] sm:h-[42px]">
-                <div className="w-8 h-8 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0">
-                  <Phone className="w-3.5 h-3.5 text-brand-orange" />
-                </div>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="08012345678"
-                  required
-                  style={{ backgroundColor: 'transparent' }}
-                  className="w-full bg-transparent border-0 outline-none ring-0 shadow-none text-xs sm:text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-normal py-1 pr-2 focus:outline-none focus:ring-0 leading-normal appearance-none"
-                />
+          {/* Row 3: Phone Number */}
+          <div>
+            <label className="block text-[11px] sm:text-xs font-bold text-slate-700 mb-0.5">
+              Phone Number
+            </label>
+            <div className="flex items-center gap-2 p-1 sm:p-1.5 rounded-2xl bg-slate-50 border border-slate-200 focus-within:border-brand-orange focus-within:ring-2 focus-within:ring-orange-500/15 transition-all shadow-sm h-[38px] sm:h-[42px]">
+              <div className="w-8 h-8 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0">
+                <Phone className="w-3.5 h-3.5 text-brand-orange" />
               </div>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="08012345678"
+                required
+                style={{ backgroundColor: 'transparent' }}
+                className="w-full bg-transparent border-0 outline-none ring-0 shadow-none text-xs sm:text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-normal py-1 pr-2 focus:outline-none focus:ring-0 leading-normal appearance-none"
+              />
             </div>
           </div>
 

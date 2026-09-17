@@ -23,6 +23,7 @@ export type TransactionCategory =
   | 'virtual_card_topup';
 
 export type UserTitle = 'Mr' | 'Mrs' | 'Miss';
+export type UserGender = 'Male' | 'Female';
 export type UserRole = 'admin' | 'customer';
 
 export type UserStatus = 'active' | 'suspended' | 'blocked';
@@ -33,6 +34,7 @@ export interface UserProfile {
   status?: UserStatus;
   is_pin_set?: boolean;
   title?: UserTitle | string | null;
+  gender?: UserGender | string | null;
   username?: string | null;
   first_name: string;
   last_name: string;

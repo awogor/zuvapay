@@ -7,6 +7,7 @@ import type { User } from '@supabase/supabase-js';
 
 interface SignUpData {
   title?: string;
+  gender?: string;
   username?: string;
   email: string;
   password: string;
@@ -50,6 +51,7 @@ const DEMO_PROFILE: UserProfile = {
   status: 'active',
   is_pin_set: true,
   title: 'Mr',
+  gender: 'Male',
   first_name: 'David',
   last_name: 'Adeleke',
   phone_number: '08031234567',
@@ -374,8 +376,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signUp = async ({ title, username, email, password, firstName, lastName, phone }: SignUpData) => {
+  const signUp = async ({ title, gender, username, email, password, firstName, lastName, phone }: SignUpData) => {
     const cleanUsername = (username || email.split('@')[0]).trim().toLowerCase().replace(/^@/, '');
+    const cleanGender = gender === 'Female' ? 'Female' : 'Male';
+    const effectiveTitle = title || (cleanGender === 'Female' ? 'Mrs' : 'Mr');
 
     if (!isSupabaseConfigured) {
       const newUserId = `kp-${Date.now()}`;
@@ -385,7 +389,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         user_metadata: {
           username: cleanUsername,
-          title: title || 'Mr',
+          title: effectiveTitle,
+          gender: cleanGender,
           first_name: firstName,
           last_name: lastName,
           phone,
@@ -394,7 +399,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const mockProfile: UserProfile = {
         id: newUserId,
         username: cleanUsername,
-        title: title || 'Mr',
+        title: effectiveTitle,
+        gender: cleanGender,
         first_name: firstName,
         last_name: lastName,
         phone_number: phone,
@@ -412,7 +418,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title,
+          title: effectiveTitle,
+          gender: cleanGender,
           username: cleanUsername,
           email,
           password,
@@ -458,6 +465,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) return { error: 'Not authenticated' };
 
+    // Strict KYC Lock: Name, phone number, gender, title cannot be modified after registration
+    const forbiddenUpdates = ['first_name', 'last_name', 'phone_number', 'gender', 'title'];
+    const hasForbidden = forbiddenUpdates.some((k) => updates[k as keyof UserProfile] !== undefined);
+    if (hasForbidden) {
+      return {
+        error: 'Personal identity details (legal name, gender, phone number) are permanently locked for account security and KYC compliance. Only password and PIN can be changed. Contact support for assistance.',
+      };
+    }
+
     if (!isSupabaseConfigured) {
       if (profile) {
         const updated = { ...profile, ...updates };
@@ -469,13 +485,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // Sync with auth user_metadata for resilience
-      if (updates.username || updates.first_name || updates.last_name || updates.phone_number) {
+      if (updates.username) {
         await supabase.auth.updateUser({
           data: {
-            ...(updates.username ? { username: updates.username.toLowerCase().replace(/^@/, '') } : {}),
-            ...(updates.first_name ? { first_name: updates.first_name } : {}),
-            ...(updates.last_name ? { last_name: updates.last_name } : {}),
-            ...(updates.phone_number ? { phone: updates.phone_number, phone_number: updates.phone_number } : {}),
+            username: updates.username.toLowerCase().replace(/^@/, ''),
           },
         }).catch(() => {});
       }

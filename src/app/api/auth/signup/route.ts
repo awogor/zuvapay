@@ -5,7 +5,7 @@ import { sendTransactionalEmail } from '@/lib/email/sendEmail';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, firstName, lastName, phone, title, username } = body;
+    const { email, password, firstName, lastName, phone, title, username, gender } = body;
 
     if (!email || !password || !firstName || !phone) {
       return NextResponse.json(
@@ -16,6 +16,9 @@ export async function POST(request: NextRequest) {
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanUsername = (username || email.split('@')[0]).trim().toLowerCase().replace(/^@/, '');
+    const cleanGender = gender === 'Female' || gender === 'female' ? 'Female' : 'Male';
+    const effectiveTitle = title || (cleanGender === 'Female' ? 'Mrs' : 'Mr');
+
     const origin =
       process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes('localhost')
         ? process.env.NEXT_PUBLIC_APP_URL
@@ -49,7 +52,8 @@ export async function POST(request: NextRequest) {
       email_confirm: false,
       user_metadata: {
         username: cleanUsername,
-        title: title || 'Mr',
+        title: effectiveTitle,
+        gender: cleanGender,
         first_name: firstName,
         last_name: lastName || '',
         phone: phone,
@@ -67,18 +71,29 @@ export async function POST(request: NextRequest) {
     const user = userData.user;
 
     // 2. Ensure profile entry has username and full details
-    await supabaseAdmin
+    const profilePayload: Record<string, any> = {
+      id: user.id,
+      username: cleanUsername,
+      title: effectiveTitle,
+      gender: cleanGender,
+      first_name: firstName,
+      last_name: lastName || '',
+      phone_number: phone,
+      status: 'active',
+      role: cleanEmail === 'awogorm@gmail.com' ? 'admin' : 'customer',
+    };
+
+    const { error: upsertError } = await supabaseAdmin
       .from('profiles')
-      .upsert({
-        id: user.id,
-        username: cleanUsername,
-        title: title || 'Mr',
-        first_name: firstName,
-        last_name: lastName || '',
-        phone_number: phone,
-        status: 'active',
-        role: cleanEmail === 'awogorm@gmail.com' ? 'admin' : 'customer',
-      }, { onConflict: 'id' });
+      .upsert(profilePayload, { onConflict: 'id' });
+
+    // Resilient fallback if profiles table in Postgres does not have gender column yet
+    if (upsertError && (upsertError.message?.includes('gender') || upsertError.code === '42703')) {
+      delete profilePayload.gender;
+      await supabaseAdmin
+        .from('profiles')
+        .upsert(profilePayload, { onConflict: 'id' });
+    }
 
     // 3. Generate verification link using Supabase Admin
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
