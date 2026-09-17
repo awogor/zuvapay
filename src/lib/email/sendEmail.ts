@@ -65,8 +65,8 @@ export async function sendTransactionalEmail(
       rendered = renderEmailVerificationEmail({
         name: data.name || 'Valued Customer',
         email: to,
-        verifyUrl: data.verifyUrl || `${getEmailAppUrl()}/login?verified=true`,
-        token: data.token,
+        verifyUrl: data.verifyUrl || data.verificationUrl || `${getEmailAppUrl()}/login?verified=true`,
+        token: data.token || data.otp,
       });
       break;
 

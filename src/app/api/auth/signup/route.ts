@@ -104,6 +104,8 @@ export async function POST(request: NextRequest) {
       data: {
         name: `${firstName} ${lastName}`.trim(),
         verificationUrl,
+        verifyUrl: verificationUrl,
+        token: linkData?.properties?.email_otp,
       },
     });
 

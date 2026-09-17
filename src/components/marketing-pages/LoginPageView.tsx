@@ -5,7 +5,18 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/common/Toast';
-import { Mail, Lock, ArrowRight, AtSign, Eye, EyeOff } from 'lucide-react';
+import {
+  Mail,
+  Lock,
+  ArrowRight,
+  AtSign,
+  Eye,
+  EyeOff,
+  AlertTriangle,
+  CheckCircle2,
+  Loader2,
+  Info,
+} from 'lucide-react';
 
 function LoginFormContent() {
   const router = useRouter();
@@ -17,14 +28,81 @@ function LoginFormContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Unconfirmed email auto-resend states
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(0);
+  const [resendStatusMsg, setResendStatusMsg] = useState<string | null>(null);
+
+  // URL status banners
+  const [verifiedBanner, setVerifiedBanner] = useState(false);
+  const [infoBanner, setInfoBanner] = useState<string | null>(null);
+  const [registeredBanner, setRegisteredBanner] = useState(false);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('zuvapay_session_expired');
+      const verified = searchParams?.get('verified');
+      const errorParam = searchParams?.get('error');
+      const infoParam = searchParams?.get('info');
+      const registered = searchParams?.get('registered');
+
+      if (verified === 'true') {
+        setVerifiedBanner(true);
+        success('Email Verified! 🎉', 'Your email has been verified. You can now sign in.');
+      }
+      if (errorParam) {
+        error('Notice', decodeURIComponent(errorParam));
+      }
+      if (infoParam) {
+        setInfoBanner(decodeURIComponent(infoParam));
+      }
+      if (registered === 'true') {
+        setRegisteredBanner(true);
+      }
+
       if (window.location.search) {
         window.history.replaceState({}, '', window.location.pathname);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, success, error]);
+
+  // Resend cooldown timer
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const timer = setTimeout(() => {
+      setResendCountdown((c) => c - 1);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [resendCountdown]);
+
+  const autoResendVerification = async (emailToResend: string) => {
+    setResending(true);
+    setResendStatusMsg('Sending fresh verification link...');
+    try {
+      const res = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailToResend }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setResendStatusMsg(
+          data.alreadyVerified
+            ? 'Your email is already verified! You can sign in.'
+            : `A fresh verification link has been sent to ${emailToResend}. Please check your inbox or spam folder.`
+        );
+        setResendCountdown(60);
+        success('Verification Link Sent', `Check ${emailToResend} for your new activation link.`);
+      } else {
+        setResendStatusMsg(data.error || 'Could not send verification email.');
+      }
+    } catch {
+      setResendStatusMsg('Network error sending verification link.');
+    } finally {
+      setResending(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +113,7 @@ function LoginFormContent() {
     }
 
     setLoading(true);
+    setUnconfirmedEmail(null);
     try {
       let targetEmail = cleanIdentifier;
 
@@ -58,7 +137,20 @@ function LoginFormContent() {
 
       const res = await signIn(targetEmail, password);
       if (res.error) {
-        error('Sign In Failed', res.error);
+        const errLower = (res.error || '').toLowerCase();
+        const isUnconfirmed =
+          errLower.includes('email not confirmed') ||
+          errLower.includes('not verified') ||
+          errLower.includes('unconfirmed');
+
+        if (isUnconfirmed) {
+          setUnconfirmedEmail(targetEmail);
+          // Auto-trigger resend to deliver verification email to returning user immediately!
+          autoResendVerification(targetEmail);
+        } else {
+          error('Sign In Failed', res.error);
+        }
+
         fetch('/api/auth/login-track', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -131,6 +223,70 @@ function LoginFormContent() {
               >
                 1-Click Demo
               </button>
+            </div>
+          )}
+          {/* Email Verified Success Banner */}
+          {verifiedBanner && (
+            <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs flex items-center gap-2.5 animate-in fade-in">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <div>
+                <p className="font-bold">Email Verified Successfully!</p>
+                <p className="text-[11px] text-emerald-800">You can now sign in to your ZuvaPay account.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Account Registered Info Banner */}
+          {registeredBanner && !verifiedBanner && (
+            <div className="p-3 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-center gap-2.5 animate-in fade-in">
+              <Info className="w-4 h-4 text-brand-orange flex-shrink-0" />
+              <div>
+                <p className="font-bold">Verification Link Sent</p>
+                <p className="text-[11px] text-amber-800">Please check your email and click the link to verify your account.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Info Banner from Callback or System */}
+          {infoBanner && (
+            <div className="p-3 rounded-2xl bg-slate-100 border border-slate-300 text-slate-900 text-xs flex items-center gap-2.5 animate-in fade-in">
+              <Info className="w-4 h-4 text-slate-600 flex-shrink-0" />
+              <p className="text-[11px]">{infoBanner}</p>
+            </div>
+          )}
+
+          {/* Unconfirmed Email Auto-Resend Card */}
+          {unconfirmedEmail && (
+            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-2 animate-in fade-in">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-bold text-amber-950">Email Verification Required</p>
+                  <p className="text-[11px] leading-relaxed text-amber-900/90">
+                    {resendStatusMsg || `Your email is not verified yet. We have sent a fresh verification link to ${unconfirmedEmail}.`}
+                  </p>
+                </div>
+              </div>
+              <div className="pt-1 flex items-center justify-between border-t border-amber-200/80 text-[11px]">
+                <span className="text-amber-700">Didn't receive it?</span>
+                <button
+                  type="button"
+                  disabled={resending || resendCountdown > 0}
+                  onClick={() => autoResendVerification(unconfirmedEmail)}
+                  className="font-bold text-brand-orange hover:text-amber-700 disabled:opacity-50 transition-colors flex items-center gap-1"
+                >
+                  {resending ? (
+                    <>
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      <span>Sending...</span>
+                    </>
+                  ) : resendCountdown > 0 ? (
+                    `Resend in ${resendCountdown}s`
+                  ) : (
+                    'Resend Link Now'
+                  )}
+                </button>
+              </div>
             </div>
           )}
 
