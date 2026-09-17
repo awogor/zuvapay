@@ -22,9 +22,10 @@ import {
 
 interface AdminSidebarProps {
   onCloseMobile?: () => void;
+  onLockAdmin?: () => void;
 }
 
-export function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
+export function AdminSidebar({ onCloseMobile, onLockAdmin }: AdminSidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentTab = searchParams.get('tab') || 'overview';
@@ -225,6 +226,21 @@ export function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
             </div>
           </div>
         </div>
+
+        {onLockAdmin && (
+          <button
+            type="button"
+            onClick={() => {
+              if (onCloseMobile) onCloseMobile();
+              onLockAdmin();
+            }}
+            className="mt-2.5 w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-100 hover:bg-rose-500/10 dark:bg-slate-900 dark:hover:bg-rose-500/15 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 text-xs font-semibold border border-slate-200 dark:border-white/5 transition-all group shadow-sm"
+            title="Lock Admin Console with Transaction PIN"
+          >
+            <Lock className="w-3.5 h-3.5 text-slate-400 group-hover:text-rose-500 transition-colors" />
+            <span>Lock Console</span>
+          </button>
+        )}
       </div>
     </aside>
   );

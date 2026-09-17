@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { AdminSidebar } from '@/components/layout/AdminSidebar';
 import { Navbar } from '@/components/layout/Navbar';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { FundWalletModal } from '@/components/modals/FundWalletModal';
 import { SwapModal } from '@/components/modals/SwapModal';
+import { AdminPinGate } from '@/components/admin/AdminPinGate';
 import { ShieldAlert, X } from 'lucide-react';
 import Link from 'next/link';
 
@@ -15,8 +16,47 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [fundModalOpen, setFundModalOpen] = useState(false);
   const [swapModalOpen, setSwapModalOpen] = useState(false);
+  const [isPinUnlocked, setIsPinUnlocked] = useState<boolean>(false);
+  const [isCheckingPinAuth, setIsCheckingPinAuth] = useState<boolean>(true);
 
-  if (loading) {
+  // Check session storage for existing unlocked admin session
+  useEffect(() => {
+    if (!user?.id) {
+      if (!loading) setIsCheckingPinAuth(false);
+      return;
+    }
+    const unlockedKey = `zuvapay_admin_unlocked_${user.id}`;
+    const unlockedAt = sessionStorage.getItem(unlockedKey);
+    if (unlockedAt) {
+      const elapsed = Date.now() - parseInt(unlockedAt, 10);
+      // Valid for 2 hours
+      if (elapsed < 2 * 60 * 60 * 1000) {
+        setIsPinUnlocked(true);
+      } else {
+        sessionStorage.removeItem(unlockedKey);
+        setIsPinUnlocked(false);
+      }
+    } else {
+      setIsPinUnlocked(false);
+    }
+    setIsCheckingPinAuth(false);
+  }, [user?.id, loading]);
+
+  const handleUnlock = () => {
+    if (user?.id) {
+      sessionStorage.setItem(`zuvapay_admin_unlocked_${user.id}`, Date.now().toString());
+    }
+    setIsPinUnlocked(true);
+  };
+
+  const handleLockAdmin = () => {
+    if (user?.id) {
+      sessionStorage.removeItem(`zuvapay_admin_unlocked_${user.id}`);
+    }
+    setIsPinUnlocked(false);
+  };
+
+  if (loading || isCheckingPinAuth) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-950 text-white text-xs">
         Verifying administrative authorization...
@@ -52,11 +92,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
+  // Strict Transaction PIN Gate: Do not render any admin DOM or data until unlocked
+  if (!isPinUnlocked) {
+    return (
+      <AdminPinGate
+        onUnlock={handleUnlock}
+        userEmail={user?.email}
+        userName={profile?.first_name || user?.user_metadata?.first_name}
+      />
+    );
+  }
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
       {/* Desktop Admin Sidebar */}
       <div className="hidden md:flex md:flex-shrink-0">
-        <AdminSidebar />
+        <AdminSidebar onLockAdmin={handleLockAdmin} />
       </div>
 
       {/* Mobile Drawer Backdrop & Drawer */}
@@ -75,7 +126,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <AdminSidebar onCloseMobile={() => setMobileMenuOpen(false)} />
+            <AdminSidebar
+              onCloseMobile={() => setMobileMenuOpen(false)}
+              onLockAdmin={handleLockAdmin}
+            />
           </div>
         </div>
       )}
