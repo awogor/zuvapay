@@ -31,7 +31,21 @@ const SupportContext = createContext<SupportContextType | undefined>(undefined);
 export function useSupport() {
   const ctx = useContext(SupportContext);
   if (!ctx) {
-    throw new Error('useSupport must be used within a SupportProvider');
+    return {
+      openSupport: (data?: SupportContextData) => {
+        if (typeof window !== 'undefined') {
+          let msg = 'Hello ZuvaPay Support, I need assistance with my account.\n\n';
+          if (data?.service) msg += `• Service: ${data.service}\n`;
+          if (data?.reference) msg += `• Reference: ${data.reference}\n`;
+          if (data?.issue) msg += `• Issue: ${data.issue}\n`;
+          window.open(
+            `https://wa.me/${SUPPORT_CONTACTS.whatsapp.cleanNumber}?text=${encodeURIComponent(msg)}`,
+            '_blank'
+          );
+        }
+      },
+      closeSupport: () => {},
+    };
   }
   return ctx;
 }

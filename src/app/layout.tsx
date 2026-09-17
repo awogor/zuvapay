@@ -151,14 +151,14 @@ export default function RootLayout({
         </Script>
         <ThemeProvider>
           <ToastProvider>
-            <AuthProvider>
-              <WalletProvider>
-                <SupportProvider>
+            <SupportProvider>
+              <AuthProvider>
+                <WalletProvider>
                   {children}
                   <ReceiptModal />
-                </SupportProvider>
-              </WalletProvider>
-            </AuthProvider>
+                </WalletProvider>
+              </AuthProvider>
+            </SupportProvider>
           </ToastProvider>
         </ThemeProvider>
       </body>
