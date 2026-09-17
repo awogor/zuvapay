@@ -60,12 +60,17 @@ export async function POST(request: NextRequest) {
       amount,
       fee = 0,
       net_amount,
-      reference, // Unique transaction reference from Billstack
+      reference,
+      merchant_reference,
+      transaction_ref,
+      wiaxy_ref,
       account,   // { account_number, account_name, bank_name, reference }
-      customer,  // { name, email, phone }
+      customer,  // { name, firstName, lastName, email, phone }
+      payer,     // Array of payers
     } = data;
 
-    if (!reference || !amount) {
+    const txReference = transaction_ref || wiaxy_ref || reference;
+    if (!txReference || !amount) {
       return NextResponse.json({ status: false, message: 'Missing reference or amount' }, { status: 400 });
     }
 
@@ -107,7 +112,7 @@ export async function POST(request: NextRequest) {
     const { data: existingTx } = await supabase
       .from('transactions')
       .select('id')
-      .eq('reference', reference)
+      .or(`reference.eq.${txReference},reference.eq.${reference || txReference}`)
       .maybeSingle();
 
     if (existingTx) {
@@ -115,8 +120,8 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Locate user via virtual_accounts
-    const accNumber = account?.account_number;
-    const accRef = account?.reference;
+    const accNumber = account?.account_number || payer?.[0]?.account_number;
+    const accRef = merchant_reference || account?.reference;
     let userId: string | null = null;
 
     if (accRef) {
@@ -163,7 +168,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: false, message: 'User wallet not found' }, { status: 404 });
     }
 
-    const payerName = customer?.name || 'Bank Transfer';
+    const payerName =
+      customer?.name ||
+      (customer?.firstName ? `${customer.firstName} ${customer.lastName || ''}`.trim() : null) ||
+      payer?.[0]?.account_name ||
+      account?.account_name ||
+      'Bank Transfer';
     const bankName = account?.bank_name || '9PSB Bank';
     const description = `Auto-Funded via ${bankName} (${accNumber || 'Dedicated Account'}) [₦${feeCharged} Fee Deducted]`;
 
@@ -172,7 +182,7 @@ export async function POST(request: NextRequest) {
       p_wallet_id: wallet.id,
       p_amount: depositAmount,
       p_description: description,
-      p_reference: reference,
+      p_reference: txReference,
       p_metadata: {
         gateway: 'billstack',
         payerName,
@@ -182,6 +192,9 @@ export async function POST(request: NextRequest) {
         gross_amount: rawAmount,
         fee: feeCharged,
         net_amount: depositAmount,
+        transaction_ref: txReference,
+        billstack_ref: reference,
+        merchant_reference: merchant_reference || accRef,
       },
     });
 
@@ -218,7 +231,7 @@ export async function POST(request: NextRequest) {
             name: ownerName,
             amount: depositAmount,
             newBalance: creditedBalance,
-            reference,
+            reference: txReference,
             payerName,
             bankName,
             date: new Date().toLocaleString('en-NG'),
