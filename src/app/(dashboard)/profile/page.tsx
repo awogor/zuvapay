@@ -48,6 +48,11 @@ export default function ProfilePage() {
     ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim()
     : 'Valued User';
 
+  const avatarUrl =
+    profile?.avatar_url ||
+    user?.user_metadata?.avatar_url ||
+    `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.email || profile?.first_name || 'KPUser')}`;
+
   // Modal display states
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
@@ -125,15 +130,22 @@ export default function ProfilePage() {
         <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-amber-500/10 blur-xl pointer-events-none" />
 
         <div className="relative z-10 flex items-center gap-4 sm:gap-5">
-          {/* Avatar Icon */}
-          <div className="relative flex-shrink-0">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FFD1AC] dark:bg-orange-950/60 border-2 border-brand-orange/30 flex items-center justify-center text-brand-orange shadow-inner">
-              <User className="w-8 h-8 sm:w-10 sm:h-10 text-brand-orange stroke-[2.2]" />
-            </div>
+          {/* Avatar Image (Matching user avatar in Navbar) */}
+          <button
+            type="button"
+            onClick={() => setShowProfileModal(true)}
+            className="relative flex-shrink-0 group focus:outline-none"
+            title="Edit Profile Information"
+          >
+            <img
+              src={avatarUrl}
+              alt={fullName}
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-orange-100 dark:bg-slate-800 border-2 border-brand-orange/40 object-cover shadow-md group-hover:scale-105 transition-transform"
+            />
             <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 text-slate-950 border-2 border-white dark:border-slate-900 flex items-center justify-center shadow-sm">
               <CheckCircle2 className="w-3.5 h-3.5 stroke-[3]" />
             </div>
-          </div>
+          </button>
 
           {/* User Details */}
           <div className="flex-1 min-w-0 space-y-1">

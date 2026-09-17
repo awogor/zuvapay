@@ -183,6 +183,25 @@ export function ProfileInfoModal({
 
         {/* Scrollable Content */}
         <div className="p-6 space-y-6 overflow-y-auto">
+          {/* User Avatar & Identity Header */}
+          <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10">
+            <img
+              src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.email || profile?.first_name || 'KPUser')}`}
+              alt="Avatar"
+              className="w-14 h-14 rounded-full border-2 border-brand-orange/40 bg-orange-100 dark:bg-slate-800 object-cover shadow-sm flex-shrink-0"
+            />
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                {profile?.title ? `${profile.title} ` : ''}{firstName} {lastName}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user?.email}</p>
+              {effectiveUsername && (
+                <span className="inline-block text-[11px] font-mono font-bold text-brand-orange mt-0.5">
+                  @{effectiveUsername}
+                </span>
+              )}
+            </div>
+          </div>
           {/* Claim Username Box if not claimed */}
           {!effectiveUsername && (
             <div className="p-4 rounded-2xl border border-brand-orange/30 bg-gradient-to-br from-amber-500/10 via-brand-orange/5 to-transparent dark:bg-slate-950/60">
