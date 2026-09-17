@@ -337,7 +337,10 @@ export function AdminUserModal({
 
   const ngnWallet = currentUser.wallets?.find((w: any) => w.currency === 'NGN');
   const usdWallet = currentUser.wallets?.find((w: any) => w.currency === 'USD');
-  const va = currentUser.virtual_accounts?.[0];
+  const vaList: any[] = Array.isArray(currentUser.virtual_accounts)
+    ? currentUser.virtual_accounts
+    : (currentUser.virtual_accounts ? [currentUser.virtual_accounts] : []);
+  const defaultVa = vaList.find((a: any) => a.bank_code === '9PSB') || vaList[0];
   const userStatus = currentUser.status || 'active';
 
   return (
@@ -631,26 +634,45 @@ export function AdminUserModal({
                   <p className="text-[10px] text-slate-400 font-mono">ID: {usdWallet?.id || 'Pending'}</p>
                 </div>
 
-                {/* Korapay Dedicated Virtual Account */}
-                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/5 space-y-1.5">
+                {/* Dedicated Virtual Bank Accounts */}
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/5 space-y-2">
                   <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-                    <span className="text-[11px] font-semibold">Dedicated Virtual Bank</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-semibold">Dedicated Virtual Bank</span>
+                      {defaultVa && (
+                        <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-brand-orange/15 text-brand-orange border border-brand-orange/30">
+                          Default
+                        </span>
+                      )}
+                    </div>
                     <Building2 className="w-4 h-4 text-amber-500" />
                   </div>
-                  {va ? (
+                  {defaultVa ? (
                     <div>
                       <p className="text-base font-black text-slate-900 dark:text-white font-mono">
-                        {va.account_number}
+                        {defaultVa.account_number}
                       </p>
                       <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
-                        {va.bank_name}
+                        {defaultVa.bank_name}
                       </p>
-                      <p className="text-[10px] text-slate-400 truncate">{va.account_name}</p>
+                      <p className="text-[10px] text-slate-400 truncate">{defaultVa.account_name}</p>
+
+                      {vaList.length > 1 && (
+                        <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-white/5 space-y-1">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Other Assigned Accounts</p>
+                          {vaList.filter((a) => a !== defaultVa).map((altVa, idx) => (
+                            <div key={idx} className="flex items-center justify-between text-xs">
+                              <span className="text-slate-500 dark:text-slate-400">{altVa.bank_name}:</span>
+                              <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{altVa.account_number}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div>
                       <p className="text-xs text-slate-400 italic">Not yet generated</p>
-                      <p className="text-[10px] text-slate-500">Auto-created upon first Korapay deposit</p>
+                      <p className="text-[10px] text-slate-500">Auto-assigned upon opening Fund Wallet</p>
                     </div>
                   )}
                 </div>

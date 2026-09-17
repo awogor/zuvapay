@@ -42,7 +42,7 @@ export async function GET() {
         avatar_url,
         created_at,
         wallets (id, balance, currency),
-        virtual_accounts (bank_name, account_number, account_name, status)
+        virtual_accounts (bank_name, bank_code, account_number, account_name, status)
       `)
       .order('created_at', { ascending: false });
 
@@ -63,7 +63,7 @@ export async function GET() {
           avatar_url,
           created_at,
           wallets (id, balance, currency),
-          virtual_accounts (bank_name, account_number, account_name, status)
+          virtual_accounts (bank_name, bank_code, account_number, account_name, status)
         `)
         .order('created_at', { ascending: false });
 

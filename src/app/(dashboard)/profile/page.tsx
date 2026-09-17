@@ -27,8 +27,10 @@ import {
   ArrowRight,
   AlertTriangle,
   KeyRound,
+  Building2,
 } from 'lucide-react';
 import { ProfileInfoModal } from '@/components/modals/ProfileInfoModal';
+import { CustomerAccountModal } from '@/components/modals/CustomerAccountModal';
 import { PinSetupModal } from '@/components/modals/PinSetupModal';
 import { ChangePasswordModal } from '@/components/modals/ChangePasswordModal';
 import { AccountLimitModal } from '@/components/modals/AccountLimitModal';
@@ -38,7 +40,7 @@ import { BvnModal } from '@/components/modals/BvnModal';
 export default function ProfilePage() {
   const searchParams = useSearchParams();
   const { user, profile, signOut } = useAuth();
-  const { wallet, formatBalance } = useWallet();
+  const { wallet, formatBalance, openFundModal } = useWallet();
   const { theme, toggleTheme } = useTheme();
   const { openSupport } = useSupport();
   const { success } = useToast();
@@ -57,6 +59,7 @@ export default function ProfilePage() {
 
   // Modal display states
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showCustomerAccountModal, setShowCustomerAccountModal] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
@@ -79,10 +82,20 @@ export default function ProfilePage() {
     }
   }, []);
 
-  // Check query parameter to trigger username claim automatically
+  // Check query parameter to trigger username claim or customer account modal automatically
   useEffect(() => {
-    if (searchParams?.get('action') === 'claim_username') {
+    const action = searchParams?.get('action');
+    const tab = searchParams?.get('tab');
+    if (action === 'claim_username') {
       setShowProfileModal(true);
+    } else if (
+      tab === 'account' ||
+      tab === 'customer-account' ||
+      tab === 'virtual-account' ||
+      action === 'customer_account' ||
+      action === 'virtual_account'
+    ) {
+      setShowCustomerAccountModal(true);
     }
   }, [searchParams]);
 
@@ -178,6 +191,17 @@ export default function ProfilePage() {
                   Claim Handle
                 </button>
               )}
+
+              {/* Quick Customer Account pill */}
+              <button
+                type="button"
+                onClick={() => setShowCustomerAccountModal(true)}
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-900/10 dark:bg-white/10 hover:bg-slate-900/15 dark:hover:bg-white/20 border border-slate-900/15 dark:border-white/15 text-slate-800 dark:text-slate-200 text-[10.5px] font-bold transition-colors"
+                title="View Dedicated Virtual Bank Accounts"
+              >
+                <Building2 className="w-3 h-3 text-brand-orange" />
+                <span>Bank Accounts</span>
+              </button>
             </div>
           </div>
         </div>
@@ -206,6 +230,33 @@ export default function ProfilePage() {
                 </h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                   View and update your profile
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+          </button>
+
+          {/* 2. Customer Account / Dedicated Virtual Banks */}
+          <button
+            type="button"
+            onClick={() => setShowCustomerAccountModal(true)}
+            className="w-full flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50 dark:hover:bg-white/5 active:bg-slate-100 dark:active:bg-white/10 transition-colors text-left group"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-100/80 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <Building2 className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                    Customer Account
+                  </h4>
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider bg-brand-orange/15 text-brand-orange border border-brand-orange/30">
+                    Dedicated Banks
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  View dedicated virtual bank accounts (9PSB, Providus, PalmPay)
                 </p>
               </div>
             </div>
@@ -513,6 +564,17 @@ export default function ProfilePage() {
         <ChangePasswordModal
           isOpen={showPasswordModal}
           onClose={() => setShowPasswordModal(false)}
+        />
+      )}
+
+      {showCustomerAccountModal && (
+        <CustomerAccountModal
+          isOpen={showCustomerAccountModal}
+          onClose={() => setShowCustomerAccountModal(false)}
+          onOpenFundWallet={() => {
+            setShowCustomerAccountModal(false);
+            openFundModal();
+          }}
         />
       )}
 

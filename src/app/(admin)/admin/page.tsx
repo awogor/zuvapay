@@ -487,7 +487,10 @@ export default function AdminDashboardPage() {
                 {filteredUsers.map((u) => {
                   const ngnWallet = u.wallets?.find((w: any) => w.currency === 'NGN');
                   const usdWallet = u.wallets?.find((w: any) => w.currency === 'USD');
-                  const va = u.virtual_accounts?.[0];
+                  const vaList: any[] = Array.isArray(u.virtual_accounts)
+                    ? u.virtual_accounts
+                    : (u.virtual_accounts ? [u.virtual_accounts] : []);
+                  const defaultVa = vaList.find((a: any) => a.bank_code === '9PSB') || vaList[0];
                   const userStatus = u.status || 'active';
 
                   return (
@@ -567,10 +570,24 @@ export default function AdminDashboardPage() {
                       </td>
 
                       <td className="py-3.5 px-4">
-                        {va ? (
+                        {defaultVa ? (
                           <div>
-                            <p className="font-mono text-slate-900 dark:text-white font-bold">{va.account_number}</p>
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400">{va.bank_name}</p>
+                            <div className="flex items-center gap-1.5">
+                              <p className="font-mono text-slate-900 dark:text-white font-bold">{defaultVa.account_number}</p>
+                              {defaultVa.bank_code === '9PSB' && (
+                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-brand-orange/15 text-brand-orange border border-brand-orange/30">
+                                  Default
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                              {defaultVa.bank_name}
+                              {vaList.length > 1 && (
+                                <span className="text-slate-400 ml-1 font-medium">
+                                  (+{vaList.length - 1} more)
+                                </span>
+                              )}
+                            </p>
                           </div>
                         ) : (
                           <span className="text-[11px] text-slate-400 italic">Not Generated</span>
