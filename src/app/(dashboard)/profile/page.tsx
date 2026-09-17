@@ -466,7 +466,9 @@ export default function ProfilePage() {
       {showPinModal && (
         <PinSetupModal
           isOpen={showPinModal}
+          onClose={() => setShowPinModal(false)}
           onSuccess={() => setShowPinModal(false)}
+          mode={profile?.is_pin_set ? 'change' : 'create'}
         />
       )}
 

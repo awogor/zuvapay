@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { pin, confirmPin } = body;
+    const { pin, confirmPin, oldPin } = body;
 
     if (!pin || typeof pin !== 'string' || !/^\d{4}$/.test(pin)) {
       return NextResponse.json(
@@ -39,8 +39,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const hashedPin = hashPin(pin, user.id);
     const adminSupabase = createAdminClient();
+    const { data: profile } = await adminSupabase
+      .from('profiles')
+      .select('is_pin_set, transaction_pin_hash, status')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    // Security Gate: If PIN is already set, oldPin MUST be provided and verified!
+    if (profile?.is_pin_set && profile?.transaction_pin_hash) {
+      if (!oldPin || typeof oldPin !== 'string' || !/^\d{4}$/.test(oldPin)) {
+        return NextResponse.json(
+          { success: false, error: 'Current PIN is required to change your transaction PIN.' },
+          { status: 400 }
+        );
+      }
+
+      const candidateHash = hashPin(oldPin, user.id);
+      const candidateBuf = Buffer.from(candidateHash, 'utf8');
+      const targetBuf = Buffer.from(profile.transaction_pin_hash, 'utf8');
+      const isMatch = candidateBuf.length === targetBuf.length && crypto.timingSafeEqual(candidateBuf, targetBuf);
+
+      if (!isMatch) {
+        return NextResponse.json(
+          { success: false, error: 'Current PIN is incorrect.' },
+          { status: 401 }
+        );
+      }
+
+      if (oldPin === pin) {
+        return NextResponse.json(
+          { success: false, error: 'New PIN cannot be the same as your current PIN.' },
+          { status: 400 }
+        );
+      }
+    }
+
+    const hashedPin = hashPin(pin, user.id);
 
     const { error: updateError } = await adminSupabase
       .from('profiles')
