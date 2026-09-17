@@ -72,14 +72,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return !!url && !url.includes('placeholder');
   }, []);
 
-  const fetchProfile = async (userId: string, userMeta?: any) => {
+  const fetchProfile = async (userId: string, userMeta?: any): Promise<UserProfile | null> => {
     try {
       // 1. Try server API endpoint with full server privileges
       const apiRes = await fetch('/api/user/profile').catch(() => null);
-      if (apiRes && apiRes.ok) {
-        const apiData = await apiRes.json();
-        if (apiData.profile) {
-          return apiData.profile as UserProfile;
+      if (apiRes) {
+        if (apiRes.status === 401) {
+          // Token might have expired. Try to refresh the session silently!
+          console.log('[Auth] Profile returned 401, attempting silent token refresh...');
+          try {
+            const { data: refreshData } = await supabase.auth.refreshSession();
+            if (refreshData?.session) {
+              const retryRes = await fetch('/api/user/profile').catch(() => null);
+              if (retryRes && retryRes.ok) {
+                const retryData = await retryRes.json();
+                if (retryData.profile) {
+                  return retryData.profile as UserProfile;
+                }
+              }
+            }
+          } catch (refreshErr) {
+            console.warn('[Auth] Silent token refresh attempt failed:', refreshErr);
+          }
+        } else if (apiRes.ok) {
+          const apiData = await apiRes.json();
+          if (apiData.profile) {
+            return apiData.profile as UserProfile;
+          }
         }
       }
 
@@ -88,36 +107,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       const metaUsername = userMeta?.username || null;
       const metaRole = userMeta?.role || (userMeta?.email === 'awogorm@gmail.com' ? 'admin' : 'customer');
 
       if (error) {
-        console.warn('Profile fetch error or table not yet populated:', error.message);
-        if (userMeta) {
-          return {
-            id: userId,
-            role: metaRole,
-            status: 'active',
-            is_pin_set: false,
-            title: userMeta.title || 'Mr',
-            first_name: userMeta.first_name || 'User',
-            last_name: userMeta.last_name || '',
-            phone_number: userMeta.phone || '',
-            username: metaUsername,
-            avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
-            created_at: new Date().toISOString(),
-          } as UserProfile;
-        }
+        console.warn('Profile fetch error:', error.message);
+        // CRITICAL: On error (e.g. JWT expired, network drop), DO NOT fabricate a profile with is_pin_set: false!
+        // Returning null allows caller to preserve previously loaded valid profile.
         return null;
       }
 
-      return {
-        ...data,
-        role: data?.role || metaRole,
-        username: data?.username || metaUsername,
-      } as UserProfile;
+      if (data) {
+        return {
+          ...data,
+          role: data?.role || metaRole,
+          username: data?.username || metaUsername,
+        } as UserProfile;
+      }
+
+      // 3. Only if database query returned 0 records (brand-new user before profile trigger fires)
+      if (userMeta) {
+        return {
+          id: userId,
+          role: metaRole,
+          status: 'active',
+          is_pin_set: false,
+          title: userMeta.title || 'Mr',
+          first_name: userMeta.first_name || 'User',
+          last_name: userMeta.last_name || '',
+          phone_number: userMeta.phone || '',
+          username: metaUsername,
+          avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
+          created_at: new Date().toISOString(),
+        } as UserProfile;
+      }
+
+      return null;
     } catch (err) {
       console.warn('Error querying profile:', err);
       return null;
@@ -150,13 +177,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        // Enforce 10-Minute Inactivity Limit upon session restoration
-        const INACTIVITY_LIMIT_MS = 10 * 60 * 1000;
+        // Enforce 30-Minute Inactivity Limit upon session restoration
+        const INACTIVITY_LIMIT_MS = 30 * 60 * 1000;
         const lastActiveStr = typeof window !== 'undefined' ? localStorage.getItem('zuvapay_last_active_time') : null;
         if (lastActiveStr) {
           const lastActive = parseInt(lastActiveStr, 10);
           if (Date.now() - lastActive >= INACTIVITY_LIMIT_MS) {
-            console.warn('[Security] Restored session expired after 10 minutes of inactivity. Logging out...');
+            console.warn('[Security] Restored session expired after 30 minutes of inactivity. Logging out cleanly...');
             try {
               localStorage.removeItem('zuvapay_last_active_time');
               localStorage.setItem('zuvapay_session_expired', 'true');
@@ -168,7 +195,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setProfile(null);
             setLoading(false);
             if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-              window.location.href = '/login';
+              window.location.replace('/login?reason=inactivity');
             }
             return;
           }
@@ -183,8 +210,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (prof) {
             setProfile(prof);
           } else {
-            // Build fallback from metadata
-            setProfile({
+            // Keep existing profile if already set, or build safe initial profile
+            setProfile((prev) => prev || {
               id: session.user.id,
               username: session.user.user_metadata?.username || null,
               role: (session.user.user_metadata?.role as any) || 'customer',
@@ -194,6 +221,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               phone_number: session.user.user_metadata?.phone || '',
               avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.id}`,
               created_at: session.user.created_at,
+              is_pin_set: true, // Safe default to prevent false PIN creation prompts on boot glitches
             });
           }
         }
@@ -210,17 +238,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (session?.user) {
             setUser(session.user);
             const prof = await fetchProfile(session.user.id, session.user.user_metadata);
-            setProfile(prof || {
-              id: session.user.id,
-              username: session.user.user_metadata?.username || null,
-              role: (session.user.user_metadata?.role as any) || 'customer',
-              title: session.user.user_metadata?.title || 'Mr',
-              first_name: session.user.user_metadata?.first_name || 'User',
-              last_name: session.user.user_metadata?.last_name || '',
-              phone_number: session.user.user_metadata?.phone || '',
-              avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.id}`,
-              created_at: session.user.created_at,
-            });
+            if (prof) {
+              setProfile(prof);
+            }
           } else {
             setUser(null);
             setProfile(null);
@@ -242,12 +262,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase, isSupabaseConfigured]);
 
   // =========================================================================
-  // 10-Minute Inactivity Auto-Logout Tracking (FinTech / Banking Security Spec)
+  // 30-Minute Inactivity Auto-Logout Tracking & Silent Keep-Alive Refresh
   // =========================================================================
   useEffect(() => {
     if (!user) return;
 
-    const INACTIVITY_LIMIT_MS = 10 * 60 * 1000; // 10 Minutes (600,000 ms)
+    const INACTIVITY_LIMIT_MS = 30 * 60 * 1000; // 30 Minutes
     const STORAGE_KEY = 'zuvapay_last_active_time';
 
     // Record activity timestamp
@@ -263,7 +283,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (lastActiveStr) {
       const lastActive = parseInt(lastActiveStr, 10);
       if (Date.now() - lastActive >= INACTIVITY_LIMIT_MS) {
-        console.warn('[Security] User session expired after 10 minutes of inactivity. Logging out...');
+        console.warn('[Security] User session expired after 30 minutes of inactivity. Logging out cleanly...');
         try {
           localStorage.removeItem(STORAGE_KEY);
           localStorage.setItem('zuvapay_session_expired', 'true');
@@ -276,7 +296,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
         setProfile(null);
         if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          window.location.replace('/login?reason=inactivity');
         }
         return;
       }
@@ -285,7 +305,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Initialize timestamp on login/mount
     recordActivity();
 
-    // Check periodically whether the user has been inactive for > 10 minutes
+    // Proactive token keep-alive every 10 minutes while active
+    const keepAliveInterval = setInterval(async () => {
+      try {
+        const lastActiveStr = localStorage.getItem(STORAGE_KEY);
+        const lastActive = lastActiveStr ? parseInt(lastActiveStr, 10) : Date.now();
+        if (Date.now() - lastActive < INACTIVITY_LIMIT_MS && isSupabaseConfigured) {
+          // User is still active: refresh session to keep access token fresh
+          await supabase.auth.getSession().catch(() => {});
+        }
+      } catch {}
+    }, 10 * 60 * 1000);
+
+    // Check periodically whether the user has been inactive for > 30 minutes
     const checkInterval = setInterval(async () => {
       try {
         const lastActiveStr = localStorage.getItem(STORAGE_KEY);
@@ -293,8 +325,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const elapsed = Date.now() - lastActive;
 
         if (elapsed >= INACTIVITY_LIMIT_MS) {
-          console.warn('[Security] User session expired after 10 minutes of inactivity. Logging out...');
+          console.warn('[Security] User session expired after 30 minutes of inactivity. Logging out cleanly...');
           clearInterval(checkInterval);
+          clearInterval(keepAliveInterval);
           try {
             localStorage.removeItem(STORAGE_KEY);
             localStorage.setItem('zuvapay_session_expired', 'true');
@@ -312,18 +345,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
           setProfile(null);
           if (typeof window !== 'undefined') {
-            window.location.href = '/login';
+            window.location.replace('/login?reason=inactivity');
           }
         }
       } catch (e) {
         console.error('Error during inactivity check:', e);
       }
-    }, 10000); // Check every 10 seconds
+    }, 15000); // Check every 15 seconds
 
-    // Throttled activity listener
+    // Throttled activity listener with proactive token refresh on return from idle
     let throttleTimeout: any = null;
     const handleUserInteraction = () => {
       if (!throttleTimeout) {
+        const lastActiveStr = localStorage.getItem(STORAGE_KEY);
+        const lastActive = lastActiveStr ? parseInt(lastActiveStr, 10) : 0;
+        const now = Date.now();
+
+        // If user was idle for > 3 minutes and returns, refresh session in background
+        if (now - lastActive > 3 * 60 * 1000 && isSupabaseConfigured) {
+          supabase.auth.getSession().catch(() => {});
+        }
+
         recordActivity();
         throttleTimeout = setTimeout(() => {
           throttleTimeout = null;
@@ -338,6 +380,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       clearInterval(checkInterval);
+      clearInterval(keepAliveInterval);
       if (throttleTimeout) clearTimeout(throttleTimeout);
       events.forEach((evt) => {
         window.removeEventListener(evt, handleUserInteraction);

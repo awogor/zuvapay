@@ -46,7 +46,11 @@ function LoginFormContent() {
       const errorParam = searchParams?.get('error');
       const infoParam = searchParams?.get('info');
       const registered = searchParams?.get('registered');
+      const reason = searchParams?.get('reason');
 
+      if (reason === 'inactivity') {
+        setInfoBanner('Your session expired due to inactivity. Please sign in to continue.');
+      }
       if (verified === 'true') {
         setVerifiedBanner(true);
         success('Email Verified! 🎉', 'Your email has been verified. You can now sign in.');

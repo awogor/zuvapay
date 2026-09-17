@@ -39,8 +39,19 @@ export default function DashboardLayout({
     }
   }, [authLoading, user, router]);
 
-  // Mandatory PIN setup: If user is authenticated and is_pin_set is false, show locked modal
-  const needsPinSetup = Boolean(!authLoading && user && profile && profile.is_pin_set === false);
+  // Mandatory PIN setup: Only show locked setup modal if user is strictly authenticated,
+  // profile is legitimately loaded from database (not an error fallback or during session expiration),
+  // and is_pin_set is explicitly false.
+  const isSessionExpiring = typeof window !== 'undefined' && Boolean(localStorage.getItem('zuvapay_session_expired'));
+  const needsPinSetup = Boolean(
+    !authLoading &&
+    !isSessionExpiring &&
+    user &&
+    profile &&
+    profile.id === user.id &&
+    profile.created_at &&
+    profile.is_pin_set === false
+  );
 
   if (authLoading) {
     return (
