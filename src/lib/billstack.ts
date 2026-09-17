@@ -173,18 +173,11 @@ export function verifyBillstackWebhook(
         return true;
       }
     } catch {
-      // Direct string comparison fallback
-      if (incomingSig === expected) return true;
-    }
-  }
-
-  // 2. Fallback: Legacy MD5 check if HMAC-SHA256 header was omitted
-  if (legacySig) {
-    const expectedMd5 = crypto.createHash('md5').update(key).digest('hex').toLowerCase();
-    if (legacySig.trim().toLowerCase() === expectedMd5) {
-      return true;
+      // Constant-time length and value check fallback
+      if (incomingSig.length === expected.length && incomingSig === expected) return true;
     }
   }
 
   return false;
 }
+

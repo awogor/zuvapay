@@ -358,19 +358,19 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
                       </div>
 
                       {/* Account Number Box */}
-                      <div className="my-4 p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                        <div>
+                      <div className="my-4 p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col min-[380px]:flex-row items-start min-[380px]:items-center justify-between gap-3">
+                        <div className="w-full min-[380px]:w-auto">
                           <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-1">
                             Account Number
                           </span>
-                          <span className="font-mono text-2xl sm:text-3xl font-black tracking-widest text-brand-orange">
+                          <span className="font-mono text-2xl sm:text-3xl font-black tracking-widest text-brand-orange break-all">
                             {activeAccount.account_number}
                           </span>
                         </div>
                         <button
                           type="button"
                           onClick={handleCopyAccount}
-                          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black transition-all ${
+                          className={`w-full min-[380px]:w-auto flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black transition-all ${
                             copiedAccount
                               ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
                               : 'bg-white/15 hover:bg-white/25 text-white'
@@ -500,7 +500,9 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
                           </div>
                         </div>
                         <input
-                          type="text"
+                          type="tel"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           maxLength={11}
                           value={idNumber}
                           onChange={(e) => setIdNumber(e.target.value.replace(/\D/g, ''))}

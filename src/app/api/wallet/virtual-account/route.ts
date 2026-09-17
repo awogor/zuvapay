@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { generateBillstackVirtualAccount } from '@/lib/billstack';
 
 export async function GET(request: NextRequest) {
@@ -85,11 +85,12 @@ export async function GET(request: NextRequest) {
 
       if (!isSandbox) {
         try {
-          const { error: insErr } = await supabase
+          const adminSupabase = createAdminClient();
+          const { error: insErr } = await adminSupabase
             .from('virtual_accounts')
             .upsert(virtualAccountData, { onConflict: 'user_id,bank_code' });
           if (insErr) {
-            await supabase
+            await adminSupabase
               .from('virtual_accounts')
               .upsert(virtualAccountData, { onConflict: 'user_id' });
           }
@@ -144,11 +145,16 @@ export async function POST(request: NextRequest) {
 
     // PalmPay regulatory requirement check
     if (selectedBank === 'PALMPAY') {
-      if (!idType || !idNumber || !['nin', 'bvn'].includes(idType.toLowerCase())) {
+      if (
+        !idType ||
+        !idNumber ||
+        !['nin', 'bvn'].includes(idType.toLowerCase()) ||
+        !/^\d{11}$/.test(idNumber.trim())
+      ) {
         return NextResponse.json(
           {
             success: false,
-            error: 'PalmPay virtual account requires an 11-digit NIN or BVN.',
+            error: 'PalmPay virtual account requires a valid 11-digit numeric NIN or BVN.',
           },
           { status: 400 }
         );
@@ -225,11 +231,12 @@ export async function POST(request: NextRequest) {
 
     if (!isSandbox) {
       try {
-        const { error: insErr } = await supabase
+        const adminSupabase = createAdminClient();
+        const { error: insErr } = await adminSupabase
           .from('virtual_accounts')
           .upsert(virtualAccountData, { onConflict: 'user_id,bank_code' });
         if (insErr) {
-          await supabase
+          await adminSupabase
             .from('virtual_accounts')
             .upsert(virtualAccountData, { onConflict: 'user_id' });
         }

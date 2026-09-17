@@ -280,6 +280,14 @@ begin
     return json_build_object('success', false, 'error', 'Unauthorized wallet operation');
   end if;
 
+  -- Ensure suspended or blocked users cannot perform debits
+  if exists (
+    select 1 from public.profiles
+    where id = v_user_id and status in ('suspended', 'blocked')
+  ) then
+    return json_build_object('success', false, 'error', 'Account is suspended or blocked');
+  end if;
+
   if p_amount <= 0 then
     return json_build_object('success', false, 'error', 'Transaction amount must be greater than zero');
   end if;

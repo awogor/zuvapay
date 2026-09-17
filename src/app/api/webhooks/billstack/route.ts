@@ -49,6 +49,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: false, message: 'Missing transaction data' }, { status: 400 });
     }
 
+    // Verify transaction status: only credit completed/successful deposits
+    const txStatus = (data.status || '').toUpperCase();
+    if (txStatus && txStatus !== 'SUCCESS' && txStatus !== 'SUCCESSFUL' && txStatus !== 'COMPLETED') {
+      console.warn(`[BILLSTACK_WEBHOOK] Non-successful transaction status ignored: ${data.status}`);
+      return NextResponse.json({ status: true, message: `Event ignored (status: ${data.status})` }, { status: 200 });
+    }
+
     const {
       amount,
       fee = 0,
@@ -159,59 +166,48 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    let creditedBalance = 0;
-
-    if (!rpcErr && rpcRes && rpcRes.success) {
-      creditedBalance = rpcRes.new_balance;
-    } else {
-      // Fallback if RPC is not available in test environment
-      const newBalance = parseFloat(wallet.balance) + depositAmount;
-      const { error: updateErr } = await supabase
-        .from('wallets')
-        .update({ balance: newBalance, updated_at: new Date().toISOString() })
-        .eq('id', wallet.id);
-
-      if (updateErr) {
-        return NextResponse.json({ status: false, message: 'Failed to credit wallet' }, { status: 500 });
-      }
-
-      await supabase.from('transactions').insert({
-        wallet_id: wallet.id,
-        amount: depositAmount,
-        type: 'credit',
-        category: 'deposit',
-        description,
-        reference,
-        status: 'completed',
-        metadata: {
-          gateway: 'billstack',
-          payerName,
-          accountNumber: accNumber,
-          accountRef: accRef,
-          bankName,
-          fee,
-        },
-      });
-
-      creditedBalance = newBalance;
+    if (rpcErr || (rpcRes && rpcRes.success === false)) {
+      console.error('[BILLSTACK_WEBHOOK] RPC credit error:', rpcErr || rpcRes?.error);
+      return NextResponse.json(
+        { status: false, message: rpcErr?.message || rpcRes?.error || 'Failed to credit wallet' },
+        { status: 500 }
+      );
     }
 
-    // 7. Dispatch asynchronous branded credit receipt email
-    const targetEmail = customer?.email;
-    if (targetEmail) {
-      sendTransactionalEmail({
-        to: targetEmail,
-        templateType: 'wallet_credit',
-        data: {
-          name: customer?.name || payerName || 'Valued Customer',
-          amount: depositAmount,
-          newBalance: creditedBalance,
-          reference,
-          payerName,
-          bankName,
-          date: new Date().toLocaleString('en-NG'),
-        },
-      }).catch((e) => console.error('Failed to send wallet credit email:', e));
+    const creditedBalance = rpcRes?.new_balance ?? (parseFloat(wallet.balance) + depositAmount);
+
+    // 7. Dispatch asynchronous branded credit receipt email to the actual wallet owner
+    try {
+      const { data: authUserData } = await supabase.auth.admin.getUserById(userId);
+      const ownerEmail = authUserData?.user?.email;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', userId)
+        .maybeSingle();
+
+      const ownerName = profile?.first_name
+        ? `${profile.first_name} ${profile.last_name || ''}`.trim()
+        : authUserData?.user?.user_metadata?.first_name || 'Valued Customer';
+
+      if (ownerEmail) {
+        sendTransactionalEmail({
+          to: ownerEmail,
+          templateType: 'wallet_credit',
+          data: {
+            name: ownerName,
+            amount: depositAmount,
+            newBalance: creditedBalance,
+            reference,
+            payerName,
+            bankName,
+            date: new Date().toLocaleString('en-NG'),
+          },
+        }).catch((e) => console.error('[BILLSTACK_WEBHOOK] Failed to send wallet credit email:', e));
+      }
+    } catch (notifyErr) {
+      console.warn('[BILLSTACK_WEBHOOK] Notification lookup failed:', notifyErr);
     }
 
     return NextResponse.json({
