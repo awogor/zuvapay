@@ -1,433 +1,536 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useWallet } from '@/context/WalletContext';
+import { useTheme } from '@/context/ThemeContext';
+import { useSupport } from '@/components/modals/SupportModal';
 import { useToast } from '@/components/common/Toast';
-import { formatNaira } from '@/lib/utils';
 import {
   User,
-  Phone,
+  Lock,
+  ShieldCheck,
+  CreditCard,
+  BadgeCheck,
+  Bell,
   Mail,
-  Shield,
-  Key,
-  Wallet,
-  CheckCircle2,
-  Save,
+  Moon,
+  Sun,
+  Headphones,
   LogOut,
-  AtSign,
-  Check,
-  X,
-  Loader2,
+  ChevronRight,
+  CheckCircle2,
+  Sparkles,
+  Shield,
+  Wallet,
   ArrowRight,
+  AlertTriangle,
 } from 'lucide-react';
+import { ProfileInfoModal } from '@/components/modals/ProfileInfoModal';
+import { PinSetupModal } from '@/components/modals/PinSetupModal';
+import { AccountLimitModal } from '@/components/modals/AccountLimitModal';
+import { KycModal } from '@/components/modals/KycModal';
+import { BvnModal } from '@/components/modals/BvnModal';
 
 export default function ProfilePage() {
   const searchParams = useSearchParams();
-  const { user, profile, updateProfile, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { wallet, formatBalance } = useWallet();
-  const { success, error } = useToast();
+  const { theme, toggleTheme } = useTheme();
+  const { openSupport } = useSupport();
+  const { success } = useToast();
 
   const effectiveUsername = profile?.username || user?.user_metadata?.username;
+  const fullName = profile?.first_name
+    ? `${profile.first_name} ${profile.last_name || ''}`.trim()
+    : user?.user_metadata?.first_name
+    ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim()
+    : 'Valued User';
 
-  const [title, setTitle] = useState(profile?.title || 'Mr');
-  const [firstName, setFirstName] = useState(profile?.first_name || '');
-  const [lastName, setLastName] = useState(profile?.last_name || '');
-  const [phoneNumber, setPhoneNumber] = useState(profile?.phone_number || '');
-  const [loading, setLoading] = useState(false);
+  // Modal display states
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [showKycModal, setShowKycModal] = useState(false);
+  const [showBvnModal, setShowBvnModal] = useState(false);
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
-  // Username claim states for accounts without a handle
-  const [claimHandle, setClaimHandle] = useState('');
-  const [isCheckingHandle, setIsCheckingHandle] = useState(false);
-  const [handleStatus, setHandleStatus] = useState<{
-    available?: boolean;
-    message?: string;
-  } | null>(null);
-  const [isClaimingHandle, setIsClaimingHandle] = useState(false);
-  const claimInputRef = useRef<HTMLInputElement>(null);
+  // Preference switches (persisted in localStorage)
+  const [smsAlertEnabled, setSmsAlertEnabled] = useState<boolean>(true);
+  const [emailAlertEnabled, setEmailAlertEnabled] = useState<boolean>(true);
 
-  // Focus claim input if redirected with action=claim_username
   useEffect(() => {
-    if (searchParams?.get('action') === 'claim_username' && claimInputRef.current) {
-      claimInputRef.current.focus();
+    if (typeof window !== 'undefined') {
+      const savedSms = localStorage.getItem('zuvapay_pref_sms_alert');
+      if (savedSms !== null) setSmsAlertEnabled(savedSms === 'true');
+
+      const savedEmail = localStorage.getItem('zuvapay_pref_email_alert');
+      if (savedEmail !== null) setEmailAlertEnabled(savedEmail === 'true');
+    }
+  }, []);
+
+  // Check query parameter to trigger username claim automatically
+  useEffect(() => {
+    if (searchParams?.get('action') === 'claim_username') {
+      setShowProfileModal(true);
     }
   }, [searchParams]);
 
-  // Synchronize state once profile data resolves from Supabase
-  useEffect(() => {
-    if (profile) {
-      if (profile.title) setTitle(profile.title);
-      if (profile.first_name) setFirstName(profile.first_name);
-      if (profile.last_name) setLastName(profile.last_name);
-      if (profile.phone_number) setPhoneNumber(profile.phone_number);
+  const toggleSmsAlert = () => {
+    const next = !smsAlertEnabled;
+    setSmsAlertEnabled(next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('zuvapay_pref_sms_alert', String(next));
     }
-  }, [profile]);
-
-  // Debounced check for username availability
-  useEffect(() => {
-    const clean = claimHandle.trim().toLowerCase().replace(/^@/, '');
-    if (!clean) {
-      setHandleStatus(null);
-      setIsCheckingHandle(false);
-      return;
-    }
-
-    if (clean.length < 3) {
-      setHandleStatus({
-        available: false,
-        message: 'Must be at least 3 characters',
-      });
-      setIsCheckingHandle(false);
-      return;
-    }
-
-    setIsCheckingHandle(true);
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/users/check-username?username=${encodeURIComponent(clean)}`);
-        const data = await res.json();
-        setHandleStatus({
-          available: data.available,
-          message: data.available ? data.message : data.error,
-        });
-      } catch {
-        setHandleStatus({
-          available: false,
-          message: 'Error checking handle availability',
-        });
-      } finally {
-        setIsCheckingHandle(false);
-      }
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [claimHandle]);
-
-  const handleClaimUsername = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const clean = claimHandle.trim().toLowerCase().replace(/^@/, '');
-    if (!clean || !handleStatus?.available) return;
-
-    setIsClaimingHandle(true);
-    try {
-      const res = await fetch('/api/users/claim-username', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: clean, userId: user?.id || profile?.id }),
-      });
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        error('Claim Failed', data.error || 'Could not claim this handle.');
-        return;
-      }
-
-      await updateProfile({ username: clean });
-      success('Handle Claimed! 🎉', `You are now @${clean} on ZuvaPay!`);
-      setClaimHandle('');
-      setHandleStatus(null);
-    } catch (err: any) {
-      error('Error', err.message || 'Failed to claim handle.');
-    } finally {
-      setIsClaimingHandle(false);
-    }
+    success('Preference Updated', next ? 'SMS alerts enabled' : 'SMS alerts paused');
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await updateProfile({
-        title,
-        first_name: firstName,
-        last_name: lastName,
-        phone_number: phoneNumber,
-      });
+  const toggleEmailAlert = () => {
+    const next = !emailAlertEnabled;
+    setEmailAlertEnabled(next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('zuvapay_pref_email_alert', String(next));
+    }
+    success('Preference Updated', next ? 'Email receipts enabled' : 'Email receipts paused');
+  };
 
-      if (res.error) {
-        error('Update Failed', res.error);
-      } else {
-        success('Profile Updated', 'Your profile details have been saved.');
-      }
-    } catch (err: any) {
-      error('Error', err.message || 'Failed to update profile');
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut();
     } finally {
-      setLoading(false);
+      setIsSigningOut(false);
+      setShowSignOutConfirm(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in">
-      <div>
-        <h1 className="text-2xl font-black text-slate-900 dark:text-white">Profile & Security</h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          Manage your ZuvaPay profile identity, username handle, and linked contact info.
+    <div className="max-w-xl mx-auto space-y-5 animate-in fade-in pb-16">
+      {/* Page Title & Subtitle */}
+      <div className="px-1">
+        <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+          Account Settings
+        </h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          Manage your account and preferences
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Profile Card */}
-        <div className="p-6 rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/70 shadow-sm dark:shadow-none backdrop-blur-xl flex flex-col items-center text-center space-y-4">
-          <div className="relative">
-            <img
-              src={profile?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=KPUser'}
-              alt="Avatar"
-              className="w-24 h-24 rounded-full border-2 border-brand-orange bg-slate-100 dark:bg-slate-800 object-cover shadow-xl"
-            />
-            <span className="absolute bottom-1 right-1 p-1 rounded-full bg-emerald-500 text-slate-950 border-2 border-white dark:border-slate-900">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-            </span>
-          </div>
+      {/* User Profile Banner Card (Inspired by reference screenshot) */}
+      <div className="relative overflow-hidden rounded-3xl border border-orange-200/70 dark:border-white/10 bg-gradient-to-br from-[#FFE8D6] via-[#FFF3E8] to-[#FFDFC4] dark:from-amber-950/40 dark:via-orange-950/25 dark:to-slate-900/90 p-5 sm:p-6 shadow-sm transition-all">
+        {/* Soft Ambient Glows */}
+        <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-brand-orange/15 blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-amber-500/10 blur-xl pointer-events-none" />
 
-          <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-              {profile?.title ? `${profile.title} ` : ''}{profile?.first_name} {profile?.last_name}
-            </h3>
-            {effectiveUsername ? (
-              <div className="mt-1 flex items-center justify-center gap-1.5">
-                <span className="font-bold text-brand-orange text-xs">@{effectiveUsername}</span>
-                <span className="px-1.5 py-0.5 rounded text-[9px] bg-brand-orange/15 text-brand-orange font-black uppercase">
-                  Handle
-                </span>
-              </div>
-            ) : (
-              <p className="text-xs text-slate-500 dark:text-slate-400">{user?.email}</p>
-            )}
-            <span className="inline-block mt-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold border border-emerald-500/20">
-              KYC Tier 1 Active
-            </span>
-          </div>
-
-          <div className="w-full pt-4 border-t border-slate-100 dark:border-white/10 text-left space-y-2 text-xs">
-            {effectiveUsername && (
-              <div className="flex justify-between py-1">
-                <span className="text-slate-500 dark:text-slate-400">Username:</span>
-                <span className="font-bold text-brand-orange">@{effectiveUsername}</span>
-              </div>
-            )}
-            <div className="flex justify-between py-1">
-              <span className="text-slate-500 dark:text-slate-400">Email:</span>
-              <span className="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[160px]">{user?.email}</span>
+        <div className="relative z-10 flex items-center gap-4 sm:gap-5">
+          {/* Avatar Icon */}
+          <div className="relative flex-shrink-0">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FFD1AC] dark:bg-orange-950/60 border-2 border-brand-orange/30 flex items-center justify-center text-brand-orange shadow-inner">
+              <User className="w-8 h-8 sm:w-10 sm:h-10 text-brand-orange stroke-[2.2]" />
             </div>
-            {profile?.phone_number && (
-              <div className="flex justify-between py-1">
-                <span className="text-slate-500 dark:text-slate-400">Phone:</span>
-                <span className="font-medium text-slate-800 dark:text-slate-200">{profile.phone_number}</span>
-              </div>
-            )}
-            <div className="flex justify-between py-1">
-              <span className="text-slate-500 dark:text-slate-400">NGN Balance:</span>
-              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                {formatBalance(wallet?.balance || 0)}
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 text-slate-950 border-2 border-white dark:border-slate-900 flex items-center justify-center shadow-sm">
+              <CheckCircle2 className="w-3.5 h-3.5 stroke-[3]" />
+            </div>
+          </div>
+
+          {/* User Details */}
+          <div className="flex-1 min-w-0 space-y-1">
+            <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight truncate">
+              {fullName}
+            </h2>
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-medium truncate">
+              {user?.email || 'customer@zuvapay.com'}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-[10.5px] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Verified
               </span>
-            </div>
-          </div>
 
-          <button
-            onClick={() => signOut()}
-            className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 text-xs font-bold transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            Sign Out
-          </button>
-        </div>
-
-        {/* Right Section: Handle Claim (if missing) + Edit Details Form */}
-        <div className="md:col-span-2 space-y-6">
-          {/* Claim Username Card if not set */}
-          {!effectiveUsername && (
-            <div className="p-6 rounded-3xl border border-brand-orange/30 bg-gradient-to-br from-amber-500/10 via-brand-orange/10 to-transparent dark:bg-slate-900/80 shadow-sm backdrop-blur-xl">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-7 w-7 rounded-lg bg-brand-orange/20 border border-brand-orange/40 flex items-center justify-center text-brand-orange font-bold text-sm">
-                  @
-                </div>
-                <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
-                  Claim Your Unique @Username Handle
-                </h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-brand-orange text-slate-950 uppercase tracking-wider">
-                  Important
+              {effectiveUsername ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-brand-orange/15 border border-brand-orange/30 text-brand-orange text-[10.5px] font-black">
+                  @{effectiveUsername}
                 </span>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-300 mb-4">
-                Your @username allows other ZuvaPay users to send you funds instantly and enables sign-in via your handle.
-              </p>
-
-              <form onSubmit={handleClaimUsername} className="space-y-3">
-                <div className="flex flex-col sm:flex-row gap-2.5">
-                  <div className="relative flex-1">
-                    <AtSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-orange" />
-                    <input
-                      ref={claimInputRef}
-                      type="text"
-                      value={claimHandle}
-                      onChange={(e) => setClaimHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                      placeholder="e.g. adeleke_pay"
-                      maxLength={20}
-                      className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 text-xs font-semibold focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange"
-                    />
-                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
-                      {isCheckingHandle && (
-                        <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
-                      )}
-                      {!isCheckingHandle && handleStatus?.available === true && (
-                        <Check className="w-4 h-4 text-emerald-500" />
-                      )}
-                      {!isCheckingHandle && handleStatus?.available === false && (
-                        <X className="w-4 h-4 text-rose-500" />
-                      )}
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={!handleStatus?.available || isClaimingHandle}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-xs transition-all shadow-md shadow-orange-500/20 disabled:opacity-50 flex items-center justify-center gap-1.5 flex-shrink-0"
-                  >
-                    {isClaimingHandle ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        Claiming...
-                      </>
-                    ) : (
-                      <>
-                        Claim Handle
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {handleStatus && (
-                  <p
-                    className={`text-[11px] font-medium flex items-center gap-1.5 ${
-                      handleStatus.available ? 'text-emerald-500' : 'text-rose-400'
-                    }`}
-                  >
-                    {handleStatus.available ? (
-                      <Check className="w-3 h-3 flex-shrink-0" />
-                    ) : (
-                      <X className="w-3 h-3 flex-shrink-0" />
-                    )}
-                    {handleStatus.message}
-                  </p>
-                )}
-              </form>
-            </div>
-          )}
-
-          {/* Edit Details Form */}
-          <div className="p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/70 shadow-sm dark:shadow-none backdrop-blur-xl space-y-6">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <User className="w-4 h-4 text-brand-orange" />
-              Personal Information
-            </h3>
-
-            <form onSubmit={handleSave} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Title
-                </label>
-                <select
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange"
-                >
-                  <option value="Mr">Mr</option>
-                  <option value="Mrs">Mrs</option>
-                  <option value="Miss">Miss</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Phone Number (Linked to Mobile Wallet)
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
-                  <input
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="08012345678"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs font-medium focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
-                  <input
-                    type="email"
-                    value={user?.email || ''}
-                    disabled
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 text-xs font-medium cursor-not-allowed"
-                  />
-                </div>
-              </div>
-
-              {effectiveUsername && (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    ZuvaPay Handle
-                  </label>
-                  <div className="relative">
-                    <AtSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-orange" />
-                    <input
-                      type="text"
-                      value={`@${effectiveUsername}`}
-                      disabled
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 text-brand-orange font-bold text-xs cursor-not-allowed"
-                    />
-                  </div>
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Your handle is permanent and uniquely bound to your ZuvaPay account.
-                  </p>
-                </div>
-              )}
-
-              <div className="pt-2">
+              ) : (
                 <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-xs shadow-lg transition-all disabled:opacity-50"
+                  onClick={() => setShowProfileModal(true)}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-[10px] font-bold transition-colors"
                 >
-                  <Save className="w-4 h-4" />
-                  {loading ? 'Saving Changes...' : 'Save Profile Changes'}
+                  <Sparkles className="w-3 h-3 text-amber-500" />
+                  Claim Handle
                 </button>
-              </div>
-            </form>
+              )}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Group 1: Account */}
+      <div className="space-y-2">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-2">
+          Account
+        </h3>
+
+        <div className="rounded-3xl border border-slate-200/80 dark:border-white/10 bg-white dark:bg-slate-900/80 shadow-sm overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+          {/* 1. Profile Information */}
+          <button
+            type="button"
+            onClick={() => setShowProfileModal(true)}
+            className="w-full flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50 dark:hover:bg-white/5 active:bg-slate-100 dark:active:bg-white/10 transition-colors text-left group"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-11 h-11 rounded-2xl bg-orange-100/80 dark:bg-orange-950/50 text-brand-orange flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <User className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                  Profile Information
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  View and update your profile
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+          </button>
+
+          {/* 2. Change PIN */}
+          <button
+            type="button"
+            onClick={() => setShowPinModal(true)}
+            className="w-full flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50 dark:hover:bg-white/5 active:bg-slate-100 dark:active:bg-white/10 transition-colors text-left group"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-11 h-11 rounded-2xl bg-purple-100/80 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <Lock className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                  Change PIN
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  Update your transaction PIN
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+          </button>
+
+          {/* 3. Account Limit */}
+          <button
+            type="button"
+            onClick={() => setShowLimitModal(true)}
+            className="w-full flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50 dark:hover:bg-white/5 active:bg-slate-100 dark:active:bg-white/10 transition-colors text-left group"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-11 h-11 rounded-2xl bg-blue-100/80 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <ShieldCheck className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                  Account Limit
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  Manage your transaction limits
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+          </button>
+
+          {/* 4. KYC Verification */}
+          <button
+            type="button"
+            onClick={() => setShowKycModal(true)}
+            className="w-full flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50 dark:hover:bg-white/5 active:bg-slate-100 dark:active:bg-white/10 transition-colors text-left group"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-11 h-11 rounded-2xl bg-teal-100/80 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <BadgeCheck className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                  KYC Verification
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  View your KYC status
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+          </button>
+
+          {/* 5. BVN Information */}
+          <button
+            type="button"
+            onClick={() => setShowBvnModal(true)}
+            className="w-full flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50 dark:hover:bg-white/5 active:bg-slate-100 dark:active:bg-white/10 transition-colors text-left group"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-11 h-11 rounded-2xl bg-amber-100/80 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <CreditCard className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                  BVN Information
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  Manage your BVN details
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+          </button>
+        </div>
+      </div>
+
+      {/* Group 2: Preferences */}
+      <div className="space-y-2 pt-2">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-2">
+          Preferences
+        </h3>
+
+        <div className="rounded-3xl border border-slate-200/80 dark:border-white/10 bg-white dark:bg-slate-900/80 shadow-sm overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+          {/* SMS Alert Toggle */}
+          <div className="flex items-center justify-between p-3.5 sm:p-4">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-11 h-11 rounded-2xl bg-rose-100/80 dark:bg-rose-950/50 text-rose-500 flex items-center justify-center flex-shrink-0">
+                <Bell className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                  SMS Alert
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  Receive SMS alerts for transactions
+                </p>
+              </div>
+            </div>
+
+            {/* Switch Toggle */}
+            <button
+              type="button"
+              onClick={toggleSmsAlert}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                smsAlertEnabled ? 'bg-brand-orange' : 'bg-slate-200 dark:bg-slate-700'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  smsAlertEnabled ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Email Receipts Toggle */}
+          <div className="flex items-center justify-between p-3.5 sm:p-4">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-11 h-11 rounded-2xl bg-sky-100/80 dark:bg-sky-950/50 text-sky-500 flex items-center justify-center flex-shrink-0">
+                <Mail className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                  Email Receipts
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  Instant invoices and recharge tokens
+                </p>
+              </div>
+            </div>
+
+            {/* Switch Toggle */}
+            <button
+              type="button"
+              onClick={toggleEmailAlert}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                emailAlertEnabled ? 'bg-brand-orange' : 'bg-slate-200 dark:bg-slate-700'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  emailAlertEnabled ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Theme Mode Toggle */}
+          <div className="flex items-center justify-between p-3.5 sm:p-4">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-11 h-11 rounded-2xl bg-indigo-100/80 dark:bg-indigo-950/50 text-indigo-500 flex items-center justify-center flex-shrink-0">
+                {theme === 'dark' ? (
+                  <Moon className="w-5 h-5 stroke-[2.2]" />
+                ) : (
+                  <Sun className="w-5 h-5 stroke-[2.2]" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                  Dark Mode
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  {theme === 'dark' ? 'Dark theme active' : 'Light theme active'}
+                </p>
+              </div>
+            </div>
+
+            {/* Switch Toggle */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                theme === 'dark' ? 'bg-brand-orange' : 'bg-slate-200 dark:bg-slate-700'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  theme === 'dark' ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Group 3: Support & Security */}
+      <div className="space-y-2 pt-2">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-2">
+          Support & Security
+        </h3>
+
+        <div className="rounded-3xl border border-slate-200/80 dark:border-white/10 bg-white dark:bg-slate-900/80 shadow-sm overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+          {/* Customer Care */}
+          <button
+            type="button"
+            onClick={() => openSupport({ issue: 'General Inquiry' })}
+            className="w-full flex items-center justify-between p-3.5 sm:p-4 hover:bg-slate-50 dark:hover:bg-white/5 active:bg-slate-100 dark:active:bg-white/10 transition-colors text-left group"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-100/80 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <Headphones className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                  Help & Support
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  Contact our 24/7 customer care desk
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+          </button>
+
+          {/* Sign Out */}
+          <button
+            type="button"
+            onClick={() => setShowSignOutConfirm(true)}
+            className="w-full flex items-center justify-between p-3.5 sm:p-4 hover:bg-rose-50 dark:hover:bg-rose-500/10 active:bg-rose-100 dark:active:bg-rose-500/20 transition-colors text-left group"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-11 h-11 rounded-2xl bg-rose-100/80 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                <LogOut className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-bold text-rose-600 dark:text-rose-400 leading-snug">
+                  Sign Out
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  Log out of your ZuvaPay account
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-rose-400 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+          </button>
+        </div>
+      </div>
+
+      {/* App Version Info */}
+      <div className="text-center pt-3 text-[11px] text-slate-400 dark:text-slate-600">
+        ZuvaPay v2.4.0 • Licensed by CBN & NDIC Insured Partners
+      </div>
+
+      {/* Interactive Modals */}
+      {showProfileModal && (
+        <ProfileInfoModal
+          isOpen={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          autoFocusClaim={searchParams?.get('action') === 'claim_username'}
+        />
+      )}
+
+      {showPinModal && (
+        <PinSetupModal
+          isOpen={showPinModal}
+          onSuccess={() => setShowPinModal(false)}
+        />
+      )}
+
+      {showLimitModal && (
+        <AccountLimitModal
+          isOpen={showLimitModal}
+          onClose={() => setShowLimitModal(false)}
+          onUpgrade={() => setShowBvnModal(true)}
+        />
+      )}
+
+      {showKycModal && (
+        <KycModal
+          isOpen={showKycModal}
+          onClose={() => setShowKycModal(false)}
+          onVerifyBvn={() => setShowBvnModal(true)}
+        />
+      )}
+
+      {showBvnModal && (
+        <BvnModal
+          isOpen={showBvnModal}
+          onClose={() => setShowBvnModal(false)}
+        />
+      )}
+
+      {/* Sign Out Confirmation Modal */}
+      {showSignOutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in">
+          <div className="relative w-full max-w-sm rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 p-6 shadow-2xl space-y-4 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-6 h-6 stroke-[2.2]" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-slate-900 dark:text-white">
+                Sign Out Confirmation
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Are you sure you want to sign out of your ZuvaPay account?
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowSignOutConfirm(false)}
+                disabled={isSigningOut}
+                className="py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={isSigningOut}
+                className="py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition-colors shadow-md shadow-rose-500/20 disabled:opacity-50"
+              >
+                {isSigningOut ? 'Signing out...' : 'Yes, Sign Out'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
