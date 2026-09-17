@@ -154,7 +154,10 @@ export function FundWalletModal({ isOpen, onClose }: FundWalletModalProps) {
           `Generated ${data.account.bank_name || bankToGen} dedicated account for automated funding.`
         );
       } else {
-        error('Generation Failed', data.error || 'Could not generate virtual account');
+        const errMsg = data.error?.toLowerCase().includes('providus')
+          ? 'Providus Bank virtual account reservation is temporarily undergoing maintenance by the bank. Please use 9PSB (Instant) or PalmPay.'
+          : data.error || 'Could not generate virtual account';
+        error('Bank System Notice', errMsg);
       }
     } catch (err: any) {
       error('Error', err.message || 'Failed to communicate with Billstack');
