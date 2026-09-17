@@ -125,16 +125,37 @@ export function AdminTransactionModal({
     meta.refunded === true ||
     Boolean(meta.refund_reference);
 
-  const hasValidDelivery = Boolean(
-    meta.delivery?.activationLink ||
-    meta.delivery?.code ||
-    (meta.delivery?.credentials && meta.delivery.credentials.trim().length > 0) ||
-    (meta.delivery?.rawText && meta.delivery.rawText.trim().length > 0) ||
-    (activeTx.category === 'power' && meta.token)
-  );
+  const isMarketplaceOrDigital =
+    activeTx.category === 'marketplace' ||
+    activeTx.category === 'logs' ||
+    activeTx.category === 'digital_service';
+
+  const hasValidDelivery = isMarketplaceOrDigital
+    ? Boolean(
+        meta.delivery?.activationLink ||
+        meta.delivery?.code ||
+        (meta.delivery?.credentials && meta.delivery.credentials.trim().length > 0) ||
+        (meta.delivery?.rawText && meta.delivery.rawText.trim().length > 0) ||
+        meta.credentials
+      )
+    : activeTx.category === 'power'
+    ? Boolean(meta.token || meta.tokens || (activeTx.status === 'completed' && !meta.error))
+    : Boolean(
+        meta.operatorReference ||
+        meta.operator_reference ||
+        meta.provider_ref ||
+        meta.supplierOrderId ||
+        meta.order_id ||
+        (activeTx.status === 'completed' && !meta.error && meta.fulfillment_status !== 'failed')
+      );
 
   const isFulfilled =
-    meta.fulfillment_status === 'fulfilled' && hasValidDelivery;
+    !isRefund &&
+    !isRefunded &&
+    activeTx.status !== 'failed' &&
+    meta.fulfillment_status !== 'failed' &&
+    !meta.error &&
+    hasValidDelivery;
 
   const descLower = (activeTx.description || '').toLowerCase();
 
@@ -434,7 +455,7 @@ export function AdminTransactionModal({
 
   // If order was debited but never fulfilled and not yet refunded, provide diagnostic context
   if (!failureReason && activeTx.type === 'debit' && !isFulfilled && !isRefund && !isRefunded) {
-    failureReason = 'Order debited customer balance, but provider order fulfillment was not finalized or timed out.';
+    failureReason = 'Order debited customer wallet, but downstream provider fulfillment was not completed or timed out.';
   }
 
   let issueCategory = 'PROVIDER FEEDBACK';
@@ -448,27 +469,33 @@ export function AdminTransactionModal({
       resolutionUrl = urlMatch[0];
     }
 
-    if (lower.includes('insufficient') || lower.includes('balance') || lower.includes('low')) {
+    const isVendorBalanceLow =
+      (lower.includes('insufficient') && !lower.includes('customer balance') && !lower.includes('customer wallet')) ||
+      lower.includes('vendor balance') ||
+      lower.includes('provider balance') ||
+      lower.includes('wholesale balance') ||
+      lower.includes('api balance') ||
+      lower.includes('upstream balance') ||
+      lower.includes('wallet balance is low');
+
+    if (isVendorBalanceLow) {
       issueCategory = 'UPSTREAM VENDOR BALANCE EXHAUSTION (402)';
-      issueAction =
-        'The upstream provider account has zero or insufficient balance. Top up your wholesale vendor balance, then click "Reissue via AI Plug" below.';
+      issueAction = `The upstream provider account (${providerName}) has insufficient balance. Top up your wholesale account with ${providerName}, then click "Reissue via ${providerName}" or cancel and refund below.`;
     } else if (lower.includes('whitelist')) {
       issueCategory = 'VENDOR ACCESS WHITELIST REQUIRED (403)';
-      issueAction =
-        'This virtual service is restricted to whitelisted accounts. Complete provider service authorization.';
+      issueAction = `This virtual service is restricted to whitelisted accounts on ${providerName}. Complete provider service authorization.`;
     } else if (lower.includes('out of stock') || lower.includes('stock')) {
       issueCategory = 'PROVIDER INVENTORY EXHAUSTION (503)';
-      issueAction =
-        'Provider stock temporarily exhausted. Retry once replenished, manually fulfill, or refund customer wallet.';
+      issueAction = `Provider stock temporarily exhausted on ${providerName}. Retry once replenished, manually fulfill, or refund customer wallet.`;
     } else if (lower.includes('cancelled') || lower.includes('canceled')) {
       issueCategory = 'ORDER ABORTED / EXPIRED';
       issueAction = 'Transaction was cancelled before delivery.';
     } else if (lower.includes('timeout')) {
       issueCategory = 'UPSTREAM CARRIER TIMEOUT';
-      issueAction = 'The provider API did not respond within SLA window.';
+      issueAction = `The ${providerName} API did not respond within the SLA window.`;
     } else {
       issueCategory = 'VENDOR EXCEPTION / UNFULFILLED';
-      issueAction = 'Take action below: click Reissue to retry with provider, manually enter credentials, or cancel and refund.';
+      issueAction = `Take action below: click "Reissue via ${providerName}" to retry with provider, or click "Cancel & Refund" to refund customer wallet.`;
     }
   }
 
@@ -859,22 +886,23 @@ export function AdminTransactionModal({
 
               {/* Action Buttons Toolbar */}
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                {/* 1. Reissue with AI Plug / Provider */}
+                {/* 1. Reissue with Provider */}
                 {!isRefunded && (
                   <button
                     onClick={handleReissueAuto}
                     disabled={!!actionLoading}
                     className="flex-1 min-w-[170px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black text-xs transition-all shadow-md shadow-orange-500/20 disabled:opacity-50 active:scale-[0.99]"
+                    title={`Retry fulfillment via ${providerName}`}
                   >
                     {actionLoading === 'reissue_auto' ? (
                       <>
                         <RefreshCw className="w-3.5 h-3.5 animate-spin stroke-[2.5]" />
-                        <span>Fulfilling via API...</span>
+                        <span>Fulfilling via {providerName}...</span>
                       </>
                     ) : (
                       <>
                         <Zap className="w-3.5 h-3.5 stroke-[2.5]" />
-                        <span>{isFulfilled ? 'Re-Fulfill with AI Plug' : '⚡ Reissue via AI Plug'}</span>
+                        <span>{isFulfilled ? `Re-Fulfill with ${providerName}` : `⚡ Reissue via ${providerName}`}</span>
                       </>
                     )}
                   </button>
@@ -892,13 +920,13 @@ export function AdminTransactionModal({
                   </button>
                 )}
 
-                {/* 3. Sync Live Status with AI Plug */}
-                {!isRefunded && meta.supplierOrderId && (
+                {/* 3. Sync Live Status with Provider */}
+                {!isRefunded && (meta.supplierOrderId || (meta.operatorReference && isMarketplaceOrDigital)) && (
                   <button
                     onClick={handleSyncProvider}
                     disabled={!!actionLoading}
                     className="px-3.5 py-2.5 rounded-xl border border-sky-300 dark:border-sky-800/60 bg-sky-50/70 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-sky-800 dark:text-sky-300 font-bold text-xs transition-all flex items-center gap-1.5 disabled:opacity-50 active:scale-[0.99]"
-                    title="Check upstream provider for live delivery credentials"
+                    title={`Check ${providerName} for live status`}
                   >
                     {actionLoading === 'sync_provider' ? (
                       <>
@@ -908,7 +936,7 @@ export function AdminTransactionModal({
                     ) : (
                       <>
                         <RefreshCw className="w-3.5 h-3.5 text-sky-600" />
-                        <span>🔄 Sync with AI Plug</span>
+                        <span>🔄 Sync with {providerName}</span>
                       </>
                     )}
                   </button>

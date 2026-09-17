@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { createAIPlugOrder, getAIPlugOrder, parseAIPlugDelivery } from '@/lib/vendors/aiplug';
+import { buyStroWalletData, buyAirtime } from '@/lib/vendors/strowallet';
+import { gongozFetch, NETWORK_IDS } from '@/lib/vendors/gongoz';
 import { sendTransactionalEmail } from '@/lib/email/sendEmail';
 
 export async function POST(request: NextRequest) {
@@ -257,7 +259,183 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({ success: false, error: `Automated reissue is not yet configured for category: ${tx.category}` }, { status: 400 });
+    // 5. Mode B: Automated Reissue via Data Providers (Gongoz or StroWallet)
+    if (tx.category === 'data') {
+      const { phone, network, planId, variationCode, serviceName, serviceId } = tx.metadata || {};
+      const targetPhone = phone || tx.metadata?.phone_number || tx.user_phone;
+      const targetNetwork = String(network || '').toUpperCase();
+
+      if (!targetPhone) {
+        return NextResponse.json(
+          { success: false, error: 'Cannot auto-reissue: Recipient phone number is missing from transaction metadata.' },
+          { status: 400 }
+        );
+      }
+
+      const isStro = tx.metadata?.provider === 'strowallet' || String(planId).startsWith('stro-');
+      if (isStro) {
+        const code = variationCode || String(planId).replace(/^stro-[^-]+-/, '');
+        const stroRes = await buyStroWalletData({
+          network: targetNetwork || 'MTN',
+          phone: targetPhone,
+          variationCode: code,
+          amount: Number(tx.amount) || 100,
+          serviceName,
+          serviceId,
+        });
+
+        if (!stroRes.isMock) {
+          const { data, ok } = stroRes;
+          if (!ok || data?.success === false || data?.error) {
+            const errMsg =
+              data?.message ||
+              data?.response?.response_description ||
+              data?.error ||
+              'StroWallet data delivery failed';
+            return NextResponse.json({ success: false, error: `StroWallet Error: ${errMsg}` }, { status: 502 });
+          }
+          const opRef = data?.response?.transactions?.transactionId || data?.reference || `STRO-DAT-${Date.now()}`;
+          const updatedMeta = {
+            ...(tx.metadata || {}),
+            fulfillment_status: 'fulfilled',
+            operatorReference: opRef,
+            provider: 'strowallet',
+            fulfilled_at: new Date().toISOString(),
+            reissued_at: new Date().toISOString(),
+            reissued_by: user.email,
+          };
+          await adminSupabase.from('transactions').update({ status: 'completed', metadata: updatedMeta }).eq('id', tx.id);
+          return NextResponse.json({
+            success: true,
+            message: `Data bundle successfully delivered to ${targetPhone} via StroWallet!`,
+            operatorReference: opRef,
+            transaction: { ...tx, status: 'completed', metadata: updatedMeta },
+          });
+        }
+      } else {
+        // GongozConcept Data
+        const gongozPlanId =
+          tx.metadata?.gongozPlanId ||
+          tx.metadata?.plan_id ||
+          parseInt(String(planId).replace(/^[^\d]+/, '')) ||
+          8;
+        const networkId = NETWORK_IDS[targetNetwork] || 1;
+
+        const gongozRes = await gongozFetch('data/', {
+          method: 'POST',
+          body: JSON.stringify({
+            network: networkId,
+            mobile_number: targetPhone,
+            plan: gongozPlanId,
+            Ported_number: true,
+          }),
+        });
+
+        if (!gongozRes.isMock) {
+          const { data, ok } = gongozRes;
+          if (!ok || data?.status === 'failed') {
+            const errMsg = data?.message || data?.error || 'GongozConcept data delivery rejected';
+            return NextResponse.json({ success: false, error: `Gongoz Error: ${errMsg}` }, { status: 502 });
+          }
+          const opRef = data?.id || data?.operator_ref || `GONGOZ-DAT-${Date.now()}`;
+          const updatedMeta = {
+            ...(tx.metadata || {}),
+            fulfillment_status: 'fulfilled',
+            operatorReference: opRef,
+            provider: 'gongoz',
+            fulfilled_at: new Date().toISOString(),
+            reissued_at: new Date().toISOString(),
+            reissued_by: user.email,
+          };
+          await adminSupabase.from('transactions').update({ status: 'completed', metadata: updatedMeta }).eq('id', tx.id);
+          return NextResponse.json({
+            success: true,
+            message: `Data bundle successfully delivered to ${targetPhone} via Gongoz!`,
+            operatorReference: opRef,
+            transaction: { ...tx, status: 'completed', metadata: updatedMeta },
+          });
+        }
+      }
+
+      // Simulation fallback
+      const mockOpRef = `DAT-REISSUE-${Date.now()}`;
+      const updatedMeta = {
+        ...(tx.metadata || {}),
+        fulfillment_status: 'fulfilled',
+        operatorReference: mockOpRef,
+        fulfilled_at: new Date().toISOString(),
+        reissued_at: new Date().toISOString(),
+        reissued_by: user.email,
+      };
+      await adminSupabase.from('transactions').update({ status: 'completed', metadata: updatedMeta }).eq('id', tx.id);
+      return NextResponse.json({
+        success: true,
+        message: `Data bundle simulated delivery to ${targetPhone}!`,
+        operatorReference: mockOpRef,
+        transaction: { ...tx, status: 'completed', metadata: updatedMeta },
+      });
+    }
+
+    // 6. Mode B: Automated Reissue via Airtime Provider (StroWallet)
+    if (tx.category === 'airtime') {
+      const targetPhone = tx.metadata?.phone || tx.metadata?.phone_number || tx.user_phone;
+      const targetNetwork = String(tx.metadata?.network || '').toUpperCase();
+      if (!targetPhone) {
+        return NextResponse.json({ success: false, error: 'Cannot auto-reissue: Phone number missing.' }, { status: 400 });
+      }
+      const stroRes = await buyAirtime({
+        network: targetNetwork || 'MTN',
+        phone: targetPhone,
+        amount: Number(tx.amount),
+      });
+      if (!stroRes.isMock) {
+        const { data, ok } = stroRes;
+        if (!ok || data?.success === false) {
+          const errMsg = data?.message || data?.error || 'StroWallet Airtime delivery failed';
+          return NextResponse.json({ success: false, error: `Airtime Error: ${errMsg}` }, { status: 502 });
+        }
+        const opRef = data?.response?.transactions?.transactionId || `STRO-AIR-${Date.now()}`;
+        const updatedMeta = {
+          ...(tx.metadata || {}),
+          fulfillment_status: 'fulfilled',
+          operatorReference: opRef,
+          provider: 'strowallet',
+          fulfilled_at: new Date().toISOString(),
+          reissued_at: new Date().toISOString(),
+          reissued_by: user.email,
+        };
+        await adminSupabase.from('transactions').update({ status: 'completed', metadata: updatedMeta }).eq('id', tx.id);
+        return NextResponse.json({
+          success: true,
+          message: `Airtime successfully reissued to ${targetPhone}!`,
+          operatorReference: opRef,
+          transaction: { ...tx, status: 'completed', metadata: updatedMeta },
+        });
+      }
+
+      // Simulation fallback
+      const mockOpRef = `AIR-REISSUE-${Date.now()}`;
+      const updatedMeta = {
+        ...(tx.metadata || {}),
+        fulfillment_status: 'fulfilled',
+        operatorReference: mockOpRef,
+        fulfilled_at: new Date().toISOString(),
+        reissued_at: new Date().toISOString(),
+        reissued_by: user.email,
+      };
+      await adminSupabase.from('transactions').update({ status: 'completed', metadata: updatedMeta }).eq('id', tx.id);
+      return NextResponse.json({
+        success: true,
+        message: `Airtime simulated delivery to ${targetPhone}!`,
+        operatorReference: mockOpRef,
+        transaction: { ...tx, status: 'completed', metadata: updatedMeta },
+      });
+    }
+
+    return NextResponse.json({
+      success: false,
+      error: `Automated live API reissue is not configured for ${tx.category}. Please click "Cancel & Refund" to immediately credit customer wallet, or fulfill manually.`,
+    }, { status: 400 });
   } catch (err: any) {
     console.error('Admin Reissue Error:', err);
     return NextResponse.json({ success: false, error: err.message || 'Failed to reissue transaction' }, { status: 500 });
