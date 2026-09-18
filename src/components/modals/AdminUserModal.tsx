@@ -30,6 +30,7 @@ import {
   Laptop,
   Smartphone,
   Globe,
+  Eye,
 } from 'lucide-react';
 import { formatNaira, formatUSD, formatDate } from '@/lib/utils';
 import { useToast } from '@/components/common/Toast';
@@ -48,12 +49,15 @@ export function AdminUserModal({
   onUserUpdated,
 }: AdminUserModalProps) {
   const { success, error, info } = useToast();
-  const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'logins' | 'email'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'logins' | 'email' | 'email_history'>('overview');
   const [transactions, setTransactions] = useState<any[]>([]);
   const [logins, setLogins] = useState<any[]>([]);
+  const [sentEmails, setSentEmails] = useState<any[]>([]);
   const [loadingTx, setLoadingTx] = useState(false);
   const [loadingLogins, setLoadingLogins] = useState(false);
+  const [loadingEmails, setLoadingEmails] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [selectedPreviewEmail, setSelectedPreviewEmail] = useState<any | null>(null);
 
   // Direct email composer state
   const [emailSubject, setEmailSubject] = useState('');
@@ -64,6 +68,21 @@ export function AdminUserModal({
 
   // Local user state reflecting optimistic or fetched updates
   const [currentUser, setCurrentUser] = useState<any | null>(user);
+
+  const fetchSentEmails = async (userId: string) => {
+    setLoadingEmails(true);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/email`);
+      const data = await res.json();
+      if (data.success) {
+        setSentEmails(data.emails || []);
+      }
+    } catch (err: any) {
+      console.warn('Failed to load user email history:', err.message);
+    } finally {
+      setLoadingEmails(false);
+    }
+  };
 
   const fetchUserTransactions = async (userId: string) => {
     setLoadingTx(true);
@@ -100,6 +119,7 @@ export function AdminUserModal({
     if (user && isOpen) {
       fetchUserTransactions(user.id);
       fetchUserLogins(user.id);
+      fetchSentEmails(user.id);
     }
   }, [user, isOpen]);
 
@@ -325,6 +345,9 @@ export function AdminUserModal({
         setEmailMessage('');
         setEmailCtaText('');
         setEmailCtaUrl('');
+        if (currentUser?.id) {
+          fetchSentEmails(currentUser.id);
+        }
       } else {
         error('Delivery Failed', data.error || 'Failed to dispatch email via SMTP server');
       }
@@ -601,6 +624,20 @@ export function AdminUserModal({
           >
             <Mail className="w-3.5 h-3.5" />
             Direct Email (SMTP)
+          </button>
+          <button
+            onClick={() => setActiveTab('email_history')}
+            className={`pb-3 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'email_history'
+                ? 'border-brand-orange text-brand-orange'
+                : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <History className="w-3.5 h-3.5" />
+            Sent Emails
+            <span className="px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-400">
+              {sentEmails.length}
+            </span>
           </button>
         </div>
 
@@ -1134,7 +1171,268 @@ export function AdminUserModal({
               </form>
             </div>
           )}
+
+          {/* Email History Tab */}
+          {activeTab === 'email_history' && (
+            <div className="space-y-4">
+              {/* Header & Controls */}
+              <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <History className="w-4 h-4 text-brand-orange" />
+                    Sent Email History ({sentEmails.length})
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    Direct emails dispatched to {currentUser.email || 'this customer'} with delivery logs & audit trails.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('email')}
+                  className="px-3.5 py-1.5 rounded-xl bg-brand-orange hover:bg-orange-600 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm shadow-brand-orange/20 cursor-pointer"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  Compose New Email
+                </button>
+              </div>
+
+              {/* Emails List */}
+              {loadingEmails ? (
+                <div className="py-16 text-center text-slate-400 space-y-2">
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto text-brand-orange" />
+                  <p className="text-xs font-medium">Loading email history...</p>
+                </div>
+              ) : sentEmails.length === 0 ? (
+                <div className="py-16 text-center space-y-3 rounded-2xl border border-dashed border-slate-200 dark:border-white/10 p-8">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
+                    <Mail className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">No Custom Emails Sent Yet</p>
+                    <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                      No custom direct emails have been dispatched to this customer through the administration portal yet.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('email')}
+                    className="mt-2 px-4 py-2 rounded-xl bg-brand-orange hover:bg-orange-600 text-white text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    Compose First Email
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {sentEmails.map((item: any, idx: number) => (
+                    <div
+                      key={item.id || idx}
+                      className="p-4 rounded-2xl border border-slate-200/80 dark:border-white/5 bg-white dark:bg-slate-950/40 hover:border-brand-orange/40 transition-all space-y-3 group shadow-xs"
+                    >
+                      {/* Top Header Row */}
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-brand-orange transition-colors">
+                              {item.subject}
+                            </span>
+                            {item.status === 'delivered' ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                <CheckCircle2 className="w-2.5 h-2.5" /> Delivered
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                                Simulated
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3 text-slate-400" />
+                              {formatDate(item.sent_at)}
+                            </span>
+                            <span>•</span>
+                            <span>
+                              Sent by: <strong className="text-slate-600 dark:text-slate-300 font-medium">{item.sent_by_admin?.name || 'Admin'}</strong>
+                            </span>
+                            {item.recipient && (
+                              <>
+                                <span>•</span>
+                                <span>To: <span className="font-mono">{item.recipient}</span></span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedPreviewEmail(item)}
+                            className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-orange/10 hover:text-brand-orange text-slate-700 dark:text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border border-transparent hover:border-brand-orange/20"
+                            title="View high-fidelity rendered email preview"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            Preview Email
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEmailSubject(item.subject || '');
+                              setEmailMessage(item.message || '');
+                              setEmailCtaText(item.ctaText || '');
+                              setEmailCtaUrl(item.ctaUrl || '');
+                              setActiveTab('email');
+                            }}
+                            className="px-2.5 py-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white text-xs font-medium transition-all hover:bg-slate-100 dark:hover:bg-slate-800"
+                            title="Reuse this email as a template"
+                          >
+                            Reuse
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Snippet */}
+                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl font-sans">
+                        {item.message}
+                      </p>
+
+                      {/* CTA Indicator */}
+                      {item.ctaText && (
+                        <div className="flex items-center gap-2 text-[11px] text-slate-400 pt-0.5">
+                          <span className="font-bold text-slate-500 dark:text-slate-400">Included Action Button:</span>
+                          <span className="px-2 py-0.5 rounded-md bg-orange-500/10 text-brand-orange font-semibold text-[10px]">
+                            {item.ctaText}
+                          </span>
+                          {item.ctaUrl && (
+                            <span className="truncate max-w-xs font-mono text-[10px] text-slate-400">
+                              → {item.ctaUrl}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* Selected Email Preview Modal */}
+        {selectedPreviewEmail && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+              {/* Header */}
+              <div className="p-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-slate-950/60">
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-brand-orange" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+                    Dispatched Email Preview
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPreviewEmail(null)}
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Delivery Metadata */}
+              <div className="p-4 bg-slate-50/70 dark:bg-slate-950/40 border-b border-slate-100 dark:border-white/5 text-xs space-y-1.5 font-mono">
+                <div className="flex flex-wrap items-center justify-between gap-1 text-slate-600 dark:text-slate-400">
+                  <span>
+                    <strong className="text-slate-800 dark:text-slate-200 font-sans">To:</strong> {selectedPreviewEmail.recipient_name || currentUser.first_name || 'Customer'} &lt;{selectedPreviewEmail.recipient}&gt;
+                  </span>
+                  <span className="text-[11px] font-sans text-slate-400">
+                    {formatDate(selectedPreviewEmail.sent_at)}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-1 text-slate-600 dark:text-slate-400">
+                  <span>
+                    <strong className="text-slate-800 dark:text-slate-200 font-sans">From:</strong> ZuvaPay &lt;m@send.zuvapay.com&gt;
+                  </span>
+                  <span className="text-[11px] font-sans text-slate-400">
+                    BCC: hello@zuvapay.com
+                  </span>
+                </div>
+                <div className="text-slate-600 dark:text-slate-400">
+                  <strong className="text-slate-800 dark:text-slate-200 font-sans">Subject:</strong> <span className="font-sans font-bold text-slate-900 dark:text-white">{selectedPreviewEmail.subject}</span>
+                </div>
+                <div className="text-slate-500 text-[11px]">
+                  <span className="font-sans font-medium">Dispatched By Admin:</span> {selectedPreviewEmail.sent_by_admin?.name || 'Administrator'} ({selectedPreviewEmail.sent_by_admin?.email || 'admin@zuvapay.com'})
+                </div>
+              </div>
+
+              {/* Rendered Email Presentation */}
+              <div className="flex-1 overflow-y-auto p-6 bg-slate-100 dark:bg-slate-950 flex justify-center">
+                <div className="w-full max-w-lg bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden text-slate-800">
+                  {/* Email Header Bar */}
+                  <div className="bg-[#0b132b] px-6 py-5 text-center border-b-4 border-[#ff6600]">
+                    <span className="text-2xl font-black tracking-tight text-white">
+                      Zuva<span className="text-[#ff6600]">Pay</span>
+                    </span>
+                  </div>
+
+                  {/* Email Body */}
+                  <div className="p-6 space-y-4">
+                    <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2.5">
+                      {selectedPreviewEmail.subject}
+                    </h2>
+
+                    {selectedPreviewEmail.bodyHtml ? (
+                      <div
+                        className="text-xs text-slate-700 leading-relaxed font-sans space-y-3"
+                        dangerouslySetInnerHTML={{ __html: selectedPreviewEmail.bodyHtml }}
+                      />
+                    ) : (
+                      <div className="text-xs text-slate-700 leading-relaxed font-sans whitespace-pre-line">
+                        {selectedPreviewEmail.message}
+                      </div>
+                    )}
+
+                    {selectedPreviewEmail.ctaText && selectedPreviewEmail.ctaUrl && (
+                      <div className="pt-4 pb-2 text-center">
+                        <a
+                          href={selectedPreviewEmail.ctaUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block px-6 py-3 rounded-xl bg-[#ff6600] text-white text-xs font-bold tracking-wide uppercase shadow-md hover:bg-orange-600 transition-colors"
+                        >
+                          {selectedPreviewEmail.ctaText}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Email Footer */}
+                  <div className="bg-slate-50 p-4 border-t border-slate-100 text-center text-[11px] text-slate-400 space-y-1">
+                    <p className="font-semibold text-slate-500">ZuvaPay Administrative Notification</p>
+                    <p>This email was dispatched securely to {selectedPreviewEmail.recipient}</p>
+                    <p className="text-[10px] text-slate-400 pt-1">© {new Date().getFullYear()} ZuvaPay. All rights reserved.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="p-3 border-t border-slate-100 dark:border-white/5 bg-white dark:bg-slate-900 flex justify-between items-center">
+                <span className="text-[11px] text-slate-400 pl-2">
+                  ID: <span className="font-mono">{selectedPreviewEmail.id || 'N/A'}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPreviewEmail(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer"
+                >
+                  Close Preview
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="p-4 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/40 flex items-center justify-between text-xs text-slate-500">
