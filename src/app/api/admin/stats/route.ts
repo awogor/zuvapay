@@ -71,6 +71,7 @@ export async function GET() {
       const userPhone = userId ? userPhoneMap.get(userId) : null;
       const isRefund =
         tx.category === 'refund' ||
+        tx.reference?.startsWith('ZP-REF') ||
         tx.reference?.startsWith('KP-REF') ||
         (tx.description || '').toLowerCase().startsWith('refund');
 

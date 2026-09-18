@@ -350,9 +350,9 @@ export async function GET(request: NextRequest) {
       const liveIds: string[] = [];
 
       for (const id of idList) {
-        if (id.startsWith('KP-')) {
+        if (id.startsWith('ZP-') || id.startsWith('KP-')) {
           let ageMs = 60000;
-          const parsed = Number(id.replace('KP-', ''));
+          const parsed = Number(id.replace(/^(ZP|KP)-/, ''));
           if (!isNaN(parsed)) ageMs = now - parsed;
 
           if (ageMs < 15000) {
@@ -380,7 +380,7 @@ export async function GET(request: NextRequest) {
 
   // 2. Check individual order status on MomoPanel
   if (action === 'status' && orderId) {
-    const isSimulated = String(orderId).startsWith('KP-');
+    const isSimulated = String(orderId).startsWith('ZP-') || String(orderId).startsWith('KP-');
 
     if (!isSimulated) {
       const statusRes = await getOrderStatus(orderId);
@@ -395,8 +395,8 @@ export async function GET(request: NextRequest) {
     // Mock order status simulation with realistic progression
     const now = Date.now();
     let ageMs = 60000;
-    if (String(orderId).startsWith('KP-')) {
-      const parsed = Number(String(orderId).replace('KP-', ''));
+    if (String(orderId).startsWith('ZP-') || String(orderId).startsWith('KP-')) {
+      const parsed = Number(String(orderId).replace(/^(ZP|KP)-/, ''));
       if (!isNaN(parsed)) ageMs = now - parsed;
     }
 
@@ -663,7 +663,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const simOrderId = `KP-${Date.now()}`;
+    const simOrderId = `ZP-${Date.now()}`;
     if (!isMock && verifiedTx) {
       await adminSupabase
         .from('transactions')

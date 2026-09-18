@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
@@ -165,7 +165,7 @@ export function ProfileInfoModal({
           <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10">
             <div className="relative flex-shrink-0">
               <img
-                src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.email || profile?.first_name || 'KPUser')}`}
+                src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.email || profile?.first_name || 'ZPUser')}`}
                 alt="Avatar"
                 className="w-14 h-14 rounded-full border-2 border-brand-orange/40 bg-orange-100 dark:bg-slate-800 object-cover shadow-sm"
               />

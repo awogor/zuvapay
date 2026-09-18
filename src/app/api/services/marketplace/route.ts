@@ -336,7 +336,7 @@ export async function POST(request: NextRequest) {
 
         // 2. Server-side atomic auto-refund: restore customer funds immediately without relying on client browser
         if (existingTx) {
-          const refundReference = `KP-REF-${orderIdempotencyKey}`;
+          const refundReference = `ZP-REF-${orderIdempotencyKey}`;
           const refundDesc = `Refund: Marketplace (${productName || 'Product'}) (Stock replenishment) [Ref: ${orderIdempotencyKey}]`;
           const { data: rpcData, error: rpcErr } = await adminSupabase.rpc('refund_wallet_for_bill', {
             p_wallet_id: existingTx.wallet_id,

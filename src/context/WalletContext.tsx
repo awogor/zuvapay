@@ -427,7 +427,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
-    const reference = generateReference(`KP-${category.substring(0, 3).toUpperCase()}`);
+    const reference = generateReference(`ZP-${category.substring(0, 3).toUpperCase()}`);
 
     if (isMockMode) {
       const newBalance = wallet.balance - amount;
@@ -561,7 +561,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   }: RefundBillParams): Promise<{ success: boolean; error?: string }> => {
     if (!wallet) return { success: false, error: 'Wallet not found' };
 
-    const refundReference = generateReference('KP-REF');
+    const refundReference = generateReference('ZP-REF');
     const cleanReason = reason
       ? reason
           .replace(/https?:\/\/[^\s)]+/g, '')
@@ -671,7 +671,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   ): Promise<{ success: boolean; error?: string }> => {
     if (!wallet) return { success: false, error: 'Wallet not found' };
 
-    const ref = generateReference('KP-DEP');
+    const ref = generateReference('ZP-DEP');
     const description = `Wallet Deposit via ${method}`;
 
     if (isMockMode) {
@@ -778,7 +778,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       setWallet((prev) => (prev ? { ...prev, balance: newNgn } : null));
       setUsdBalance(newUsd);
 
-      const ref = generateReference('KP-SWP');
+      const ref = generateReference('ZP-SWP');
       const swapTx: Transaction = {
         id: 'tx-swap-' + Date.now(),
         wallet_id: wallet.id,
@@ -810,7 +810,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       setWallet((prev) => (prev ? { ...prev, balance: newNgn } : null));
       setUsdBalance(newUsd);
 
-      const ref = generateReference('KP-SWP');
+      const ref = generateReference('ZP-SWP');
       const swapTx: Transaction = {
         id: 'tx-swap-' + Date.now(),
         wallet_id: wallet.id,
@@ -856,7 +856,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       newBalance?: number;
     }) => {
       const isCredit = action === 'credit';
-      const ref = reference || `KP-ADJ-${Date.now().toString(36).toUpperCase()}`;
+      const ref = reference || `ZP-ADJ-${Date.now().toString(36).toUpperCase()}`;
       const desc = `Manual Admin Adjustment: ${reason || (isCredit ? 'Account Credit' : 'Account Debit')}`;
 
       const currentBal = wallet?.balance ?? 42800;

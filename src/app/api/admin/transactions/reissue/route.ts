@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Generate a fresh idempotency key to prevent collision with previously rejected calls
-      const idempotencyKey = `KP-REISSUE-${tx.reference}-${Date.now().toString(36).toUpperCase()}`;
+      const idempotencyKey = `ZP-REISSUE-${tx.reference}-${Date.now().toString(36).toUpperCase()}`;
 
       const aiPlugRes = await createAIPlugOrder({
         productId,

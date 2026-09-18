@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     const isMock = process.env.NEXT_PUBLIC_MOCK_DATA === 'true';
     if (isMock) {
-      const refundRef = `KP-REF-MOCK-${Date.now()}`;
+      const refundRef = `ZP-REF-MOCK-${Date.now()}`;
       return NextResponse.json({
         success: true,
         refundReference: refundRef,
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const refundReference = `KP-REF-${originalReference}`;
+    const refundReference = `ZP-REF-${originalReference}`;
     const description = `Refund: ${title || 'Service'} (${cleanReason}) [Ref: ${originalReference}]`;
 
     // 2. Atomic lock: mark original transaction as refund_pending to prevent race condition double-refunds

@@ -103,7 +103,7 @@ function ActiveOtpContent() {
           service: 'WhatsApp',
           cost: 1620,
           expiresAt: Date.now() + 15 * 60 * 1000,
-          reference: 'KP-SMS-ACTIVE',
+          reference: 'ZP-SMS-ACTIVE',
         };
         setOrder(fallback);
       }

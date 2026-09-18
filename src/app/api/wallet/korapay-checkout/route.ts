@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const korapaySecretKey = process.env.KORAPAY_SECRET_KEY;
     const isMock = !korapaySecretKey || korapaySecretKey.includes('test') || korapaySecretKey.includes('mock');
 
-    const reference = `KP-CHG-${userId.substring(0, 8)}-${Date.now().toString(36).toUpperCase()}`;
+    const reference = `ZP-CHG-${userId.substring(0, 8)}-${Date.now().toString(36).toUpperCase()}`;
     const baseUrl = process.env.KORAPAY_BASE_URL || 'https://api.korapay.com/merchant/api/v1';
     const appUrl =
       process.env.NEXT_PUBLIC_APP_URL ||

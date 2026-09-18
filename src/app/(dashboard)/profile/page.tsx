@@ -55,7 +55,7 @@ export default function ProfilePage() {
   const avatarUrl =
     profile?.avatar_url ||
     user?.user_metadata?.avatar_url ||
-    `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.email || profile?.first_name || 'KPUser')}`;
+    `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.email || profile?.first_name || 'ZPUser')}`;
 
   // Modal display states
   const [showProfileModal, setShowProfileModal] = useState(false);

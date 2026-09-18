@@ -116,6 +116,7 @@ export function AdminTransactionModal({
 
   const isRefund =
     activeTx.category === 'refund' ||
+    activeTx.reference?.startsWith('ZP-REF') ||
     activeTx.reference?.startsWith('KP-REF') ||
     (activeTx.description || '').toLowerCase().startsWith('refund') ||
     meta.is_refund === true;
@@ -159,7 +160,7 @@ export function AdminTransactionModal({
 
   const descLower = (activeTx.description || '').toLowerCase();
 
-  // Extract original order reference if present (e.g., [Ref: KP-SMS-MTVXDHYD-HTZVV])
+  // Extract original order reference if present (e.g., [Ref: ZP-SMS-MTVXDHYD-HTZVV] or KP-...)
   const originalRefMatch = activeTx.description?.match(/\[Ref:\s*([^\]]+)\]/);
   const originalOrderRef = originalRefMatch
     ? originalRefMatch[1]
@@ -193,11 +194,13 @@ export function AdminTransactionModal({
   const isKorapayCheckout =
     meta.method === 'checkout' ||
     Boolean(activeTx.reference?.includes('-CHG-')) ||
+    Boolean(activeTx.reference?.startsWith('ZP-CHG')) ||
     Boolean(activeTx.reference?.startsWith('KP-CHG')) ||
     Boolean(meta.sessionId) ||
     Boolean(meta.session_id) ||
     ((meta.gateway === 'korapay' || rawProvider.includes('korapay') || descLower.includes('via korapay')) &&
       !meta.accountNumber &&
+      !opRef.startsWith('ZP-VBA') &&
       !opRef.startsWith('KP-VBA') &&
       !descLower.includes('virtual account'));
 
@@ -212,7 +215,9 @@ export function AdminTransactionModal({
 
   const isKorapayVba =
     meta.method === 'virtual_account' ||
+    opRef.startsWith('ZP-VBA') ||
     opRef.startsWith('KP-VBA') ||
+    Boolean(activeTx.reference?.startsWith('ZP-VBA')) ||
     Boolean(activeTx.reference?.startsWith('KP-VBA')) ||
     Boolean(activeTx.reference?.startsWith('KORA-')) ||
     Boolean(meta.accountNumber) ||
@@ -220,6 +225,8 @@ export function AdminTransactionModal({
     descLower.includes('vba');
 
   const isAdminAdjustment =
+    Boolean(activeTx.reference?.startsWith('ZP-ADJ')) ||
+    Boolean(activeTx.reference?.startsWith('KP-ADJ')) ||
     Boolean(activeTx.reference?.startsWith('ADJ-')) ||
     Boolean(activeTx.reference?.startsWith('MANUAL-')) ||
     descLower.includes('manual adjustment') ||
@@ -237,6 +244,7 @@ export function AdminTransactionModal({
     activeTx.category === 'digital_service' ||
     opRef.startsWith('AIP-') ||
     opRef.startsWith('PRV-MAR') ||
+    activeTx.reference?.startsWith('ZP-MAR') ||
     activeTx.reference?.startsWith('KP-MAR')
   ) {
     resolvedProviderId = 'aiplug';
@@ -381,16 +389,16 @@ export function AdminTransactionModal({
        meta.merchant_reference ||
        meta.external_reference ||
        (resolvedProviderId === 'aiplug'
-         ? (isFulfilled ? `AIP-ORD-${activeTx.reference.replace(/^(KP-MAR-|KP-)/, '')}` : 'AIPLUG-PENDING-REISSUE')
+         ? (isFulfilled ? `AIP-ORD-${activeTx.reference.replace(/^(ZP-MAR-|KP-MAR-|ZP-|KP-)/, '')}` : 'AIPLUG-PENDING-REISSUE')
          : resolvedProviderId === 'strowallet'
          ? (activeTx.category === 'power'
-             ? `STRO-PWR-${activeTx.reference.replace(/^(KP-POW-|KP-)/, '')}`
+             ? `STRO-PWR-${activeTx.reference.replace(/^(ZP-POW-|KP-POW-|ZP-|KP-)/, '')}`
              : activeTx.category === 'cable' || activeTx.category === 'tv'
-             ? `STRO-CBL-${activeTx.reference.replace(/^(KP-CBL-|KP-TV-|KP-)/, '')}`
-             : `STRO-AIR-${activeTx.reference.replace(/^(KP-AIR-|KP-)/, '')}`)
+             ? `STRO-CBL-${activeTx.reference.replace(/^(ZP-CBL-|ZP-TV-|KP-CBL-|KP-TV-|ZP-|KP-)/, '')}`
+             : `STRO-AIR-${activeTx.reference.replace(/^(ZP-AIR-|KP-AIR-|ZP-|KP-)/, '')}`)
          : resolvedProviderId === 'gongoz'
-         ? `GONGOZ-DAT-${activeTx.reference.replace(/^(KP-DAT-|KP-)/, '')}`
-         : `PRV-${activeTx.reference.replace(/^(KP-REF-|KP-)/, '')}`));
+         ? `GONGOZ-DAT-${activeTx.reference.replace(/^(ZP-DAT-|KP-DAT-|ZP-|KP-)/, '')}`
+         : `PRV-${activeTx.reference.replace(/^(ZP-REF-|KP-REF-|ZP-|KP-)/, '')}`));
 
   // 3b. Dynamic Funding Gateway Telemetry (for deposit & credit audits)
   let fundingGatewayTitle = 'Dedicated Virtual Account';

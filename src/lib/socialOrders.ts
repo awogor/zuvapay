@@ -51,7 +51,7 @@ export function getSocialOrders(): SocialOrderRecord[] {
                 if (tx.category === 'social' && tx.reference && !existingRefs.has(tx.reference)) {
                   const meta = tx.metadata || {};
                   orders.push({
-                    orderId: meta.momoOrderId || `KP-${tx.reference}`,
+                    orderId: meta.momoOrderId || `ZP-${tx.reference}`,
                     reference: tx.reference,
                     platform: meta.platform || 'instagram',
                     category: meta.category || 'Social Boost',

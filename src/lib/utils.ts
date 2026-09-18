@@ -43,7 +43,7 @@ export function formatDate(dateInput: string | number | Date): string {
   }
 }
 
-export function generateReference(prefix: string = 'KP'): string {
+export function generateReference(prefix: string = 'ZP'): string {
   const timestamp = Date.now().toString(36).toUpperCase();
   const random = Math.random().toString(36).substring(2, 7).toUpperCase();
   return `${prefix}-${timestamp}-${random}`;

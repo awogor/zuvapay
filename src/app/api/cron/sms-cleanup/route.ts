@@ -55,11 +55,12 @@ export async function GET(request: NextRequest) {
       processedCount++;
 
       // Check if refund was already recorded
-      const refundRef = `KP-REF-${tx.reference}`;
+      const refundRef = `ZP-REF-${tx.reference}`;
+      const legacyRefundRef = `KP-REF-${tx.reference}`;
       const { data: existingRefund } = await supabase
         .from('transactions')
         .select('id')
-        .eq('reference', refundRef)
+        .or(`reference.eq.${refundRef},reference.eq.${legacyRefundRef}`)
         .maybeSingle();
 
       if (existingRefund) {

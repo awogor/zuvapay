@@ -380,6 +380,7 @@ export default function AdminDashboardPage() {
                 {stats.recentTransactions.map((tx: any) => {
                   const isTxRefund =
                     tx.category === 'refund' ||
+                    tx.reference?.startsWith('ZP-REF') ||
                     tx.reference?.startsWith('KP-REF') ||
                     (tx.description || '').toLowerCase().startsWith('refund');
 

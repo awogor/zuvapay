@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     // Handle mock wallets or when running without a persistent database wallet
     if (walletId.startsWith('mock-')) {
-      const reference = `KP-ADJ-${Date.now().toString(36).toUpperCase()}`;
+      const reference = `ZP-ADJ-${Date.now().toString(36).toUpperCase()}`;
       return NextResponse.json({
         success: true,
         isMock: true,
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     if (walletErr || !wallet) {
       // Fallback for demo or freshly seeded users
-      const reference = `KP-ADJ-${Date.now().toString(36).toUpperCase()}`;
+      const reference = `ZP-ADJ-${Date.now().toString(36).toUpperCase()}`;
       return NextResponse.json({
         success: true,
         isMock: true,
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Log transaction
-    const reference = `KP-ADJ-${Date.now().toString(36).toUpperCase()}`;
+    const reference = `ZP-ADJ-${Date.now().toString(36).toUpperCase()}`;
     await adminSupabase.from('transactions').insert({
       wallet_id: walletId,
       amount: numAmount,

@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
           bonusUnits: existingBonusUnits,
           tokens: existingTokens,
           amount: parseFloat(amount) || 0,
-          reference: reference || `KP-PWR-${Date.now()}`,
+          reference: reference || `ZP-PWR-${Date.now()}`,
           operatorReference: existingOpRef,
           date: new Date().toLocaleString('en-NG'),
         },

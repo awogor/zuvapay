@@ -326,7 +326,7 @@ export function Navbar({ onOpenMobileMenu, onOpenFundModal }: NavbarProps) {
             className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
           >
             <img
-              src={profile?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=KPUser'}
+              src={profile?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=ZPUser'}
               alt="Avatar"
               className="h-8 w-8 rounded-full border border-slate-200 dark:border-white/20 bg-slate-100 dark:bg-slate-800 object-cover"
             />

@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
 
       if (orderId && status !== 'Completed' && status !== 'Canceled') {
         const idStr = String(orderId);
-        if (!idStr.startsWith('KP-')) {
+        if (!idStr.startsWith('ZP-') && !idStr.startsWith('KP-')) {
           activeTxMap.set(idStr, tx);
           orderIds.push(idStr);
         }

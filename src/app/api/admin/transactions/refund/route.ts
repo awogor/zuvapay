@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     const cleanReason = reason?.trim() || 'Admin manual refund';
     const numAmount = Number(origTx.amount);
-    const refundReference = `KP-REF-${origTx.reference}`;
+    const refundReference = `ZP-REF-${origTx.reference}`;
     const description = `Admin Refund: ${origTx.description || 'Service'} (${cleanReason}) [Ref: ${origTx.reference}]`;
 
     // 3. Execute atomic refund RPC using service_role

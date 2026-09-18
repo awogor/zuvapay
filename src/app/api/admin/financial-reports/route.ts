@@ -80,7 +80,7 @@ function resolveProvider(tx: any): { id: string; name: string } {
     if (rawProvider.includes('billstack') || meta.bankName || descLower.includes('billstack') || descLower.includes('9psb')) {
       return { id: 'billstack', name: 'Billstack (9PSB Dedicated Account)' };
     }
-    if (rawProvider.includes('korapay') || opRef.startsWith('KP-') || descLower.includes('korapay')) {
+    if (rawProvider.includes('korapay') || opRef.startsWith('ZP-VBA') || opRef.startsWith('KP-VBA') || opRef.startsWith('KP-') || descLower.includes('korapay')) {
       return { id: 'korapay', name: 'Korapay Virtual Accounts' };
     }
     if (rawProvider.includes('strowallet')) return { id: 'strowallet', name: 'StroWallet API Gateway' };
@@ -114,7 +114,7 @@ function resolveProvider(tx: any): { id: string; name: string } {
     if (descLower.includes('9psb') || meta.bankName || descLower.includes('billstack')) {
       return { id: 'billstack', name: 'Billstack (9PSB Dedicated Account)' };
     }
-    if (descLower.includes('korapay') || tx.reference?.startsWith('KP-')) {
+    if (descLower.includes('korapay') || tx.reference?.startsWith('ZP-CHG') || tx.reference?.startsWith('KP-CHG') || tx.reference?.startsWith('KP-')) {
       return { id: 'korapay', name: 'Korapay Dedicated Account' };
     }
     if (descLower.includes('admin') || tx.reference?.startsWith('ADM-')) {
@@ -174,6 +174,7 @@ function calculateTxCost(tx: any): { cost: number; profit: number } {
   const meta = tx.metadata || {};
   const isRefund =
     tx.category === 'refund' ||
+    tx.reference?.startsWith('ZP-REF') ||
     tx.reference?.startsWith('KP-REF') ||
     (tx.description || '').toLowerCase().startsWith('refund') ||
     meta.is_refund === true;
@@ -348,6 +349,7 @@ export async function GET(request: NextRequest) {
     mergedTxs.forEach((tx: any) => {
       const isRefundTx =
         tx.category === 'refund' ||
+        tx.reference?.startsWith('ZP-REF') ||
         tx.reference?.startsWith('KP-REF') ||
         (tx.description || '').toLowerCase().startsWith('refund') ||
         tx.metadata?.is_refund === true;
@@ -375,6 +377,7 @@ export async function GET(request: NextRequest) {
 
       const isRefund =
         tx.category === 'refund' ||
+        tx.reference?.startsWith('ZP-REF') ||
         tx.reference?.startsWith('KP-REF') ||
         (tx.description || '').toLowerCase().startsWith('refund') ||
         tx.metadata?.is_refund === true;
