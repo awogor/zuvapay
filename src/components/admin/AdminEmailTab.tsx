@@ -219,7 +219,7 @@ export function AdminEmailTab() {
           <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-white/5">
             <span className="text-[10px] uppercase font-bold text-slate-400 block">From Address</span>
             <span className="font-mono font-bold text-slate-800 dark:text-slate-200 truncate block">
-              {smtpStatus?.config?.fromEmail || 'support@zuvapay.com'}
+              {smtpStatus?.config?.fromEmail || 'hello@zuvapay.com'}
             </span>
           </div>
           <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-white/5">

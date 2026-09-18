@@ -20,6 +20,8 @@ export interface SendEmailOptions {
   templateType: EmailTemplateType;
   data: Record<string, any>;
   customSubject?: string;
+  bcc?: string | string[];
+  cc?: string | string[];
 }
 
 export interface SendEmailResult {
@@ -216,6 +218,8 @@ export async function sendTransactionalEmail(
       from: `"${config.fromName}" <${config.fromEmail}>`,
       replyTo: config.replyTo || 'hello@zuvapay.com',
       to,
+      bcc: options.bcc,
+      cc: options.cc,
       subject,
       html: rendered.html,
       text: rendered.html.replace(/<[^>]*>?/gm, ' ').replace(/\s\s+/g, ' ').trim(), // Plaintext fallback

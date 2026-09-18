@@ -98,10 +98,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .join('');
 
     // 5. Send email via ZuvaPay SMTP
+    // Automatically BCC hello@zuvapay.com for audit trail unless target is hello@zuvapay.com
+    const adminCopyEmail = 'hello@zuvapay.com';
+    const bccEmail = recipientEmail.toLowerCase() !== adminCopyEmail ? adminCopyEmail : undefined;
+
     const emailResult = await sendTransactionalEmail({
       to: recipientEmail,
       templateType: 'admin_broadcast',
       customSubject: subject.trim(),
+      bcc: bccEmail,
       data: {
         name: recipientName,
         headline: subject.trim(),

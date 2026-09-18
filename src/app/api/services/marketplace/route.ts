@@ -376,7 +376,7 @@ export async function POST(request: NextRequest) {
         : 'Service fulfillment timed out. Your payment has been safely refunded to your wallet.';
 
       // Dispatch urgent notification email to admin in background
-      const adminEmailRecipient = process.env.ADMIN_ALERT_EMAIL || process.env.SMTP_FROM_EMAIL || 'support@zuvapay.com';
+      const adminEmailRecipient = process.env.ADMIN_ALERT_EMAIL || process.env.SMTP_FROM_EMAIL || 'hello@zuvapay.com';
       sendTransactionalEmail({
         to: adminEmailRecipient,
         templateType: 'admin_low_balance',
