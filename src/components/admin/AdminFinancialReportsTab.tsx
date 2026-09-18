@@ -28,6 +28,10 @@ import {
   BarChart3,
   Search,
   Activity,
+  Landmark,
+  Building2,
+  Wallet,
+  Receipt,
 } from 'lucide-react';
 import { ProviderSummary, CategorySummary, TimeSeriesPoint } from '@/app/api/admin/financial-reports/route';
 
@@ -39,6 +43,7 @@ const PROVIDER_ICONS: Record<string, any> = {
   smspool: Smartphone,
   marketplace: Sparkles,
   korapay: CreditCard,
+  billstack: Landmark,
   internal: Zap,
 };
 
@@ -58,10 +63,14 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
     summary: {
       totalVolume?: number;
       totalTransactionsCount?: number;
+      totalGrossDeposits?: number;
+      totalNetDeposits?: number;
       totalDepositVolume?: number;
       totalDepositCount?: number;
+      totalCollectionFees?: number;
       totalGrossSales: number;
       totalWholesaleCost: number;
+      totalServiceProfit?: number;
       totalNetProfit: number;
       overallMarginPercent: number;
       totalCompletedOrders: number;
@@ -122,10 +131,11 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
       'Date',
       'Type',
       'Category',
-      'Provider',
+      'Provider / Gateway',
       'Description',
-      'Retail Price (NGN)',
+      'Gross Amount (NGN)',
       'Wholesale Cost (NGN)',
+      'Collection Fee (NGN)',
       'Net Profit (NGN)',
       'Margin (%)',
       'Status',
@@ -137,10 +147,11 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
       `"${row.category}"`,
       `"${row.providerName}"`,
       `"${(row.description || '').replace(/"/g, '""')}"`,
-      row.retailPrice,
-      row.wholesaleCost,
-      row.netProfit,
-      `${row.marginPercent}%`,
+      row.retailPrice || 0,
+      row.wholesaleCost || 0,
+      row.fee || 0,
+      row.netProfit || 0,
+      `${row.marginPercent || 0}%`,
       `"${row.status}"`,
     ]);
 
@@ -340,14 +351,16 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
         <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100 dark:border-white/5">
           <div className="flex items-center gap-2 text-xs">
             <span className="text-slate-400 font-semibold flex items-center gap-1">
-              <Filter className="w-3 h-3" /> Provider:
+              <Filter className="w-3 h-3" /> Provider / Gateway:
             </span>
             <select
               value={selectedProvider}
               onChange={(e) => setSelectedProvider(e.target.value)}
               className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-brand-orange"
             >
-              <option value="all">All Providers (Consolidated)</option>
+              <option value="all">All Providers & Gateways (Consolidated)</option>
+              <option value="billstack">Billstack Dedicated Accounts (9PSB)</option>
+              <option value="korapay">Korapay Virtual Accounts & Checkout</option>
               <option value="strowallet">StroWallet API Gateway (Electricity & Cable TV)</option>
               <option value="gongoz">GongozAPI Gateway (Airtime & SME Data)</option>
               <option value="fadded">Fadded Inventory (Account Logs)</option>
@@ -355,7 +368,6 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
               <option value="smspool">SMSPool (Server 1 SMS)</option>
               <option value="grizzly">GrizzlySMS (Server 2 SMS)</option>
               <option value="marketplace">AI Marketplace Gateway</option>
-              <option value="korapay">Korapay Dedicated Accounts</option>
             </select>
           </div>
 
@@ -367,6 +379,7 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
               className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-brand-orange"
             >
               <option value="all">All Service Categories</option>
+              <option value="deposit">Wallet Funding & Collections</option>
               <option value="data">Data Bundles</option>
               <option value="airtime">Airtime VTU</option>
               <option value="power">Electricity Tokens</option>
@@ -380,99 +393,185 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
         </div>
       </div>
 
-      {/* 5 Big Executive Financial Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        {/* Total Transaction Volume */}
-        <div className="p-5 rounded-3xl bg-gradient-to-br from-brand-orange/10 via-white to-amber-500/10 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 border-2 border-brand-orange/40 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-brand-orange" />
-              Total Volume
-            </span>
-            <div className="w-8 h-8 rounded-xl bg-brand-orange/15 text-brand-orange flex items-center justify-center">
-              <Activity className="w-4 h-4" />
+      {/* 8 Big Executive Financial Cards (2 Strategic Tiers) */}
+      <div className="space-y-4">
+        {/* Tier 1: Platform Inflow, GMV & Retained Earnings */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Total Turnover / Volume */}
+          <div className="p-5 rounded-3xl bg-gradient-to-br from-brand-orange/10 via-white to-amber-500/10 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 border-2 border-brand-orange/40 shadow-sm space-y-2">
+            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-brand-orange" />
+                Gross Platform Turnover
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-brand-orange/15 text-brand-orange flex items-center justify-center">
+                <Activity className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              {formatNaira(data?.summary.totalVolume || 0)}
+            </p>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-500 dark:text-slate-400">
+                {data?.summary.totalTransactionsCount || 0} Total Transactions
+              </span>
+              <span className="text-brand-orange font-bold">Total Flow</span>
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-            {formatNaira(data?.summary.totalVolume || 0)}
-          </p>
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-500 dark:text-slate-400">
-              {data?.summary.totalTransactionsCount || 0} Total {data?.summary.totalTransactionsCount === 1 ? 'Tx' : 'Txs'}
-            </span>
-            <span className="text-brand-orange font-bold">Gross Turnover</span>
-          </div>
-        </div>
-        {/* Total Sales */}
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">Actual Net Revenue</span>
-            <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center">
-              <DollarSign className="w-4 h-4" />
+
+          {/* Card 2: Combined Net Retained Profit */}
+          <div className="p-5 rounded-3xl bg-gradient-to-br from-emerald-500/10 via-white to-teal-500/10 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 border-2 border-emerald-500/30 shadow-sm space-y-2">
+            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                Total Platform Net Profit
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <DollarSign className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
+              +{formatNaira(data?.summary.totalNetProfit || 0)}
+            </p>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-500 dark:text-slate-400 truncate">
+                Services: {formatNaira(data?.summary.totalServiceProfit || 0)} · Fees: {formatNaira(data?.summary.totalCollectionFees || 0)}
+              </span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0">Retained</span>
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-            {formatNaira(data?.summary.totalGrossSales || 0)}
-          </p>
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-500 dark:text-slate-400">
-              {data?.summary.totalCompletedOrders || 0} Successful {data?.summary.totalCompletedOrders === 1 ? 'Order' : 'Orders'}
-              {data?.summary.totalRefundOrders ? ` · ${data.summary.totalRefundOrders} Refunded` : ''}
-            </span>
-            <span className="text-sky-600 dark:text-sky-400 font-bold">Delivered Sales</span>
+
+          {/* Card 3: Delivered Service Sales */}
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
+            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                <ShoppingBag className="w-3.5 h-3.5 text-sky-500" />
+                Delivered Service Sales
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center">
+                <Sparkles className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              {formatNaira(data?.summary.totalGrossSales || 0)}
+            </p>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-500 dark:text-slate-400">
+                {data?.summary.totalCompletedOrders || 0} Successful Orders (Avg: {formatNaira(data?.summary.averageOrderValue || 0)})
+              </span>
+              <span className="text-sky-600 dark:text-sky-400 font-bold">GMV</span>
+            </div>
+          </div>
+
+          {/* Card 4: Profit Margin Yield */}
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
+            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                <Percent className="w-3.5 h-3.5 text-purple-500" />
+                Overall Margin Yield
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
+                <Percent className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-2xl sm:text-3xl font-black text-purple-600 dark:text-purple-400 tracking-tight">
+              {data?.summary.overallMarginPercent || 0}%
+            </p>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-500 dark:text-slate-400">
+                Yield Across Total Flow
+              </span>
+              <span className="text-purple-600 dark:text-purple-400 font-bold">Efficiency</span>
+            </div>
           </div>
         </div>
 
-        {/* Total Costs */}
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">Wholesale Provider Costs</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
-              <CreditCard className="w-4 h-4" />
+        {/* Tier 2: Wallet Funding, Collection Fees, COGS & Reversals */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 5: Gross Wallet Inflow (Deposits) */}
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
+            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                <ArrowDownLeft className="w-3.5 h-3.5 text-blue-500" />
+                Gross Wallet Inflow
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                <Wallet className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400 tracking-tight">
+              {formatNaira(data?.summary.totalGrossDeposits || data?.summary.totalDepositVolume || 0)}
+            </p>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-500 dark:text-slate-400">
+                {data?.summary.totalDepositCount || 0} Deposits · Net: {formatNaira(data?.summary.totalNetDeposits || 0)}
+              </span>
+              <span className="text-blue-600 dark:text-blue-400 font-bold">Collections</span>
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
-            {formatNaira(data?.summary.totalWholesaleCost || 0)}
-          </p>
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-500 dark:text-slate-400">Cost of Goods Sold</span>
-            <span className="text-amber-600 dark:text-amber-400 font-bold">API Debits</span>
-          </div>
-        </div>
 
-        {/* Total Profit */}
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Net Profit</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
+          {/* Card 6: Payment Collection Fees Made */}
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
+            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                <Receipt className="w-3.5 h-3.5 text-emerald-500" />
+                Collection Fees Made
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <Landmark className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
+              +{formatNaira(data?.summary.totalCollectionFees || 0)}
+            </p>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-500 dark:text-slate-400">
+                Dedicated Accounts & Gateway Fees
+              </span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold">100% Retained</span>
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
-            +{formatNaira(data?.summary.totalNetProfit || 0)}
-          </p>
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-500 dark:text-slate-400">Retained Business Margin</span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-bold">Net Earnings</span>
-          </div>
-        </div>
 
-        {/* Profit Margin & AOV */}
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">Average Profit Margin</span>
-            <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
-              <Percent className="w-4 h-4" />
+          {/* Card 7: Wholesale Provider Costs (COGS) */}
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
+            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                <CreditCard className="w-3.5 h-3.5 text-amber-500" />
+                Wholesale Provider Costs
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                <CreditCard className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
+              {formatNaira(data?.summary.totalWholesaleCost || 0)}
+            </p>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-500 dark:text-slate-400">Cost of Goods Sold (COGS)</span>
+              <span className="text-amber-600 dark:text-amber-400 font-bold">Supplier Debits</span>
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-purple-600 dark:text-purple-400 tracking-tight">
-            {data?.summary.overallMarginPercent || 0}%
-          </p>
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-500 dark:text-slate-400">
-              Avg Order: {formatNaira(data?.summary.averageOrderValue || 0)}
-            </span>
-            <span className="text-purple-600 dark:text-purple-400 font-bold">Efficiency</span>
+
+          {/* Card 8: Refunds & Auto-Reversals */}
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
+            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                <RotateCcw className="w-3.5 h-3.5 text-rose-500" />
+                Auto-Refunded Orders
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+                <RotateCcw className="w-4 h-4" />
+              </div>
+            </div>
+            <p className="text-2xl sm:text-3xl font-black text-rose-600 dark:text-rose-400 tracking-tight">
+              {formatNaira(data?.summary.totalRefundAmount || 0)}
+            </p>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-500 dark:text-slate-400">
+                {data?.summary.totalRefundOrders || 0} Orders Restored to Wallets
+              </span>
+              <span className="text-rose-600 dark:text-rose-400 font-bold">100% Reversed</span>
+            </div>
           </div>
         </div>
       </div>
@@ -634,8 +733,9 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
                 <tr>
                   <th className="py-3.5 px-4 font-bold">Provider / Gateway</th>
                   <th className="py-3.5 px-4 font-bold text-center">Orders</th>
-                  <th className="py-3.5 px-4 font-bold text-right">Delivered Sales</th>
+                  <th className="py-3.5 px-4 font-bold text-right">Gross Volume</th>
                   <th className="py-3.5 px-4 font-bold text-right">Wholesale Cost</th>
+                  <th className="py-3.5 px-4 font-bold text-right">Fees Retained</th>
                   <th className="py-3.5 px-4 font-bold text-right">Net Profit</th>
                   <th className="py-3.5 px-4 font-bold text-center">Margin %</th>
                   <th className="py-3.5 px-4 font-bold text-center">Reversals</th>
@@ -644,7 +744,7 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
               <tbody className="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
                 {!data?.providerBreakdown || data.providerBreakdown.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-10 text-slate-400">
+                    <td colSpan={8} className="text-center py-10 text-slate-400">
                       No provider sales recorded for this timeframe.
                     </td>
                   </tr>
@@ -680,6 +780,9 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
                         <td className="py-3.5 px-4 text-right font-mono text-amber-600 dark:text-amber-400">
                           {formatNaira(p.totalCost)}
                         </td>
+                        <td className="py-3.5 px-4 text-right font-mono font-semibold text-teal-600 dark:text-teal-400">
+                          {p.collectionFees > 0 ? `+${formatNaira(p.collectionFees)}` : '₦0.00'}
+                        </td>
                         <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
                           +{formatNaira(p.netProfit)}
                         </td>
@@ -712,10 +815,10 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
         <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/80 shadow-sm overflow-hidden">
           <div className="p-5 border-b border-slate-100 dark:border-white/5">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-              Service Category Profitability
+              Service Category & Collections Profitability
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Contribution to top-line gross sales and bottom-line profit across all 8 service pillars.
+              Contribution to top-line turnover and bottom-line retained profit across all service pillars and funding collections.
             </p>
           </div>
 
@@ -725,8 +828,9 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
                 <tr>
                   <th className="py-3.5 px-4 font-bold">Category</th>
                   <th className="py-3.5 px-4 font-bold text-center">Volume</th>
-                  <th className="py-3.5 px-4 font-bold text-right">Delivered Sales</th>
+                  <th className="py-3.5 px-4 font-bold text-right">Gross Sales / Inflow</th>
                   <th className="py-3.5 px-4 font-bold text-right">Wholesale Cost</th>
+                  <th className="py-3.5 px-4 font-bold text-right">Fees Retained</th>
                   <th className="py-3.5 px-4 font-bold text-right">Net Profit</th>
                   <th className="py-3.5 px-4 font-bold text-center">Net Margin</th>
                 </tr>
@@ -734,7 +838,7 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
               <tbody className="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
                 {!data?.categoryBreakdown || data.categoryBreakdown.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-10 text-slate-400">
+                    <td colSpan={7} className="text-center py-10 text-slate-400">
                       No category metrics available for this period.
                     </td>
                   </tr>
@@ -755,6 +859,9 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
                       </td>
                       <td className="py-3.5 px-4 text-right font-mono text-amber-600 dark:text-amber-400">
                         {formatNaira(cat.totalCost)}
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-mono font-semibold text-teal-600 dark:text-teal-400">
+                        {cat.collectionFees > 0 ? `+${formatNaira(cat.collectionFees)}` : '₦0.00'}
                       </td>
                       <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
                         +{formatNaira(cat.netProfit)}
@@ -805,9 +912,10 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
                   <th className="py-3.5 px-4 font-bold">Ref / Date</th>
                   <th className="py-3.5 px-4 font-bold">Category</th>
                   <th className="py-3.5 px-4 font-bold">Description</th>
-                  <th className="py-3.5 px-4 font-bold">Fulfillment Provider</th>
-                  <th className="py-3.5 px-4 font-bold text-right">Retail (Sale)</th>
+                  <th className="py-3.5 px-4 font-bold">Provider / Gateway</th>
+                  <th className="py-3.5 px-4 font-bold text-right">Gross Amount</th>
                   <th className="py-3.5 px-4 font-bold text-right">Wholesale Cost</th>
+                  <th className="py-3.5 px-4 font-bold text-right">Fee Retained</th>
                   <th className="py-3.5 px-4 font-bold text-right">Net Profit</th>
                   <th className="py-3.5 px-4 font-bold text-center">Margin</th>
                 </tr>
@@ -815,7 +923,7 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
               <tbody className="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300 font-mono">
                 {filteredLedger.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-10 text-slate-400 font-sans">
+                    <td colSpan={9} className="text-center py-10 text-slate-400 font-sans">
                       No matching records found.
                     </td>
                   </tr>
@@ -866,6 +974,15 @@ export function AdminFinancialReportsTab({ onSelectAuditTx }: { onSelectAuditTx?
                       </td>
                       <td className="py-3.5 px-4 text-right text-amber-600 dark:text-amber-400">
                         {formatNaira(row.wholesaleCost)}
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-semibold">
+                        {row.fee > 0 ? (
+                          <span className="text-teal-600 dark:text-teal-400">
+                            +{formatNaira(row.fee)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 font-normal">₦0.00</span>
+                        )}
                       </td>
                       <td className="py-3.5 px-4 text-right font-bold">
                         {row.type === 'reversal' || row.status === 'refunded' ? (

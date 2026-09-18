@@ -8,6 +8,7 @@ export interface ProviderSummary {
   totalOrders: number;
   grossSales: number;
   totalCost: number;
+  collectionFees: number;
   netProfit: number;
   marginPercent: number;
   refundedCount: number;
@@ -20,6 +21,7 @@ export interface CategorySummary {
   totalOrders: number;
   grossSales: number;
   totalCost: number;
+  collectionFees: number;
   netProfit: number;
   marginPercent: number;
 }
@@ -29,21 +31,58 @@ export interface TimeSeriesPoint {
   periodKey: string;
   sales: number;
   cost: number;
+  collectionFees: number;
   profit: number;
   ordersCount: number;
+}
+
+function extractDepositFee(tx: any): { fee: number; grossAmount: number; netAmount: number } {
+  const netAmount = Math.abs(parseFloat(tx.amount || 0));
+  const meta = tx.metadata || {};
+  const desc = tx.description || '';
+
+  let fee = 0;
+  if (meta.fee !== undefined && meta.fee !== null && !isNaN(parseFloat(meta.fee))) {
+    fee = parseFloat(meta.fee);
+  } else if (meta.gross_amount && meta.net_amount) {
+    fee = Math.max(0, parseFloat(meta.gross_amount) - parseFloat(meta.net_amount));
+  } else {
+    // Check if description has "[₦50 Fee Deducted]" or similar
+    const feeMatch = desc.match(/\[₦?([0-9,.]+)\s*Fee\s*Deducted\]/i);
+    if (feeMatch && feeMatch[1]) {
+      fee = parseFloat(feeMatch[1].replace(/,/g, ''));
+    } else if (desc.toLowerCase().includes('9psb') || meta.gateway === 'billstack' || meta.bankName) {
+      // 9PSB / Billstack flat dedicated account fee is ₦50
+      fee = 50;
+    }
+  }
+
+  const grossAmount = meta.gross_amount
+    ? parseFloat(meta.gross_amount)
+    : meta.total_paid
+    ? parseFloat(meta.total_paid)
+    : netAmount + fee;
+
+  return { fee, grossAmount, netAmount };
 }
 
 function resolveProvider(tx: any): { id: string; name: string } {
   const meta = tx.metadata || {};
   const descLower = (tx.description || '').toLowerCase();
   const cat = (tx.category || '').toLowerCase();
-  const rawProvider = String(meta.provider || meta.vendor || meta.supplier || '').toLowerCase();
+  const rawProvider = String(meta.provider || meta.vendor || meta.supplier || meta.gateway || '').toLowerCase();
   const opRef = String(meta.operatorReference || meta.operator_reference || meta.provider_ref || '').toUpperCase();
   const planId = String(meta.planId || meta.plan_id || '').toLowerCase();
   const planType = String(meta.planType || meta.type || '').toLowerCase();
 
-  // 1. Explicit vendor metadata
+  // 1. Explicit vendor or gateway metadata
   if (rawProvider) {
+    if (rawProvider.includes('billstack') || meta.bankName || descLower.includes('billstack') || descLower.includes('9psb')) {
+      return { id: 'billstack', name: 'Billstack (9PSB Dedicated Account)' };
+    }
+    if (rawProvider.includes('korapay') || opRef.startsWith('KP-') || descLower.includes('korapay')) {
+      return { id: 'korapay', name: 'Korapay Virtual Accounts' };
+    }
     if (rawProvider.includes('strowallet')) return { id: 'strowallet', name: 'StroWallet API Gateway' };
     if (rawProvider.includes('gongoz')) return { id: 'gongoz', name: 'GongozAPI Gateway' };
     if (rawProvider.includes('fadded')) return { id: 'fadded', name: 'Fadded Inventory Provider' };
@@ -51,7 +90,6 @@ function resolveProvider(tx: any): { id: string; name: string } {
     if (rawProvider.includes('grizzly')) return { id: 'grizzly', name: 'GrizzlySMS (Server 2)' };
     if (rawProvider.includes('smspool')) return { id: 'smspool', name: 'SMSPool (Server 1)' };
     if (rawProvider.includes('marketplace') || rawProvider.includes('aiplug')) return { id: 'marketplace', name: 'AI Marketplace Gateway' };
-    if (rawProvider.includes('korapay')) return { id: 'korapay', name: 'Korapay Virtual Accounts' };
   }
 
   // 2. Upstream operator reference prefix inspection
@@ -71,7 +109,21 @@ function resolveProvider(tx: any): { id: string; name: string } {
     return { id: 'momo', name: 'MomoPanel Enterprise API' };
   }
 
-  // 3. Category contextual fallback
+  // 3. Deposit & funding categorization
+  if (cat === 'deposit' || tx.type === 'credit') {
+    if (descLower.includes('9psb') || meta.bankName || descLower.includes('billstack')) {
+      return { id: 'billstack', name: 'Billstack (9PSB Dedicated Account)' };
+    }
+    if (descLower.includes('korapay') || tx.reference?.startsWith('KP-')) {
+      return { id: 'korapay', name: 'Korapay Dedicated Account' };
+    }
+    if (descLower.includes('admin') || tx.reference?.startsWith('ADM-')) {
+      return { id: 'internal', name: 'Manual Admin Adjustment' };
+    }
+    return { id: 'billstack', name: 'Dedicated Virtual Account' };
+  }
+
+  // 4. Category contextual fallback
   if (
     cat === 'marketplace' ||
     descLower.includes('chatgpt') ||
@@ -112,9 +164,6 @@ function resolveProvider(tx: any): { id: string; name: string } {
       return { id: 'grizzly', name: 'GrizzlySMS (Server 2)' };
     }
     return { id: 'smspool', name: 'SMSPool (Server 1)' };
-  }
-  if (cat === 'deposit') {
-    return { id: 'korapay', name: 'Korapay Dedicated Bank' };
   }
 
   return { id: 'internal', name: 'Internal Settlement Engine' };
@@ -244,10 +293,17 @@ export async function GET(request: NextRequest) {
 
     let totalVolume = 0;
     let totalTransactionsCount = 0;
-    let totalDepositVolume = 0;
+
+    // Funding & Collections
+    let totalGrossDeposits = 0;
+    let totalNetDeposits = 0;
     let totalDepositCount = 0;
+    let totalCollectionFees = 0;
+
+    // Service Fulfillment Sales
     let totalGrossSales = 0;
     let totalWholesaleCost = 0;
+    let totalServiceProfit = 0;
     let totalCompletedOrders = 0;
     let totalRefundOrders = 0;
     let totalRefundAmount = 0;
@@ -261,13 +317,13 @@ export async function GET(request: NextRequest) {
       const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       monthNames.forEach((name, idx) => {
         const key = `${selectedYear}-${String(idx + 1).padStart(2, '0')}`;
-        timeSeriesMap.set(key, { label: name, periodKey: key, sales: 0, cost: 0, profit: 0, ordersCount: 0 });
+        timeSeriesMap.set(key, { label: name, periodKey: key, sales: 0, cost: 0, collectionFees: 0, profit: 0, ordersCount: 0 });
       });
     } else if (period === 'month') {
       const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
       for (let day = 1; day <= daysInMonth; day++) {
         const key = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        timeSeriesMap.set(key, { label: `Day ${day}`, periodKey: key, sales: 0, cost: 0, profit: 0, ordersCount: 0 });
+        timeSeriesMap.set(key, { label: `Day ${day}`, periodKey: key, sales: 0, cost: 0, collectionFees: 0, profit: 0, ordersCount: 0 });
       }
     } else if (period === '7d' || period === '30d') {
       const numDays = period === '7d' ? 7 : 30;
@@ -275,7 +331,7 @@ export async function GET(request: NextRequest) {
         const d = new Date(now.getTime() - i * 86400 * 1000);
         const key = d.toISOString().split('T')[0];
         const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
-        timeSeriesMap.set(key, { label: dayLabel, periodKey: key, sales: 0, cost: 0, profit: 0, ordersCount: 0 });
+        timeSeriesMap.set(key, { label: dayLabel, periodKey: key, sales: 0, cost: 0, collectionFees: 0, profit: 0, ordersCount: 0 });
       }
     } else if (period === 'today' || period === 'yesterday') {
       const targetDate = period === 'today' ? now : new Date(now.getTime() - 86400 * 1000);
@@ -283,7 +339,7 @@ export async function GET(request: NextRequest) {
       for (let h = 0; h < 24; h++) {
         const key = `${datePrefix}T${String(h).padStart(2, '0')}`;
         const label = `${String(h).padStart(2, '0')}:00`;
-        timeSeriesMap.set(key, { label, periodKey: key, sales: 0, cost: 0, profit: 0, ordersCount: 0 });
+        timeSeriesMap.set(key, { label, periodKey: key, sales: 0, cost: 0, collectionFees: 0, profit: 0, ordersCount: 0 });
       }
     }
 
@@ -310,19 +366,12 @@ export async function GET(request: NextRequest) {
 
     filteredTxs.forEach((tx: any) => {
       const amount = Math.abs(parseFloat(tx.amount || 0));
-      totalVolume += amount;
-      totalTransactionsCount += 1;
 
       const isDeposit =
         tx.type === 'credit' &&
         (tx.category === 'deposit' ||
           (tx.description || '').toLowerCase().includes('deposit') ||
           (tx.description || '').toLowerCase().includes('funded'));
-
-      if (isDeposit) {
-        totalDepositVolume += amount;
-        totalDepositCount += 1;
-      }
 
       const isRefund =
         tx.category === 'refund' ||
@@ -341,8 +390,9 @@ export async function GET(request: NextRequest) {
       const isDeliveredSale = tx.type === 'debit' && !isRefund && !isFailedOrRefundedDebit;
 
       const provider = resolveProvider(tx);
-      const cat = (tx.category || 'other').toLowerCase();
+      const cat = isDeposit ? 'deposit' : (tx.category || 'other').toLowerCase();
 
+      // Ensure Provider Map entry exists
       if (!providerMap.has(provider.id)) {
         providerMap.set(provider.id, {
           providerId: provider.id,
@@ -351,6 +401,7 @@ export async function GET(request: NextRequest) {
           totalOrders: 0,
           grossSales: 0,
           totalCost: 0,
+          collectionFees: 0,
           netProfit: 0,
           marginPercent: 0,
           refundedCount: 0,
@@ -359,20 +410,20 @@ export async function GET(request: NextRequest) {
       }
       const pSummary = providerMap.get(provider.id)!;
 
+      // Ensure Category Map entry exists
       if (!categoryMap.has(cat)) {
         categoryMap.set(cat, {
           category: cat,
-          label: cat.toUpperCase(),
+          label: cat === 'deposit' ? 'WALLET FUNDING & COLLECTIONS' : cat.toUpperCase(),
           totalOrders: 0,
           grossSales: 0,
           totalCost: 0,
+          collectionFees: 0,
           netProfit: 0,
           marginPercent: 0,
         });
       }
       const cSummary = categoryMap.get(cat)!;
-
-      const { cost, profit } = isDeliveredSale ? calculateTxCost(tx) : { cost: 0, profit: 0 };
 
       const txDate = new Date(tx.created_at);
       let timeKey = txDate.toISOString().split('T')[0];
@@ -394,17 +445,65 @@ export async function GET(request: NextRequest) {
           periodKey: timeKey,
           sales: 0,
           cost: 0,
+          collectionFees: 0,
           profit: 0,
           ordersCount: 0,
         });
       }
       const tsPoint = timeSeriesMap.get(timeKey)!;
 
-      if (isDeliveredSale) {
-        // Actual Delivered Revenue
+      if (isDeposit) {
+        // Handle incoming wallet funding & collection fees
+        const { fee, grossAmount, netAmount } = extractDepositFee(tx);
+
+        totalGrossDeposits += grossAmount;
+        totalNetDeposits += netAmount;
+        totalDepositCount += 1;
+        totalCollectionFees += fee;
+        totalVolume += grossAmount;
+        totalTransactionsCount += 1;
+
+        pSummary.totalOrders += 1;
+        pSummary.grossSales += grossAmount;
+        pSummary.collectionFees += fee;
+        pSummary.netProfit += fee; // Collection fee is direct platform retained profit
+
+        cSummary.totalOrders += 1;
+        cSummary.grossSales += grossAmount;
+        cSummary.collectionFees += fee;
+        cSummary.netProfit += fee;
+
+        tsPoint.sales += grossAmount;
+        tsPoint.collectionFees = (tsPoint.collectionFees || 0) + fee;
+        tsPoint.profit += fee;
+        tsPoint.ordersCount += 1;
+
+        itemizedList.push({
+          id: tx.id,
+          reference: tx.reference,
+          date: tx.created_at,
+          category: 'deposit',
+          description: tx.description || 'Wallet Deposit',
+          providerId: provider.id,
+          providerName: provider.name,
+          retailPrice: grossAmount,
+          wholesaleCost: 0,
+          fee: fee,
+          netProfit: fee,
+          marginPercent: grossAmount > 0 ? Math.round((fee / grossAmount) * 100) : 0,
+          status: 'credited',
+          type: 'deposit',
+        });
+      } else if (isDeliveredSale) {
+        // Actual Delivered Product / Bill Fulfillment Revenue
+        const { cost, profit } = calculateTxCost(tx);
+
         totalGrossSales += amount;
         totalWholesaleCost += cost;
+        totalServiceProfit += profit;
         totalCompletedOrders += 1;
+        totalVolume += amount;
+        totalTransactionsCount += 1;
 
         pSummary.totalOrders += 1;
         pSummary.grossSales += amount;
@@ -431,15 +530,19 @@ export async function GET(request: NextRequest) {
           providerName: provider.name,
           retailPrice: amount,
           wholesaleCost: cost,
+          fee: 0,
           netProfit: profit,
           marginPercent: amount > 0 ? Math.round((profit / amount) * 100) : 0,
           status: 'completed',
           type: 'sale',
         });
       } else if (isFailedOrRefundedDebit) {
-        // Failed / Refunded purchase: Do NOT count as gross sales or provider wholesale cost!
+        // Failed / Refunded purchase: Exclude from delivered sales and provider COGS
         totalRefundOrders += 1;
         totalRefundAmount += amount;
+        totalVolume += amount;
+        totalTransactionsCount += 1;
+
         pSummary.refundedCount += 1;
         pSummary.refundedAmount += amount;
 
@@ -453,13 +556,14 @@ export async function GET(request: NextRequest) {
           providerName: provider.name,
           retailPrice: amount,
           wholesaleCost: 0,
+          fee: 0,
           netProfit: 0,
           marginPercent: 0,
           status: 'refunded',
           type: 'reversal',
         });
       } else if (isRefund) {
-        // Refund credit log: only count toward totals if the original debit was not already accounted for
+        // Refund credit log
         const origRef = tx.metadata?.original_reference;
         const alreadyCountedInDebit = origRef && filteredTxs.some((t: any) => t.reference === origRef);
 
@@ -469,6 +573,7 @@ export async function GET(request: NextRequest) {
           pSummary.refundedCount += 1;
           pSummary.refundedAmount += amount;
         }
+        totalTransactionsCount += 1;
 
         itemizedList.push({
           id: tx.id,
@@ -480,6 +585,7 @@ export async function GET(request: NextRequest) {
           providerName: provider.name,
           retailPrice: -amount,
           wholesaleCost: 0,
+          fee: 0,
           netProfit: 0,
           marginPercent: 0,
           status: 'refunded',
@@ -488,9 +594,9 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    const totalNetProfit = Math.max(0, totalGrossSales - totalWholesaleCost);
+    const totalNetProfit = Math.max(0, totalServiceProfit + totalCollectionFees);
     const overallMarginPercent =
-      totalGrossSales > 0 ? Math.round((totalNetProfit / totalGrossSales) * 100) : 0;
+      totalVolume > 0 ? Math.round((totalNetProfit / totalVolume) * 100) : 0;
     const averageOrderValue =
       totalCompletedOrders > 0 ? Math.round(totalGrossSales / totalCompletedOrders) : 0;
 
@@ -520,10 +626,17 @@ export async function GET(request: NextRequest) {
       summary: {
         totalVolume,
         totalTransactionsCount,
-        totalDepositVolume,
+        // Funding & Collections
+        totalGrossDeposits,
+        totalNetDeposits,
+        totalDepositVolume: totalNetDeposits, // Backward-compatibility
         totalDepositCount,
+        totalCollectionFees,
+        // Service Fulfillment
         totalGrossSales,
         totalWholesaleCost,
+        totalServiceProfit,
+        // Combined Platform Earnings
         totalNetProfit,
         overallMarginPercent,
         totalCompletedOrders,
