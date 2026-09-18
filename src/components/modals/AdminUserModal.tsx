@@ -962,7 +962,7 @@ export function AdminUserModal({
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      Sent from <strong className="text-slate-700 dark:text-slate-300">ZuvaPay Official SMTP Gateway</strong> (<code className="font-mono text-[10px]">hello@zuvapay.com</code>) • <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Copy automatically sent to hello@zuvapay.com</span>
+                      Sent from <strong className="text-slate-700 dark:text-slate-300">ZuvaPay Official SMTP Gateway</strong> (<code className="font-mono text-[10px]">m@send.zuvapay.com</code>) • <span className="text-emerald-600 dark:text-emerald-400 font-semibold">BCC: hello@zuvapay.com</span>
                     </p>
                   </div>
                 </div>
